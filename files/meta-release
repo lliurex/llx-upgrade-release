@@ -1,0 +1,24 @@
+Dist: focal
+Name: Focal Fossa
+Version: 20.04.5 LTS
+Date: Thu, 23 April 2020 20:04:00 UTC
+Supported: 1
+Description: This is the 20.04.5 LTS release
+Release-File: http://lliurex.net/focal/dists/focal-updates/Release
+ReleaseNotes: https://github.com/juanma1980/do-lliurex-upgrade/focal/ReleaseAnnouncement
+ReleaseNotesHtml: https://github.com/juanma1980/do-lliurex-upgrade/focal/ReleaseAnnouncement.html
+UpgradeTool: https://github.com/juanma1980/do-lliurex-upgrade/focal/focal.tar.gz
+UpgradeToolSignature: https://github.com/juanma1980/do-lliurex-upgrade/focal/focal.tar.gz.gpg
+
+Dist: jammy
+Name: Jammy Jellyfish
+Version: 22.04.3 LTS
+Date: Thu, 21 April 2022 22:04:00 UTC
+Supported: 1
+Description: This is the 22.04.3 LTS release
+Release-File: http://lliurex.net/jammy/dists/focal-updates/Release
+ReleaseNotes: https://github.com/juanma1980/do-lliurex-upgrade/jammy/ReleaseAnnouncement
+ReleaseNotesHtml: https://github.com/juanma1980/do-lliurex-upgrade/jammy/ReleaseAnnouncement.html
+UpgradeTool: https://github.com/juanma1980/do-lliurex-upgrade/jammy/jammy.tar.gz
+UpgradeToolSignature: https://github.com/juanma1980/do-lliurex-upgrade/jammy/jammy.tar.gz.gpg
+

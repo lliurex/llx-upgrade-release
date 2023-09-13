@@ -124,11 +124,13 @@ def enableUpgradeRepos(tools):
 #def enableUpgradeRepos
 
 def launchLliurexUp():
-	llxup=b=lliurexup.LliurexUpCore()
+	llxup=lliurexup.LliurexUpCore()
 	llxup.defaultUrltoCheck="http://lliurex.net/jammy"
 	llxup.defaultMirror="llx23"
 	llxup.defaultVersion="jammy"
 	llxup.installLliurexUp()
+	a=open("/var/run/disableMetaProtection.token","w")
+	a.close()
 	os.execv("/usr/sbin/lliurex-upgrade",["-u"])
 		
 def disableRepos():

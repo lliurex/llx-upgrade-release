@@ -19,6 +19,6 @@ Description: This is the LliureX 23 LTS release
 Release-File: http://lliurex.net/jammy/dists/jammy-updates/Release
 ReleaseNotes: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/ReleaseAnnouncement
 ReleaseNotesHtml: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/ReleaseAnnouncement.html
-UpgradeTool: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/llx23.tar
-UpgradeToolSignature: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/llx23.tar.gpg
+UpgradeTool: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/llx23/llx23.tar
+UpgradeToolSignature: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/llx23/llx23.tar.gpg
 

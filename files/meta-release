@@ -1,6 +1,6 @@
 Dist: llx21
 Name: LliureX 21
-Version: 20.04.5 LTS
+Version: 21.230721.1
 Date: Thu, 23 April 2020 20:04:00 UTC
 Supported: 1
 Description: This is the LliureX 21 LTS release
@@ -12,7 +12,7 @@ UpgradeToolSignature: https://raw.githubusercontent.com/juanma1980/llx-upgrade-r
 
 Dist: llx23
 Name: LliureX 23
-Version: 22.04.3 LTS
+Version: 23.230901.1
 Date: Thu, 13 Sept 2023 12:10:00 UTC
 Supported: 1
 Description: This is the LliureX 23 LTS release

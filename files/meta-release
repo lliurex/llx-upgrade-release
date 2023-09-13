@@ -1,24 +1,24 @@
-Dist: focal
-Name: Focal Fossa
+Dist: llx21
+Name: LliureX 21
 Version: 20.04.5 LTS
 Date: Thu, 23 April 2020 20:04:00 UTC
 Supported: 1
-Description: This is the 20.04.5 LTS release
+Description: This is the LliureX 21 LTS release
 Release-File: http://lliurex.net/focal/dists/focal-updates/Release
-ReleaseNotes: https://github.com/juanma1980/do-lliurex-upgrade/focal/ReleaseAnnouncement
-ReleaseNotesHtml: https://github.com/juanma1980/do-lliurex-upgrade/focal/ReleaseAnnouncement.html
-UpgradeTool: https://github.com/juanma1980/do-lliurex-upgrade/focal/focal.tar.gz
-UpgradeToolSignature: https://github.com/juanma1980/do-lliurex-upgrade/focal/focal.tar.gz.gpg
+ReleaseNotes: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx21/ReleaseAnnouncement
+ReleaseNotesHtml: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx21/ReleaseAnnouncement.html
+UpgradeTool: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx21/llx21.tar.gz
+UpgradeToolSignature: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx21/llx21.tar.gz.gpg
 
-Dist: jammy
-Name: Jammy Jellyfish
+Dist: llx23
+Name: LliureX 23
 Version: 22.04.3 LTS
-Date: Thu, 21 April 2022 22:04:00 UTC
+Date: Thu, 13 Sept 2023 12:10:00 UTC
 Supported: 1
-Description: This is the 22.04.3 LTS release
-Release-File: http://lliurex.net/jammy/dists/focal-updates/Release
-ReleaseNotes: https://github.com/juanma1980/do-lliurex-upgrade/jammy/ReleaseAnnouncement
-ReleaseNotesHtml: https://github.com/juanma1980/do-lliurex-upgrade/jammy/ReleaseAnnouncement.html
-UpgradeTool: https://github.com/juanma1980/do-lliurex-upgrade/jammy/jammy.tar.gz
-UpgradeToolSignature: https://github.com/juanma1980/do-lliurex-upgrade/jammy/jammy.tar.gz.gpg
+Description: This is the LliureX 23 LTS release
+Release-File: http://lliurex.net/jammy/dists/jammy-updates/Release
+ReleaseNotes: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/ReleaseAnnouncement
+ReleaseNotesHtml: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/ReleaseAnnouncement.html
+UpgradeTool: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx21/llx23.tar.gz
+UpgradeToolSignature: https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/llx23/llx23.tar.gz.gpg
 

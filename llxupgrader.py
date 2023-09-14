@@ -26,7 +26,7 @@ def i18n(raw):
 		"DISMISS":_("If you don't know what are you doing abort now"),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("If you continue the system will be upgraded to the new release of LliureX"),
+		"LASTCHANCE":_("This is the last chance for aborting"),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
@@ -98,11 +98,11 @@ def prepareFiles(metadata):
 
 def enableUpgradeRepos(tools):
 	try:
-		a=tarfile.open(tools)
-		a.extractall()
+		with tarfile.open(tools) as tar:
+			tar.extractall(path=WRKDIR,filter='data')
 	except Exception as e:
 		print(e)
-	shutil.copy("sources.list","/etc/apt/sources.list")
+	shutil.copy("{}/sources.list".format(WRKDIR),"/etc/apt/sources.list")
 #def enableUpgradeRepos
 
 def restoreRepos():

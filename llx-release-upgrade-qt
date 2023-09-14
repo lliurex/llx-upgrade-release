@@ -59,7 +59,12 @@ class upgraderGui(QWidget):
 	def __init__(self,parent=None):
 		super (upgraderGui,self).__init__(parent)
 		self.th=thRun()
+		self.noreturn=0
 	#def __init__
+
+	def closeEvent(self,event):
+		if self.noreturn==1:
+			event.ignore()
 
 	def _revertAll(self):
 		llxupgrader.restoreRepos()
@@ -71,6 +76,7 @@ class upgraderGui(QWidget):
 		self.lst_Steps.setItemWidget(item,lbl_info)
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 		self.lst_Steps.setCurrentItem(item)
+		self.noreturn=0
 	#def _revertAll
 
 	def _beginLastStepUpgrade(self):
@@ -91,7 +97,7 @@ class upgraderGui(QWidget):
 		llxupgrader.launchLliurexUp()
 	#def _doLastStepUpgrade
 
-	def doUpgrade(self):
+	def _doUpgrade(self):
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
 		lbl_info.setText(llxupgrader.i18n("DISABLEREPOS"))
@@ -105,6 +111,7 @@ class upgraderGui(QWidget):
 			self.th.setTarget("disablerepos")
 			self.th.start()
 			self.th.end.connect(self._beginLastStepUpgrade)
+			self.noreturn=1	
 		except Exception as e:
 			print(e)
 			lbl_info.setText("{}".format(e))
@@ -124,7 +131,7 @@ class upgraderGui(QWidget):
 			lbl_info.setText((llxupgrader.i18n("PENDING")))
 		else:
 			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(llxupgrader.i18n("DISABLE"),llxupgrader.i18n("DEFAULT"),llxupgrader.i18n("UNDO")))
-			lbl_info.clicked.connect(self.doUpgrade)
+			lbl_info.clicked.connect(self._doUpgrade)
 			#self.doUpgrade()
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 		self.lst_Steps.setCurrentItem(item)

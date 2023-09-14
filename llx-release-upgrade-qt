@@ -1,0 +1,152 @@
+#!/usr/bin/python3
+# Copyright (c) 2023 LliureX Team
+# This code is released under the GPL-3 terms
+# https://www.gnu.org/licenses/gpl-3.0.en.html#license-text
+
+import llxupgrader
+from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem,QSizePolicy
+from PySide2 import QtGui
+from PySide2.QtCore import QSize,Qt,QThread,Signal,QObject
+
+class thRun(QThread): 
+	end=Signal()
+	def __init__(self,parent=None):
+		super (thRun,self).__init__(parent)
+		self.target=""
+
+	def setTarget(self,target):
+		self.target=target
+
+	def run(self):
+		if self.target=="disablerepos":
+			llxupgrader.disableRepos()
+		self.end.emit()
+#class thRun
+
+
+class QStepLine(QWidget):
+	clicked=Signal()
+	def __init__(self,parent=None):
+		super (QStepLine,self).__init__(parent)
+		lay=QGridLayout()
+		self.lbl_info=QLabel()
+		self.lbl_info.setWordWrap(True)
+		self.btn_ok=QPushButton(llxupgrader.i18n("ACCEPT"))
+		self.btn_ok.clicked.connect(self.emitOk)
+		self.btn_ko=QPushButton(llxupgrader.i18n("CANCEL"))
+		self.btn_ko.clicked.connect(self.cancel)
+		lay.addWidget(self.lbl_info,0,0,1,2)
+		lay.addWidget(self.btn_ok,1,0,1,1,Qt.AlignLeft)
+		lay.addWidget(self.btn_ko,1,1,1,1,Qt.AlignRight)
+		self.setLayout(lay)
+		return
+	#def __init__
+
+	def setText(self,msg):
+		self.lbl_info.setText(msg)
+
+	def emitOk(self):
+		self.setDisabled(True)
+		self.clicked.emit()
+
+	def cancel(self):
+		self.btn_ok.setDisabled(True)
+
+
+class upgraderGui(QWidget):
+	def __init__(self,parent=None):
+		super (upgraderGui,self).__init__(parent)
+		self.th=thRun()
+	#def __init__
+
+	def doUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(llxupgrader.i18n("DISABLEREPOS"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		try:
+			self.th.setTarget("disablerepos")
+			self.th.start()
+			self.th.end.connect(self._doNextStepUpgrade)
+		except Exception as e:
+			print(e)
+			lbl_info.setText("{}".format(e))
+			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+			return(False)
+	#def doUpgrade
+
+	def _doNextStepUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(llxupgrader.i18n("EXTRACT"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		tools=llxupgrader.prepareFiles(self.upgradeTo)
+		llxupgrader.enableUpgradeRepos(tools)
+		llxupgrader.launchLliurexUp()
+
+	def beginUpgrade(self):
+		self.chk_sure.setDisabled(True)
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		if llxupgrader.upgradeCurrentState():
+			lbl_info.btn_ok.setVisible(False)
+			lbl_info.btn_ko.setVisible(False)
+			lbl_info.setText((llxupgrader.i18n("PENDING")))
+		else:
+			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(llxupgrader.i18n("DISABLE"),llxupgrader.i18n("DEFAULT"),llxupgrader.i18n("UNDO")))
+			lbl_info.clicked.connect(self.doUpgrade)
+			#self.doUpgrade()
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
+	#def beginUpgrade
+
+	def renderGui(self):
+		lay=QGridLayout()
+		self.setLayout(lay)
+		self.lst_Steps=QListWidget()
+		lbl_info=QStepLine()
+		lbl_info.btn_ok.setEnabled(False)
+		lbl_info.clicked.connect(self.beginUpgrade)
+		lay.addWidget(self.lst_Steps,0,0,1,2)
+		self.chk_sure=QCheckBox(llxupgrader.i18n("DISCLAIMERGUI"))
+		self.chk_sure.stateChanged.connect(lambda x:lbl_info.btn_ok.setEnabled(self.chk_sure.isChecked()))
+		lay.addWidget(self.chk_sure,3,0,1,2,Qt.AlignLeft)
+		self.upgradeTo=self.chkUpAvailable()
+		if self.upgradeTo:
+			lbl_info.setText("<i>{0}: {1}</i><p><b>{3}</b></p>".format(llxupgrader.i18n("AVAILABLE"),self.upgradeTo["Name"].split(":")[1].strip(),llxupgrader.i18n("ASK"),llxupgrader.i18n("DISMISS")))
+			item = QListWidgetItem(self.lst_Steps)
+			self.lst_Steps.addItem(item)
+			self.lst_Steps.setItemWidget(item,lbl_info)
+			item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+	#def renderGui
+
+	def chkUpAvailable(self):
+		url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
+		meta=llxupgrader.downloadFile(url)
+		with open(meta,"r") as f:
+			metadata=llxupgrader.processMetaRelease(f.readlines())
+
+		upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
+		return(upgradeTo)
+	#def chkUpAvailable
+#class upgraderGui
+
+##### MAIN APP ######
+
+app=QApplication(["Lliurex Release Upgrade"])
+gui=upgraderGui()
+gui.renderGui()
+gui.show()
+app.exec_()
+

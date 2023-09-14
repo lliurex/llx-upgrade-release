@@ -10,12 +10,18 @@ _ = gettext.gettext
 
 def i18n(raw):
 	imsg={"IMPORTANT":_("IMPORTANT"),
+		"ACCEPT":_("Accept"),
+		"AVAILABLE":_("There's a new LliureX release"),
+		"ASK":_("Update?"),
+		"CANCEL":_("Cancel"),
 		"DISCLAIMER":_("This operation may destroy your system (or not)"),
+		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
 		"ABORT":_("Operation canceled"),
 		"READ":_("Read carefully all the info showed in the screen"),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"UPGRADE":_("Setting info for lliurex-up"),
 		"EXTRACT":_("Extracting upgrade files.."),
+		"DISABLEREPOS":_("Disabling repos.."),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"DISABLE":_("All configured repositories will be disabled."),
 		"DEFAULT":_("Default repositores will be resetted to Lliurex defaults.") ,
@@ -94,8 +100,8 @@ def upgradeCurrentState():
 	llxup=lliurexup.LliurexUpCore()
 	update=llxup.getLliurexVersionLliurexNet()
 	if update["installed"]<update["candidate"]:
-		return False
-	return True
+		return True
+	return False
 #def upgradeCurrentState
 
 def prepareFiles(metadata):
@@ -120,10 +126,19 @@ def launchLliurexUp():
 	llxup.installLliurexUp()
 	a=open("/var/run/disableMetaProtection.token","w")
 	a.close()
-	if os.environ.get("DISPLAY","")!="":
-		os.execv("/usr/sbin/lliurex-up",["-u"])
-	else:
-		os.execv("/usr/sbin/lliurex-upgrade",["-u"])
+	os.execv("/usr/sbin/lliurex-up",["-u"])
+#def launchLliurexUp
+
+def launchLliurexUpgrade():
+	llxup=lliurexup.LliurexUpCore()
+	llxup.defaultUrltoCheck="http://lliurex.net/jammy"
+	llxup.defaultMirror="llx23"
+	llxup.defaultVersion="jammy"
+	llxup.installLliurexUp()
+	a=open("/var/run/disableMetaProtection.token","w")
+	a.close()
+	os.execv("/usr/sbin/lliurex-upgrade",["-u"])
+#def launchLliurexUpgrade
 		
 def disableRepos():
 	copySystemFiles()

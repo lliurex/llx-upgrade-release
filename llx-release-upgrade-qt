@@ -23,7 +23,6 @@ class thRun(QThread):
 		self.end.emit()
 #class thRun
 
-
 class QStepLine(QWidget):
 	clicked=Signal()
 	def __init__(self,parent=None):
@@ -44,20 +43,53 @@ class QStepLine(QWidget):
 
 	def setText(self,msg):
 		self.lbl_info.setText(msg)
+	#def setText
 
 	def emitOk(self):
 		self.setDisabled(True)
 		self.clicked.emit()
+	#def emitOk
 
 	def cancel(self):
 		self.btn_ok.setDisabled(True)
-
+	#def cancel
+#class QStepLine
 
 class upgraderGui(QWidget):
 	def __init__(self,parent=None):
 		super (upgraderGui,self).__init__(parent)
 		self.th=thRun()
 	#def __init__
+
+	def _revertAll(self):
+		llxupgrader.restoreRepos()
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		msg=[llxupgrader.i18n("ABORT"),llxupgrader.i18n("REVERT"),llxupgrader.i18n("RECOM")]
+		lbl_info.setText("<br><br>".join(msg))
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
+	#def _revertAll
+
+	def _beginLastStepUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(llxupgrader.i18n("LASTCHANCE"))
+		lbl_info.clicked.connect(self._doLastStepUpgrade)
+		lbl_info.btn_ko.clicked.connect(self._revertAll)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+	#def _beginLastStepUpgrade
+
+	def _doLastStepUpgrade(self):
+		tools=llxupgrader.prepareFiles(self.upgradeTo)
+		llxupgrader.enableUpgradeRepos(tools)
+		llxupgrader.launchLliurexUp()
+	#def _doLastStepUpgrade
 
 	def doUpgrade(self):
 		item = QListWidgetItem(self.lst_Steps)
@@ -72,26 +104,13 @@ class upgraderGui(QWidget):
 		try:
 			self.th.setTarget("disablerepos")
 			self.th.start()
-			self.th.end.connect(self._doNextStepUpgrade)
+			self.th.end.connect(self._beginLastStepUpgrade)
 		except Exception as e:
 			print(e)
 			lbl_info.setText("{}".format(e))
 			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 			return(False)
 	#def doUpgrade
-
-	def _doNextStepUpgrade(self):
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.setText(llxupgrader.i18n("EXTRACT"))
-		lbl_info.btn_ok.setVisible(False)
-		lbl_info.btn_ko.setVisible(False)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
-		tools=llxupgrader.prepareFiles(self.upgradeTo)
-		llxupgrader.enableUpgradeRepos(tools)
-		llxupgrader.launchLliurexUp()
 
 	def beginUpgrade(self):
 		self.chk_sure.setDisabled(True)

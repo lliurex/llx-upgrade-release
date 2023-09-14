@@ -8,26 +8,33 @@ from lliurex import lliurexup
 import gettext
 _ = gettext.gettext
 
+WRKDIR="/tmp/llx-release-updater"
+
 def i18n(raw):
-	imsg={"IMPORTANT":_("IMPORTANT"),
+	imsg=({
+		"ABORT":_("Operation canceled"),
 		"ACCEPT":_("Accept"),
-		"AVAILABLE":_("There's a new LliureX release"),
 		"ASK":_("Update?"),
+		"AVAILABLE":_("There's a new LliureX release"),
+		"BEGIN":_("Upgrading Lliurex..."),
 		"CANCEL":_("Cancel"),
+		"DEFAULT":_("Default repositores will be resetted to Lliurex defaults.") ,
+		"DISABLE":_("All configured repositories will be disabled."),
+		"DISABLEREPOS":_("Disabling repos.."),
 		"DISCLAIMER":_("This operation may destroy your system (or not)"),
 		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
-		"ABORT":_("Operation canceled"),
-		"READ":_("Read carefully all the info showed in the screen"),
-		"REPOS":_("All repositories configured in this system will be deleted."),
-		"UPGRADE":_("Setting info for lliurex-up"),
-		"EXTRACT":_("Extracting upgrade files.."),
-		"DISABLEREPOS":_("Disabling repos.."),
-		"PENDING":_("There're updates available. Install them before continue."),
-		"DISABLE":_("All configured repositories will be disabled."),
-		"DEFAULT":_("Default repositores will be resetted to Lliurex defaults.") ,
-		"UNDO":_("This operation could not be reversed"),
 		"DISMISS":_("If you don't know what are you doing abort now"),
-		"BEGIN":_("Upgrading Lliurex...")}
+		"EXTRACT":_("Extracting upgrade files.."),
+		"IMPORTANT":_("IMPORTANT"),
+		"LASTCHANCE":_("If you continue the system will be upgraded to the new release of LliureX"),
+		"PENDING":_("There're updates available. Install them before continue."),
+		"PRESS":_("Press a key for launching Lliurex-Up"),
+		"READ":_("Read carefully all the info showed in the screen"),
+		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
+		"REPOS":_("All repositories configured in this system will be deleted."),
+		"REVERT":_("Reverting repositories to previous state"),
+		"UNDO":_("This operation could not be reversed"),
+		"UPGRADE":_("Setting info for lliurex-up")})
 	return(imsg.get(raw,raw))
 
 def processMetaRelease(meta):
@@ -75,26 +82,6 @@ def chkReleaseAvailable(metadata):
 	return(upgradeTo)
 #def chkReleaseAvailable
 
-def disclaimerAgree():
-	print(" ===== {} =====".format(i18n("IMPORTANT")))
-	print(" ===== {} =====".format(i18n("IMPORTANT")))
-	print()
-	print(" {}".format(i18n("DISCLAIMER")))
-	print()
-	print("****************")
-	print(" * {} *".format(i18n("READ")))
-	print("****************")
-	print()
-	print(" * {} *".format(i18n("REPOS")))
-	print()
-	print("{}".format(i18n("DISMISS")))
-	print()
-	abort=input("[y]/n: ")
-	if abort=="n":
-		return(True)
-	return(False)
-#def disclaimerAgree
-
 def upgradeCurrentState():
 	#check state of current release
 	llxup=lliurexup.LliurexUpCore()
@@ -117,6 +104,23 @@ def enableUpgradeRepos(tools):
 		print(e)
 	shutil.copy("sources.list","/etc/apt/sources.list")
 #def enableUpgradeRepos
+
+def restoreRepos():
+	ftar="/tmp/data.tar"
+	if os.path.isfile(ftar)==False:
+		return
+	try:
+		with tarfile.open(ftar) as tar:
+			tar.extractall(path=WRKDIR,filter='data')
+	except Exception as e:
+		print("Untar: {}".format(e))
+	wrkdir=os.path.join(WRKDIR,"etc/apt")
+	shutil.copy("{}/sources.list".format(wrkdir),"/etc/apt/sources.list")
+	if os.path.isdir("{}/sources.list.d".format(wrkdir)):
+		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
+			if f.endswith(".list"):
+				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+#def restoreRepos
 
 def launchLliurexUp():
 	llxup=lliurexup.LliurexUpCore()
@@ -147,13 +151,16 @@ def disableRepos():
 	for line in repos:
 		if len(line)>0:
 			repoId=line.split(")")[0]
-			print("... {}".format(line))
 			cmd=["repoman-cli","-y","-d",repoId]
 			subprocess.run(cmd)
 #def disableRepos
 
 def downloadFile(url):
 	meta=os.path.basename(url)
+	meta=os.path.join(WRKDIR,meta)
+	if os.path.isdir(WRKDIR)==False:
+		os.makedirs(WRKDIR)
+
 	try:
 		urlretrieve(url, meta)
 	except Exception as e:
@@ -164,12 +171,9 @@ def downloadFile(url):
 #def downloadFile
 
 def copySystemFiles():
-	tarf=tarfile.open("/tmp/data.tar","w")
-	tarf.addfile(tarfile.TarInfo("/etc/apt/sources.list"))
-	tarf.addfile(tarfile.TarInfo("/etc/apt/sources.list.d/"))
-	for f in os.listdir("/etc/apt/sources.list.d"):
-		tarf.addfile(tarfile.TarInfo("/etc/apt/sources.list.d/{}".format(f)))
-	tarf.close()
+	with tarfile.open("/tmp/data.tar","w") as tarf:
+		tarf.add("/etc/apt/sources.list")
+		tarf.add("/etc/apt/sources.list.d/")
 #def copySystemFiles
 
 def chkUpgradeResult():

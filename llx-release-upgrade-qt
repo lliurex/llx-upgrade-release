@@ -3,6 +3,7 @@
 # This code is released under the GPL-3 terms
 # https://www.gnu.org/licenses/gpl-3.0.en.html#license-text
 
+import os
 import llxupgrader
 from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem,QSizePolicy
 from PySide2 import QtGui
@@ -70,6 +71,8 @@ class upgraderGui(QWidget):
 		llxupgrader.restoreRepos()
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
+		lbl_info.btn_ko.setVisible(False)
+		lbl_info.clicked.connect(self._launchUp)
 		msg=[llxupgrader.i18n("ABORT"),llxupgrader.i18n("REVERT"),llxupgrader.i18n("RECOM")]
 		lbl_info.setText("<br><br>".join(msg))
 		self.lst_Steps.addItem(item)
@@ -79,10 +82,14 @@ class upgraderGui(QWidget):
 		self.noreturn=0
 	#def _revertAll
 
+	def _launchUp(self):
+		os.execv("/usr/sbin/lliurex-up",["-n"])
+	#def self._launchUp
+		
 	def _beginLastStepUpgrade(self):
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
-		lbl_info.setText(llxupgrader.i18n("LASTCHANCE"))
+		lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("LASTCHANCE"),llxupgrader.i18n("DISMISS")))
 		lbl_info.clicked.connect(self._doLastStepUpgrade)
 		lbl_info.btn_ko.clicked.connect(self._revertAll)
 		self.lst_Steps.addItem(item)
@@ -95,6 +102,7 @@ class upgraderGui(QWidget):
 		tools=llxupgrader.prepareFiles(self.upgradeTo)
 		llxupgrader.enableUpgradeRepos(tools)
 		llxupgrader.launchLliurexUp()
+		self.noreturn=0
 	#def _doLastStepUpgrade
 
 	def _doUpgrade(self):

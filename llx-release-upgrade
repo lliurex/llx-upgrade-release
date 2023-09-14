@@ -103,5 +103,6 @@ if lastChance()==False:
 	input("")
 	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
 llxupgrader.launchLliurexUpgrade()
+noreturn=0
 llxupgrader.chkUpgradeResult()
-sys.exit(0)
+sys.exit(noreturn)

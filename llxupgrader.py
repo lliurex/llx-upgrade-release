@@ -26,7 +26,7 @@ def i18n(raw):
 		"DISMISS":_("If you don't know what are you doing abort now"),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("This is the last chance for aborting"),
+		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way"),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
@@ -122,26 +122,43 @@ def restoreRepos():
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
 #def restoreRepos
 
+def _getValuesForLliurexUp():
+	data={"url":"http://lliurex.net/jammy","mirror":"llx23","version":"jammy"}
+	with open("/etc/apt/sources.list") as f:
+		for line in f.readlines():
+			l=line.strip().split()
+			for item in l:
+				if "://" in item:
+					data["url"]=item
+					data["version"]=os.path.basename(item)
+					break
+	return(data)
+#def _getValuesForLliurexUp
+
 def launchLliurexUp():
+	data=_getValuesForLliurexUp()
 	llxup=lliurexup.LliurexUpCore()
-	llxup.defaultUrltoCheck="http://lliurex.net/jammy"
-	llxup.defaultMirror="llx23"
-	llxup.defaultVersion="jammy"
+	llxup.defaultUrltoCheck=data.get("url")
+	llxup.defaultVersion=data.get("version")
 	llxup.installLliurexUp()
 	a=open("/var/run/disableMetaProtection.token","w")
 	a.close()
-	os.execv("/usr/sbin/lliurex-up",["-u"])
+	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-up"]
+	out=subprocess.run(cmd)
+	return(out)
 #def launchLliurexUp
 
 def launchLliurexUpgrade():
+	data=_getValuesForLliurexUp()
 	llxup=lliurexup.LliurexUpCore()
-	llxup.defaultUrltoCheck="http://lliurex.net/jammy"
-	llxup.defaultMirror="llx23"
-	llxup.defaultVersion="jammy"
+	llxup.defaultUrltoCheck=data.get("url")
+	llxup.defaultVersion=data.get("version")
 	llxup.installLliurexUp()
 	a=open("/var/run/disableMetaProtection.token","w")
 	a.close()
-	os.execv("/usr/sbin/lliurex-upgrade",["-u"])
+	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-upgrade","-u","-n"]
+	out=subprocess.run(cmd)
+	return(out)
 #def launchLliurexUpgrade
 		
 def disableRepos():

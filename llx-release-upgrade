@@ -1,6 +1,20 @@
 #!/usr/bin/python3
 import sys,os
+import signal
 import llxupgrader
+
+
+noreturn=0
+
+def abort(*args):
+	print("",end="")
+	if noreturn==1:
+		llxupgrader.restoreRepos()
+	elif noreturn==2:
+		sys.exit(1)
+#def abort
+
+signal.signal(signal.SIGINT, abort)
 
 def disclaimerAgree():
 	print()
@@ -32,7 +46,9 @@ def lastChance():
 	print()
 	print("****************")
 	print("****************")
+	print()
 	print(" * {} *".format(llxupgrader.i18n("LASTCHANCE")))
+	print()
 	print("****************")
 	print("****************")
 	print()
@@ -44,11 +60,12 @@ def lastChance():
 	return(False)
 #def lastChance
 
+
+#### MAIN APP ####
 url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
 meta=llxupgrader.downloadFile(url)
 with open(meta,"r") as f:
 	metadata=llxupgrader.processMetaRelease(f.readlines())
-
 upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
 if len(upgradeTo)>0:
 	print("{0}: {1}".format(llxupgrader.i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
@@ -75,12 +92,14 @@ llxupgrader.disableRepos()
 tools=llxupgrader.prepareFiles(upgradeTo)
 print(llxupgrader.i18n("EXTRACT"))
 llxupgrader.enableUpgradeRepos(tools)
+noreturn=1
 if lastChance()==False:
 	llxupgrader.restoreRepos()
 	print(llxupgrader.i18n("ABORT"))
 	print(llxupgrader.i18n("REVERT"))
 	print(llxupgrader.i18n("RECOM"))
 	print(llxupgrader.i18n("PRESS"))
+	noreturn=2
 	input("")
 	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
 llxupgrader.launchLliurexUpgrade()

@@ -113,13 +113,13 @@ def _generateDemoteScript():
 				if len(line.strip())>0:
 					demote.append(line.strip())
 		if len(demote)>0:
-			destpath="/usr/share/lliurex-up/preActions/180_release_upgrade"
+			destpath="/usr/share/lliurex-up/preActions/180-release_upgrade"
 			fcontent="#!/bin/bash\n"
 			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="initActions|initActionsSai)\n"
 			fcontent+="apt-get remove -y {}\n".format(" ".join(demote))
-			fcontent+="rm /usr/share/lliurex-up/preActions/180_release_upgrade\n"
+			fcontent+="rm /usr/share/lliurex-up/preActions/180-release_upgrade\n"
 			fcontent+="\n;;\nesac"
 		with open(destpath,"w") as f:
 			f.write(fcontent)
@@ -152,7 +152,7 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
-	destpath="/usr/share/lliurex-up/preActions/180_release_upgrade"
+	destpath="/usr/share/lliurex-up/preActions/180-release_upgrade"
 	if os.path.isfile(destpath):
 		os.unlink(destpath)
 #def restoreRepos

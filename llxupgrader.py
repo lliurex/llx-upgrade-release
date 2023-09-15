@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os,sys, tempfile, shutil
 import tarfile
+import time
 import subprocess
 from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
@@ -24,12 +25,19 @@ def i18n(raw):
 		"DISCLAIMER":_("This operation may destroy your system (or not)"),
 		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
 		"DISMISS":_("If you don't know what are you doing abort now"),
+		"DOWNGRADE":_("¡¡UPGRADE FAILED!!. Wait while trying to recovery..."),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way"),
+		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
 		"PENDING":_("There're updates available. Install them before continue."),
+		"PRAY":_("This is catastrophical. Upgrader has tried to revert Lliurex-Up to original state"),
+		"PRAY2":_("The upgraded failed. Call a technical assistant and try to manually downgrade through Lliurex-Up"),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
+		"REBOOT":_("If lliurex-up process went Ok reboot the system."),
+		"REBOOT2":_("System is under big failure. Press CANCEL to begin system rescue."),
+		"REBOOT3":_("Call a technical assistant."),
+
 		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"REVERT":_("Reverting repositories to previous state"),
@@ -97,6 +105,26 @@ def prepareFiles(metadata):
 	return(tools)
 #def prepareFiles(metadata):
 
+def _generateDemoteScript():
+	if os.path.isfile("demoted.cfg")==True:
+		demoted=[]
+		with open("demoted.cfg","r") as f:
+			for line in f.readlines():
+				if len(line.strip())>0:
+					demoted.append(line.strip())
+		if len(demoted)>0:
+			destpath="/usr/share/lliurex-up/preActions/180_release_upgrade"
+			fcontent="#!/bin/bash"
+			fcontent+="ACTION=\"$1\""
+			fcontent+="case \"$ACTION\" in\n" 
+			fcontent+="initActions|initActionsSai)\n"
+			fcontent+="apt-get remove -y {}\n".format(demoted)
+			fcontent+="rm /usr/share/lliurex-up/preActions/180_release_upgrade"
+			fcontent+=(";;\nesac")
+		with open(destpath,"w") as f:
+			f.write(fcontent)
+#def _generateDemoteScript
+
 def enableUpgradeRepos(tools):
 	try:
 		with tarfile.open(tools) as tar:
@@ -104,55 +132,12 @@ def enableUpgradeRepos(tools):
 	except Exception as e:
 		print(e)
 	shutil.copy("{}/sources.list".format(WRKDIR),"/etc/apt/sources.list")
-#def enableUpgradeRepos
-
-def restoreRepos():
-	ftar="/tmp/data.tar"
-	if os.path.isfile(ftar)==False:
-		return
-	try:
-		with tarfile.open(ftar) as tar:
-			tar.extractall(path=WRKDIR)
-	except Exception as e:
-		print("Untar: {}".format(e))
-	wrkdir=os.path.join(WRKDIR,"etc/apt")
-	shutil.copy("{}/sources.list".format(wrkdir),"/etc/apt/sources.list")
-	if os.path.isdir("{}/sources.list.d".format(wrkdir)):
-		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
-			if f.endswith(".list"):
-				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
-#def restoreRepos
-
-def _getValuesForLliurexUp():
-	data={"url":"http://lliurex.net/jammy","mirror":"llx23","version":"jammy"}
-	with open("/etc/apt/sources.list") as f:
-		for line in f.readlines():
-			l=line.strip().split()
-			for item in l:
-				if "://" in item:
-					data["url"]=item
-					data["version"]=os.path.basename(item)
-					break
-	return(data)
-#def _getValuesForLliurexUp
-
-def launchLliurexUp():
-	data=_getValuesForLliurexUp()
-	print(data)
-	llxup=lliurexup.LliurexUpCore()
-	llxup.defaultUrltoCheck=data.get("url")
-	llxup.defaultVersion=data.get("version")
-	llxup.installLliurexUp()
-	a=open("/var/run/disableMetaProtection.token","w")
-	a.close()
-	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-up"]
-	out=subprocess.run(cmd)
-	return(out)
+	_generateDemoteScript()
+	return()
 #def launchLliurexUp
 
 def launchLliurexUpgrade():
 	data=_getValuesForLliurexUp()
-	print(data)
 	llxup=lliurexup.LliurexUpCore()
 	llxup.defaultUrltoCheck=data.get("url")
 	llxup.defaultVersion=data.get("version")
@@ -180,7 +165,6 @@ def downloadFile(url):
 	meta=os.path.join(WRKDIR,meta)
 	if os.path.isdir(WRKDIR)==False:
 		os.makedirs(WRKDIR)
-
 	if os.path.isfile(meta):
 		os.unlink(meta)
 	try:

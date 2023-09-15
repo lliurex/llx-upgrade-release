@@ -130,6 +130,7 @@ class upgraderGui(QWidget):
 		self.th.setTarget("downgrade")
 		self.th.start()
 		self.th.downgraded.connect(self._endUpgradeFailed)
+	#def _beginUpgradeFailed
 		
 	def _endUpgrade(self):
 		self.noreturn=0

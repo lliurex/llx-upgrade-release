@@ -60,6 +60,17 @@ def lastChance():
 	return(False)
 #def lastChance
 
+def _errorEnd():
+	print("****************")
+	print("****************")
+	print("{0}\n{1}".format(llxupgrader.i18n("REBOOT2"),llxupgrader.i18n("REBOOT3")))
+	llxupgrader.restoreRepos()
+	print()
+	llxupgrader.downgrade()
+	print()
+	print("{}\n{}".format(llxupgrader.i18n("PRAY"),llxupgrader.i18n("PRAY2")))
+	print()
+#def _errorEnd
 
 #### MAIN APP ####
 url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
@@ -104,5 +115,7 @@ if lastChance()==False:
 	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
 llxupgrader.launchLliurexUpgrade()
 noreturn=0
-llxupgrader.chkUpgradeResult()
+self.upgradeTo=self.chkUpAvailable()
+if len(self.upgradeTo)>0:
+	_errorEnd()
 sys.exit(noreturn)

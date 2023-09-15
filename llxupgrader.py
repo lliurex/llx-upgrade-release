@@ -106,9 +106,9 @@ def prepareFiles(metadata):
 #def prepareFiles(metadata):
 
 def _generateDemoteScript():
-	if os.path.isfile("demoted.cfg")==True:
+	if os.path.isfile("{}/demoted.cfg".format(WRKDIR))==True:
 		demoted=[]
-		with open("demoted.cfg","r") as f:
+		with open("{}/demoted.cfg".format(WRKDIR),"r") as f:
 			for line in f.readlines():
 				if len(line.strip())>0:
 					demoted.append(line.strip())
@@ -134,6 +134,67 @@ def enableUpgradeRepos(tools):
 	shutil.copy("{}/sources.list".format(WRKDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
 	return()
+#def enableUpgradeRepos(tools):
+
+def restoreRepos():
+	ftar="/tmp/data.tar"
+	if os.path.isfile(ftar)==False:
+		return
+	try:
+		with tarfile.open(ftar) as tar:
+			tar.extractall(path=WRKDIR)
+	except Exception as e:
+		print("Untar: {}".format(e))
+	wrkdir=os.path.join(WRKDIR,"etc/apt")
+	shutil.copy("{}/sources.list".format(wrkdir),"/etc/apt/sources.list")
+	if os.path.isdir("{}/sources.list.d".format(wrkdir)):
+		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
+			if f.endswith(".list"):
+				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+#def restoreRepos
+
+def downgrade():
+	#Update info
+	cmd=["apt-get","update"]
+	time.sleep(10)
+	subprocess.run(cmd)
+	#Get old version
+	cmd=["apt-cache","policy","lliurex-up"]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	line=""
+	for out in cmdOutput.split("\n"):
+		if "://" in out:
+			break
+		line=out
+	uprelease=line.strip().split()[0]
+	cmd=["apt-get","install","-y","--allow-downgrades","--reinstall","lliurex-up={}".format(uprelease), "lliurex-up-core={}".format(uprelease), "lliurex-up-cli={}".format(uprelease), "lliurex-up-indicator={}".format(uprelease),"python3-lliurexup={}".format(uprelease)]
+	subprocess.run(cmd)
+#def downgrade()
+
+def _getValuesForLliurexUp():
+	data={"url":"http://lliurex.net/jammy","mirror":"llx23","version":"jammy"}
+	with open("/etc/apt/sources.list") as f:
+		for line in f.readlines():
+			l=line.strip().split()
+			for item in l:
+				if "://" in item:
+					data["url"]=item
+					data["version"]=os.path.basename(item)
+					break
+	return(data)
+#def _getValuesForLliurexUp
+
+def launchLliurexUp():
+	data=_getValuesForLliurexUp()
+	llxup=lliurexup.LliurexUpCore()
+	llxup.defaultUrltoCheck=data.get("url")
+	llxup.defaultVersion=data.get("version")
+	llxup.installLliurexUp()
+	a=open("/var/run/disableMetaProtection.token","w")
+	a.close()
+	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-up"]
+	out=subprocess.run(cmd)
+	return(out)
 #def launchLliurexUp
 
 def launchLliurexUpgrade():

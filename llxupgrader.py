@@ -2,7 +2,7 @@
 import os,sys, tempfile, shutil
 import tarfile
 import subprocess
-from repomanager import RepoManager as repos
+from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
 from lliurex import lliurexup
 import gettext
@@ -99,7 +99,7 @@ def prepareFiles(metadata):
 def enableUpgradeRepos(tools):
 	try:
 		with tarfile.open(tools) as tar:
-			tar.extractall(path=WRKDIR,filter='data')
+			tar.extractall(path=WRKDIR)
 	except Exception as e:
 		print(e)
 	shutil.copy("{}/sources.list".format(WRKDIR),"/etc/apt/sources.list")
@@ -111,7 +111,7 @@ def restoreRepos():
 		return
 	try:
 		with tarfile.open(ftar) as tar:
-			tar.extractall(path=WRKDIR,filter='data')
+			tar.extractall(path=WRKDIR)
 	except Exception as e:
 		print("Untar: {}".format(e))
 	wrkdir=os.path.join(WRKDIR,"etc/apt")
@@ -163,13 +163,13 @@ def launchLliurexUpgrade():
 		
 def disableRepos():
 	copySystemFiles()
-	cmd=["repoman-cli","-l"]
-	repos=subprocess.check_output(cmd,encoding="utf8").split("\n")
-	for line in repos:
-		if len(line)>0:
-			repoId=line.split(")")[0]
-			cmd=["repoman-cli","-y","-d",repoId]
-			subprocess.run(cmd)
+	manager=repoman.manager()
+	for repo,data in manager.list_sources().items():
+		repos={}
+		repos[repo]=data
+		repos[repo]['enabled']='false'
+		manager.write_repo_json(repos)
+		manager.write_repo(repos)
 #def disableRepos
 
 def downloadFile(url):
@@ -178,6 +178,8 @@ def downloadFile(url):
 	if os.path.isdir(WRKDIR)==False:
 		os.makedirs(WRKDIR)
 
+	if os.path.isfile(meta):
+		os.unlink(meta)
 	try:
 		urlretrieve(url, meta)
 	except Exception as e:
@@ -188,6 +190,8 @@ def downloadFile(url):
 #def downloadFile
 
 def copySystemFiles():
+	if os.path.isfile("/tmp/data.tar"):
+		os.unlink("/tmp/data.tar")
 	with tarfile.open("/tmp/data.tar","w") as tarf:
 		tarf.add("/etc/apt/sources.list")
 		tarf.add("/etc/apt/sources.list.d/")

@@ -99,6 +99,15 @@ class upgraderGui(QWidget):
 	#def _beginLastStepUpgrade
 
 	def _doLastStepUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(llxupgrader.i18n("SETTINGUP"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 		tools=llxupgrader.prepareFiles(self.upgradeTo)
 		llxupgrader.enableUpgradeRepos(tools)
 		llxupgrader.launchLliurexUp()

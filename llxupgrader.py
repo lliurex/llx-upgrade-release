@@ -33,6 +33,7 @@ def i18n(raw):
 		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"REVERT":_("Reverting repositories to previous state"),
+		"SETTINGUP":_("Setting up things. Be patient..."),
 		"UNDO":_("This operation could not be reversed"),
 		"UPGRADE":_("Setting info for lliurex-up")})
 	return(imsg.get(raw,raw))
@@ -137,6 +138,7 @@ def _getValuesForLliurexUp():
 
 def launchLliurexUp():
 	data=_getValuesForLliurexUp()
+	print(data)
 	llxup=lliurexup.LliurexUpCore()
 	llxup.defaultUrltoCheck=data.get("url")
 	llxup.defaultVersion=data.get("version")
@@ -150,6 +152,7 @@ def launchLliurexUp():
 
 def launchLliurexUpgrade():
 	data=_getValuesForLliurexUp()
+	print(data)
 	llxup=lliurexup.LliurexUpCore()
 	llxup.defaultUrltoCheck=data.get("url")
 	llxup.defaultVersion=data.get("version")

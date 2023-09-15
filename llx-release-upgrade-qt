@@ -133,7 +133,6 @@ class upgraderGui(QWidget):
 	#def _beginUpgradeFailed
 		
 	def _endUpgrade(self):
-		self.noreturn=0
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
 		lbl_info.btn_ok.clicked.connect(self.close)
@@ -146,6 +145,7 @@ class upgraderGui(QWidget):
 		else:
 			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("END")))
 			lbl_info.btn_ok.setVisible(True)
+			self.noreturn=0
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
 		self.lst_Steps.setCurrentItem(item)

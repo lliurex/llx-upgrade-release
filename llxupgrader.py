@@ -106,23 +106,24 @@ def prepareFiles(metadata):
 #def prepareFiles(metadata):
 
 def _generateDemoteScript():
-	if os.path.isfile("{}/demoted.cfg".format(WRKDIR))==True:
-		demoted=[]
-		with open("{}/demoted.cfg".format(WRKDIR),"r") as f:
+	if os.path.isfile("{}/demote.cfg".format(WRKDIR))==True:
+		demote=[]
+		with open("{}/demote.cfg".format(WRKDIR),"r") as f:
 			for line in f.readlines():
 				if len(line.strip())>0:
-					demoted.append(line.strip())
-		if len(demoted)>0:
+					demote.append(line.strip())
+		if len(demote)>0:
 			destpath="/usr/share/lliurex-up/preActions/180_release_upgrade"
-			fcontent="#!/bin/bash"
-			fcontent+="ACTION=\"$1\""
+			fcontent="#!/bin/bash\n"
+			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="initActions|initActionsSai)\n"
-			fcontent+="apt-get remove -y {}\n".format(demoted)
-			fcontent+="rm /usr/share/lliurex-up/preActions/180_release_upgrade"
-			fcontent+=(";;\nesac")
+			fcontent+="apt-get remove -y {}\n".format(" ".join(demote))
+			fcontent+="rm /usr/share/lliurex-up/preActions/180_release_upgrade\n"
+			fcontent+="\n;;\nesac"
 		with open(destpath,"w") as f:
 			f.write(fcontent)
+		os.chmod(destpath,0o755)
 #def _generateDemoteScript
 
 def enableUpgradeRepos(tools):
@@ -151,6 +152,9 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+	destpath="/usr/share/lliurex-up/preActions/180_release_upgrade"
+	if os.path.isfile(destpath):
+		os.unlink(destpath)
 #def restoreRepos
 
 def downgrade():

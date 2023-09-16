@@ -10,6 +10,7 @@ import gettext
 _ = gettext.gettext
 
 WRKDIR="/tmp/llx-release-updater"
+LLXUPSCRIPT="/usr/share/lliurex-up/initActions/450-remove-comited"
 
 def i18n(raw):
 	imsg=({
@@ -113,17 +114,16 @@ def _generateDemoteScript():
 				if len(line.strip())>0:
 					demote.append(line.strip())
 		if len(demote)>0:
-			destpath="/usr/share/lliurex-up/preActions/180-release_upgrade"
 			fcontent="#!/bin/bash\n"
 			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="initActions|initActionsSai)\n"
-			fcontent+="apt-get remove -y {}\n".format(" ".join(demote))
-			fcontent+="rm /usr/share/lliurex-up/preActions/180-release_upgrade\n"
+			fcontent+="dpkg --purge {}\n".format(" ".join(demote))
+			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
-		with open(destpath,"w") as f:
+		with open(LLXUPSCRIPT,"w") as f:
 			f.write(fcontent)
-		os.chmod(destpath,0o755)
+		os.chmod(LLXUPSCRIPT,0o755)
 #def _generateDemoteScript
 
 def enableUpgradeRepos(tools):
@@ -152,9 +152,8 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
-	destpath="/usr/share/lliurex-up/preActions/180-release_upgrade"
-	if os.path.isfile(destpath):
-		os.unlink(destpath)
+	if os.path.isfile(LLXUPSCRIPT):
+		os.unlink(LLXUPSCRIPT)
 #def restoreRepos
 
 def downgrade():

@@ -10,7 +10,7 @@ import gettext
 _ = gettext.gettext
 
 WRKDIR="/tmp/llx-release-updater"
-LLXUPSCRIPT="/usr/share/lliurex-up/initActions/850-remove-comited"
+LLXUPSCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 
 def i18n(raw):
 	imsg=({
@@ -31,8 +31,8 @@ def i18n(raw):
 		"IMPORTANT":_("IMPORTANT"),
 		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
 		"PENDING":_("There're updates available. Install them before continue."),
-		"PRAY":_("This is catastrophical. Upgrader has tried to revert Lliurex-Up to original state"),
-		"PRAY2":_("The upgraded failed. Call a technical assistant and try to manually downgrade through Lliurex-Up"),
+		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
+		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
 		"REBOOT":_("If lliurex-up process went Ok reboot the system."),
@@ -120,7 +120,7 @@ def _generateDemoteScript():
 			fcontent="#!/bin/bash\n"
 			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
-			fcontent+="initActions|initActionsSai)\n"
+			fcontent+="preActions)\n"
 			fcontent+="dpkg --force-all --purge {}\n".format(" ".join(demote))
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"

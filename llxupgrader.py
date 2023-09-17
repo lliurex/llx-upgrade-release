@@ -10,7 +10,7 @@ import gettext
 _ = gettext.gettext
 
 WRKDIR="/tmp/llx-release-updater"
-LLXUPSCRIPT="/usr/share/lliurex-up/initActions/450-remove-comited"
+LLXUPSCRIPT="/usr/share/lliurex-up/initActions/850-remove-comited"
 
 def i18n(raw):
 	imsg=({

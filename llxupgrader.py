@@ -121,7 +121,7 @@ def _generateDemoteScript():
 			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="initActions|initActionsSai)\n"
-			fcontent+="dpkg --purge {}\n".format(" ".join(demote))
+			fcontent+="dpkg --force-all --purge {}\n".format(" ".join(demote))
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
 		with open(LLXUPSCRIPT,"w") as f:

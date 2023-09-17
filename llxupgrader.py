@@ -83,10 +83,12 @@ def processMetaRelease(meta):
 def chkReleaseAvailable(metadata):
 	cmd=["lliurex-version","-n"]
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	majorCurrent=cmdOutput.split(".")[0]
 	upgradeTo={}
 	for release,releasedata in metadata.items():
 		version=releasedata.get("Version","").split(":")[1].strip()
-		if (str(version) > str(cmdOutput)):
+		majorNext=version.split(".")[0]
+		if (str(majorNext) > str(majorCurrent)):
 			upgradeTo=releasedata
 			break
 	return(upgradeTo)

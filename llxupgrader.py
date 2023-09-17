@@ -42,6 +42,7 @@ def i18n(raw):
 		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"REVERT":_("Reverting repositories to previous state"),
+		"ROOT":_("Must be root"),
 		"SETTINGUP":_("Setting up things. Be patient..."),
 		"UNDO":_("This operation could not be reversed"),
 		"UPGRADE":_("Setting info for lliurex-up")})

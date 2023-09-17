@@ -3,7 +3,7 @@
 # This code is released under the GPL-3 terms
 # https://www.gnu.org/licenses/gpl-3.0.en.html#license-text
 
-import os
+import os,sys,subprocess
 import llxupgrader
 from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem,QSizePolicy
 from PySide2 import QtGui
@@ -252,6 +252,10 @@ class upgraderGui(QWidget):
 
 ##### MAIN APP ######
 
+if os.geteuid()!=0:
+	cmd=["kdialog","--error",llxupgrader.i18n("ROOT"),"--title","Error"]
+	subprocess.run(cmd)
+	sys.exit(10)
 app=QApplication(["Lliurex Release Upgrade"])
 gui=upgraderGui()
 gui.renderGui()

@@ -73,6 +73,11 @@ def _errorEnd():
 #def _errorEnd
 
 #### MAIN APP ####
+
+if os.geteuid()!=0:
+	print(llxupgrader.i18n("ROOT"))
+	sys.exit(10)
+
 url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
 meta=llxupgrader.downloadFile(url)
 with open(meta,"r") as f:

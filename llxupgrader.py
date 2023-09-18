@@ -122,6 +122,7 @@ def _generateDemoteScript():
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="preActions)\n"
 			fcontent+="dpkg --force-all --purge {}\n".format(" ".join(demote))
+			fcontent+="apt-get update\n"
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
 		with open(LLXUPSCRIPT,"w") as f:

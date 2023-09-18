@@ -215,7 +215,6 @@ class upgraderGui(QWidget):
 		else:
 			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(llxupgrader.i18n("DISABLE"),llxupgrader.i18n("DEFAULT"),llxupgrader.i18n("UNDO")))
 			lbl_info.clicked.connect(self._doUpgrade)
-			#self.doUpgrade()
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 		self.lst_Steps.setCurrentItem(item)
 	#def beginUpgrade

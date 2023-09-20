@@ -3,12 +3,28 @@
 # This code is released under the GPL-3 terms
 # https://www.gnu.org/licenses/gpl-3.0.en.html#license-text
 
-import os,sys,subprocess
+import os,sys,subprocess,time
 import llxupgrader
-from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem,QSizePolicy
+from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem,QSizePolicy,QProgressBar
 from PySide2 import QtGui
 from PySide2.QtCore import QSize,Qt,QThread,Signal,QObject
 
+class thProgress(QThread): 
+	end=Signal()
+	disabled=Signal()
+	downgraded=Signal()
+	def __init__(self,parent=None):
+		super (thProgress,self).__init__(parent)
+		self.prg=QProgressBar()
+
+	def run(self):
+		val=0
+		while val<100:
+			val=self.prg.prg.value()
+			self.prg.prg.setValue(val+1)
+			time.sleep(1)
+
+#class thRun
 class thRun(QThread): 
 	end=Signal()
 	disabled=Signal()
@@ -53,8 +69,19 @@ class QStepLine(QWidget):
 		lay.addWidget(self.btn_ok,1,0,1,1,Qt.AlignLeft)
 		lay.addWidget(self.btn_ko,1,1,1,1,Qt.AlignRight)
 		self.setLayout(lay)
+		self.prg=QProgressBar()
+		lay.addWidget(self.prg,0,0,1,2)
+		self.prg.setVisible(False)
 		return
 	#def __init__
+
+	def enableImg(self,image):
+		self.prg.setVisible(True)
+		self.prg.setFixedHeight(self.height())
+		self.prg.setFixedWidth(self.width())
+		self.setStyleSheet("QProgressBar {padding:0px;border:0px}\nQProgressBar::chunk {border-image:url('/usr/share/llx-upgrade-release/rsrc/bkg.png') 0 0 0 0 stretch}")
+		self.prg.setValue(0)
+		self.lbl_info.setVisible(False)
 
 	def setText(self,msg):
 		self.lbl_info.setText(msg)
@@ -75,6 +102,7 @@ class upgraderGui(QWidget):
 		super (upgraderGui,self).__init__(parent)
 		self.upgradeTo=self.chkUpAvailable()
 		self.th=thRun()
+		self.thProgress=thProgress()
 		self.th.upgradeTo=self.upgradeTo.copy()
 		self.noreturn=0
 	#def __init__
@@ -134,21 +162,32 @@ class upgraderGui(QWidget):
 		self.th.start()
 		self.th.downgraded.connect(self._endUpgradeFailed)
 	#def _beginUpgradeFailed
+
+	def _launch(self):
+		cmd=["systemctl","isolate","llx-upgrade"]
+		subprocess.run(cmd)
+		sys.exit(noreturn)
 		
 	def _endUpgrade(self):
+		val=self.thProgress.prg.prg.value()
+		while val<90:
+			val+=0.1
+			self.thProgress.prg.prg.setValue(val)
+			time.sleep(0.01)
+		time.sleep(1)
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
-		lbl_info.btn_ok.clicked.connect(self.close)
+		lbl_info.btn_ok.clicked.connect(self._launch)
 		self.upgradeTo=self.chkUpAvailable()
-		if len(self.upgradeTo)>0:
-			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT2"),llxupgrader.i18n("REBOOT3")))
-			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
-			lbl_info.btn_ok.setVisible(False)
-			lbl_info.btn_ko.setVisible(True)
-		else:
-			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("END")))
-			lbl_info.btn_ok.setVisible(True)
-			self.noreturn=0
+#		if len(self.upgradeTo)>0:
+#			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT2"),llxupgrader.i18n("REBOOT3")))
+#			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
+#			lbl_info.btn_ok.setVisible(False)
+#			lbl_info.btn_ko.setVisible(True)
+#		else:
+		lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("END")))
+		lbl_info.btn_ok.setVisible(True)
+		self.noreturn=0
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
 		self.lst_Steps.setCurrentItem(item)
@@ -158,13 +197,14 @@ class upgraderGui(QWidget):
 	def _doLastStepUpgrade(self):
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
-		lbl_info.setText(llxupgrader.i18n("SETTINGUP"))
+		#lbl_info.setText(llxupgrader.i18n("SETTINGUP"))
 		lbl_info.btn_ok.setVisible(False)
 		lbl_info.btn_ko.setVisible(False)
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
 		self.lst_Steps.setCurrentItem(item)
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.progressBar()
 		self.th.setTarget("doUpgrade")
 		self.th.start()
 		self.th.end.connect(self._endUpgrade)
@@ -222,10 +262,25 @@ class upgraderGui(QWidget):
 		self.lst_Steps.setCurrentItem(item)
 	#def beginUpgrade
 
+	def progressBar(self):
+		item=self.lst_Steps.item(0)
+		wdg=self.lst_Steps.itemWidget(item)
+		self.lst_Steps.setCurrentItem(item)
+		self.thProgress.prg=wdg
+		self.thProgress.start()
+
+
 	def renderGui(self):
 		lay=QGridLayout()
 		self.setLayout(lay)
 		self.lst_Steps=QListWidget()
+		banner=QStepLine()
+		banner.enableImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
+		banner.btn_ok.setVisible(False)
+		banner.btn_ko.setVisible(False)
+		itemb = QListWidgetItem(self.lst_Steps)
+		self.lst_Steps.addItem(itemb)
+		self.lst_Steps.setItemWidget(itemb,banner)
 		lbl_info=QStepLine()
 		lbl_info.btn_ok.setEnabled(False)
 		lbl_info.clicked.connect(self.beginUpgrade)
@@ -238,7 +293,9 @@ class upgraderGui(QWidget):
 			item = QListWidgetItem(self.lst_Steps)
 			self.lst_Steps.addItem(item)
 			self.lst_Steps.setItemWidget(item,lbl_info)
+			itemb.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
 			item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+		self.resize(QSize(self.lst_Steps.width(),self.lst_Steps.height()))
 	#def renderGui
 
 	def chkUpAvailable(self):

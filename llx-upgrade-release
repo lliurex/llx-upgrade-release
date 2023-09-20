@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import sys,os
+import sys,os,subprocess
 import signal
 import llxupgrader
 
@@ -83,6 +83,7 @@ meta=llxupgrader.downloadFile(url)
 with open(meta,"r") as f:
 	metadata=llxupgrader.processMetaRelease(f.readlines())
 upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
+print(upgradeTo)
 if len(upgradeTo)>0:
 	print("{0}: {1}".format(llxupgrader.i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
 	upgrade=input("{}? y/[n]: ".format(llxupgrader.i18n("ASK")))
@@ -96,7 +97,7 @@ print()
 print(llxupgrader.i18n("BEGIN"))
 if llxupgrader.upgradeCurrentState():
 	print(llxupgrader.i18n("PENDING"))
-	sys.exit(3)
+	#sys.exit(3)
 print(llxupgrader.i18n("DISABLE"))
 print(llxupgrader.i18n("DEFAULT"))
 print("\n  **** {} **** \n".format(llxupgrader.i18n("UNDO").upper()))
@@ -118,9 +119,14 @@ if lastChance()==False:
 	noreturn=2
 	input("")
 	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
-llxupgrader.launchLliurexUpgrade()
+#llxupgrader.launchLliurexUpgrade()
+llxupgrader.downloadPackages()
+llxupgrader.generateLocalRepo()
+llxupgrader.setLocalRepo()
 noreturn=0
-self.upgradeTo=self.chkUpAvailable()
-if len(self.upgradeTo)>0:
-	_errorEnd()
+#self.upgradeTo=self.chkUpAvailable()
+#if len(self.upgradeTo)>0:
+#	_errorEnd()
+cmd=["systemctl","isolate","llx-upgrade"]
+subprocess.run(cmd)
 sys.exit(noreturn)

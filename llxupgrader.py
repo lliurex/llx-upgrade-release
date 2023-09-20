@@ -9,7 +9,9 @@ from lliurex import lliurexup
 import gettext
 _ = gettext.gettext
 
-WRKDIR="/tmp/llx-release-updater"
+TMPDIR="/tmp/llx-upgrade-release"
+WRKDIR="/usr/share/llx-upgrade-release/"
+REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUPSCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 
 def i18n(raw):
@@ -35,10 +37,9 @@ def i18n(raw):
 		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
-		"REBOOT":_("If lliurex-up process went Ok reboot the system."),
+		"REBOOT":_("System will reboot now to the new LliureX Release."), 
 		"REBOOT2":_("System is under big failure. Press CANCEL to begin system rescue."),
 		"REBOOT3":_("Call a technical assistant."),
-
 		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"REVERT":_("Reverting repositories to previous state"),
@@ -89,6 +90,7 @@ def chkReleaseAvailable(metadata):
 	for release,releasedata in metadata.items():
 		version=releasedata.get("Version","").split(":")[1].strip()
 		majorNext=version.split(".")[0]
+		upgradeTo=releasedata
 		if (str(majorNext) > str(majorCurrent)):
 			upgradeTo=releasedata
 			break
@@ -110,9 +112,9 @@ def prepareFiles(metadata):
 #def prepareFiles(metadata):
 
 def _generateDemoteScript():
-	if os.path.isfile("{}/demote.cfg".format(WRKDIR))==True:
+	if os.path.isfile("{}/demote.cfg".format(TMPDIR))==True:
 		demote=[]
-		with open("{}/demote.cfg".format(WRKDIR),"r") as f:
+		with open("{}/demote.cfg".format(TMPDIR),"r") as f:
 			for line in f.readlines():
 				if len(line.strip())>0:
 					demote.append(line.strip())
@@ -133,12 +135,14 @@ def _generateDemoteScript():
 def enableUpgradeRepos(tools):
 	try:
 		with tarfile.open(tools) as tar:
-			tar.extractall(path=WRKDIR)
+			tar.extractall(path=TMPDIR)
 	except Exception as e:
 		print(e)
-	shutil.copy("{}/sources.list".format(WRKDIR),"/etc/apt/sources.list")
+	shutil.copy("{}/sources.list".format(TMPDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
 	return()
+#def enableUpgradeRepos(tools):
+
 #def enableUpgradeRepos(tools):
 
 def restoreRepos():
@@ -147,10 +151,10 @@ def restoreRepos():
 		return
 	try:
 		with tarfile.open(ftar) as tar:
-			tar.extractall(path=WRKDIR)
+			tar.extractall(path=TMPDIR)
 	except Exception as e:
 		print("Untar: {}".format(e))
-	wrkdir=os.path.join(WRKDIR,"etc/apt")
+	wrkdir=os.path.join(TMPDIR,"etc/apt")
 	shutil.copy("{}/sources.list".format(wrkdir),"/etc/apt/sources.list")
 	if os.path.isdir("{}/sources.list.d".format(wrkdir)):
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
@@ -192,27 +196,27 @@ def _getValuesForLliurexUp():
 #def _getValuesForLliurexUp
 
 def launchLliurexUp():
-	data=_getValuesForLliurexUp()
-	llxup=lliurexup.LliurexUpCore()
-	llxup.defaultUrltoCheck=data.get("url")
-	llxup.defaultVersion=data.get("version")
-	llxup.installLliurexUp()
+	#data=_getValuesForLliurexUp()
+	#llxup=lliurexup.LliurexUpCore()
+	#llxup.defaultUrltoCheck=data.get("url")
+	#llxup.defaultVersion=data.get("version")
+	#llxup.installLliurexUp()
 	a=open("/var/run/disableMetaProtection.token","w")
 	a.close()
-	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-up"]
+	cmd=["/bin/bash","-c","/usr/sbin/lliurex-up","-s","-n"]
 	out=subprocess.run(cmd)
 	return(out)
 #def launchLliurexUp
 
 def launchLliurexUpgrade():
-	data=_getValuesForLliurexUp()
-	llxup=lliurexup.LliurexUpCore()
-	llxup.defaultUrltoCheck=data.get("url")
-	llxup.defaultVersion=data.get("version")
-	llxup.installLliurexUp()
+	#data=_getValuesForLliurexUp()
+	#llxup=lliurexup.LliurexUpCore()
+	#llxup.defaultUrltoCheck=data.get("url")
+	#llxup.defaultVersion=data.get("version")
+	#llxup.installLliurexUp()
 	a=open("/var/run/disableMetaProtection.token","w")
 	a.close()
-	cmd=["kde-inhibit","--power","--screenSaver","/usr/sbin/lliurex-upgrade","-u","-n"]
+	cmd=["/bin/bash","-c","/usr/sbin/lliurex-upgrade","-s","-n"]
 	out=subprocess.run(cmd)
 	return(out)
 #def launchLliurexUpgrade
@@ -230,9 +234,9 @@ def disableRepos():
 
 def downloadFile(url):
 	meta=os.path.basename(url)
-	meta=os.path.join(WRKDIR,meta)
-	if os.path.isdir(WRKDIR)==False:
-		os.makedirs(WRKDIR)
+	meta=os.path.join(TMPDIR,meta)
+	if os.path.isdir(TMPDIR)==False:
+		os.makedirs(TMPDIR)
 	if os.path.isfile(meta):
 		os.unlink(meta)
 	try:
@@ -251,6 +255,69 @@ def copySystemFiles():
 		tarf.add("/etc/apt/sources.list")
 		tarf.add("/etc/apt/sources.list.d/")
 #def copySystemFiles
+
+def _modifyAptConf():
+	aptconf="/etc/apt/apt.conf"
+	if os.path.isfile(aptconf)==True:
+		shutil.copy(aptconf,TMPDIR)
+	if os.path.isdir(REPODIR)==False:
+		os.makedirs(REPODIR)
+	with open(aptconf,"w") as f:
+		f.writelines(["Dir::Cache{Archives /usr/share/llx-upgrade-release/repo/}","Dir::Cache::Archives /usr/share/llx-upgrade-release/repo;"])
+#def _modifyAptConf
+
+def setLocalRepo():
+	sources="/etc/apt/sources.list"
+	with open(sources,"w") as f:
+		f.write("deb file:{} ./".format(REPODIR))
+#def setLocalRepo
+
+def downloadPackages():
+	_modifyAptConf()
+	cmd=["apt-get","update"]
+	subprocess.run(cmd)
+	cmd=["apt-get","clean"]
+	subprocess.run(cmd)
+	cmd=["apt-get","dist-upgrade","-d","-y"]
+	subprocess.run(cmd)
+	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):
+		shutil.copy(os.path.join(TMPDIR,"apt.conf"),"/etc/apt")
+	else:
+		os.unlink(os.path.join("/etc/apt/apt.conf"))
+#def downloadPackages
+
+def generateLocalRepo():
+	cmd=["dpkg-scanpackages",REPODIR]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	line=""
+	with open(os.path.join(REPODIR,"Packages"),"w") as f:
+		f.write(cmdOutput)
+#def generateLocalRepo
+
+def setSyemdUpgradeTarget():
+	systemdpath="/usr/lib/systemd/system"
+	target=os.path.join(systemdpath,"llx-upgrade.target")
+	service=os.path.join(systemdpath,"llx-upgrade.service")
+	targetContent=["[Unit]","Description=Upgrade Mode","Documentation=man:systemd.special(7)","Requires=llx-upgrade.service","After=llx-upgrade.service","AllowIsolate=yes"]
+	with open (target,"w") as f:
+		f.writelines(targetContent)
+	unitContent=["[Unit]","Description=Upgrade environment","Documentation=man:sulogin(8)","DefaultDependencies=no","Conflicts=shutdown.target","Conflicts=llx-upgrade.service","Before=shutdown.target","Before=llx-upgrade.service"]
+	serviceContent=["[Service]","Environment=HOME=/root","Environment=QT_QPA_PLATFORMTHEME=linuxfb","WorkingDirectory=-/root","ExecStartPre=-/bin/plymouth --wait quit","ExecStart=-/usr/share/llx-upgrade-release/upgrader.py","Type=idle","StandardInput=tty-force","StandardOutput=inherit","StandardError=inherit","KillMode=process","IgnoreSIGPIPE=no","SendSIGHUP=yes"]
+	with open (service,"w") as f:
+		f.writelines(unitContent)
+		f.write("\n")
+		f.writelines(serviceContent)
+#def setSyemdUpgradeTarget
+
+def unsetSyemdUpgradeTarget():
+	systemdpath="/usr/lib/systemd/system"
+	target=os.path.join(systemdpath,"llx-upgrade.target")
+	service=os.path.join(systemdpath,"llx-upgrade.service")
+	if os.path.isfile(target):
+		os.unlink(target)
+	if os.path.isfile(service):
+		os.unlink(service)
+#def unsetSyemdUpgradeTarget
 
 def chkUpgradeResult():
 	pass

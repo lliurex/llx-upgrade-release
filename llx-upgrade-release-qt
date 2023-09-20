@@ -28,7 +28,10 @@ class thRun(QThread):
 		if self.target=="doUpgrade":
 			tools=llxupgrader.prepareFiles(self.upgradeTo)
 			llxupgrader.enableUpgradeRepos(tools)
-			llxupgrader.launchLliurexUp()
+			llxupgrader.downloadPackages()
+			llxupgrader.generateLocalRepo()
+			llxupgrader.setLocalRepo()
+			#llxupgrader.launchLliurexUp()
 			self.end.emit()
 		if self.target=="downgrade":
 			llxupgrader.downgrade()

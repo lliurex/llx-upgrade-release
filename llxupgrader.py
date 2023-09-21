@@ -100,6 +100,8 @@ def chkReleaseAvailable(metadata):
 def upgradeCurrentState():
 	#check state of current release
 	llxup=lliurexup.LliurexUpCore()
+	cmd=["apt-get","clean"]
+	subprocess.run(cmd)
 	update=llxup.getPackagesToUpdate()
 	return(update)
 #def upgradeCurrentState
@@ -270,10 +272,6 @@ def setLocalRepo():
 
 def downloadPackages():
 	_modifyAptConf()
-	cmd=["apt-get","update"]
-	subprocess.run(cmd)
-	cmd=["apt-get","clean"]
-	subprocess.run(cmd)
 	cmd=["apt-get","dist-upgrade","-d","-y"]
 	subprocess.run(cmd)
 	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):

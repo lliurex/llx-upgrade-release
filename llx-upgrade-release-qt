@@ -115,7 +115,7 @@ class QProgressBar(QWidget):
 
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
-		self.img.setFixedSize(QSize(val,self.img.height()))
+		self.img.setFixedSize(QSize(val/1.01,self.img.height()))
 	#def setValue
 
 	def setInc(self,inc):

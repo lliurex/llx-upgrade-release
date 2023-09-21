@@ -107,7 +107,7 @@ class QProgressBar(QWidget):
 	def setImg(self,image):
 		lay=self.layout()
 		qimage=QtGui.QPixmap(image)
-		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left()),self.height()+(lay.contentsMargins().top()/2)+1,Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
+		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left())+2,self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
 		self.img.setPixmap(qimage)
 		self.img.setStyleSheet("padding:0px;border:0px")
 		#self.img.setScaledContents(True)
@@ -115,7 +115,7 @@ class QProgressBar(QWidget):
 
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
-		self.img.setFixedSize(QSize(val/1.5,self.img.height()))
+		self.img.setFixedSize(QSize(val,self.img.height()))
 	#def setValue
 
 	def setInc(self,inc):
@@ -267,8 +267,8 @@ class upgraderGui(QWidget):
 		self.noreturn=0
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
 	#def _endUpgrade
 
 	def _doLastStepUpgrade(self):

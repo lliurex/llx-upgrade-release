@@ -82,7 +82,6 @@ class QProgressBar(QWidget):
 		super (QProgressBar,self).__init__(parent)
 		self.bkgImg=QLabel()
 		self.img=QLabel()
-		self.img.resize(QSize(0,self.img.height()))
 		self.inc=1
 		self.range=[0,1]
 		self._renderGui()
@@ -97,24 +96,31 @@ class QProgressBar(QWidget):
 
 	def setRange(self,low,hi):
 		self.range=[low,hi]
+	#def setRange
 
 	def setBkgImg(self,image):
 		qimage=QtGui.QPixmap(image)
 		self.bkgImg.setPixmap(qimage)
 		self.bkgImg.setScaledContents(True)
+	#def setBkgImg
 
 	def setImg(self,image):
+		lay=self.layout()
 		qimage=QtGui.QPixmap(image)
-		qimage=qimage.scaledToWidth(self.width(),Qt.TransformationMode.FastTransformation)
+		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left()),self.height()+(lay.contentsMargins().top()/2),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
 		self.img.setPixmap(qimage)
+		self.img.setStyleSheet("padding:0px;border:0px")
 		#self.img.setScaledContents(True)
+	#def setImg
 
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
-		self.img.setFixedSize(QSize(val/2,self.img.height()))
+		self.img.setFixedSize(QSize(val/1.5,self.img.height()))
+	#def setValue
 
 	def setInc(self,inc):
 		self.inc=inc
+	#def setInc
 
 class QStepLine(QWidget):
 	clicked=Signal()
@@ -294,8 +300,8 @@ class upgraderGui(QWidget):
 		lbl_info.btn_ko.clicked.connect(self._revertAll)
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
 	#def _beginLastStepUpgrade
 
 	def _doUpgrade(self):

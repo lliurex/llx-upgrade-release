@@ -272,6 +272,8 @@ def setLocalRepo():
 
 def downloadPackages():
 	_modifyAptConf()
+	cmd=["apt-get","clean"]
+	subprocess.run(cmd)
 	cmd=["apt-get","dist-upgrade","-d","-y"]
 	subprocess.run(cmd)
 	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):

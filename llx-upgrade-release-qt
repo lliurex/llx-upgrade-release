@@ -77,6 +77,45 @@ class thRun(QThread):
 		return(True)
 #class thRun
 
+class QProgressBar(QWidget):
+	def __init__(self,parent=None):
+		super (QProgressBar,self).__init__(parent)
+		self.bkgImg=QLabel()
+		self.img=QLabel()
+		self.img.resize(QSize(0,self.img.height()))
+		self.inc=1
+		self.range=[0,1]
+		self._renderGui()
+		return
+
+	def _renderGui(self):
+		lay=QGridLayout()
+		lay.addWidget(self.bkgImg,0,0,1,1)
+		lay.addWidget(self.img,0,0,1,1)
+		self.img.setFixedSize(QSize(0,self.img.height()))
+		self.setLayout(lay)
+
+	def setRange(self,low,hi):
+		self.range=[low,hi]
+
+	def setBkgImg(self,image):
+		qimage=QtGui.QPixmap(image)
+		self.bkgImg.setPixmap(qimage)
+		self.bkgImg.setScaledContents(True)
+
+	def setImg(self,image):
+		qimage=QtGui.QPixmap(image)
+		qimage=qimage.scaledToWidth(self.width(),Qt.TransformationMode.FastTransformation)
+		self.img.setPixmap(qimage)
+		#self.img.setScaledContents(True)
+
+	def setValue(self,value):
+		val=value*self.bkgImg.width()/self.range[1]
+		self.img.setFixedSize(QSize(val/2,self.img.height()))
+
+	def setInc(self,inc):
+		self.inc=inc
+
 class QStepLine(QWidget):
 	clicked=Signal()
 	def __init__(self,parent=None):
@@ -93,6 +132,8 @@ class QStepLine(QWidget):
 		lay.addWidget(self.btn_ko,1,1,1,1,Qt.AlignRight)
 		self.setLayout(lay)
 		self.prg=QProgressBar()
+		self.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
+		self.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
 		lay.addWidget(self.prg,0,0,1,2)
 		self.prg.setVisible(False)
 		return
@@ -101,8 +142,8 @@ class QStepLine(QWidget):
 	def enableImg(self,image):
 		self.prg.setVisible(True)
 		self.prg.setFixedHeight(self.height())
-		self.prg.setFixedWidth(self.width())
-		self.setStyleSheet("QProgressBar {padding:0px;border:0px}\nQProgressBar::chunk {border-image:url('/usr/share/llx-upgrade-release/rsrc/bkg.png') 0 0 0 0 stretch}")
+		#self.prg.setFixedWidth(self.width())
+		#self.setStyleSheet("QProgressBar {padding:0px;border:0px}\nQProgressBar::chunk {border-image:url('/usr/share/llx-upgrade-release/rsrc/bkg.png') 0 0 0 0 stretch}")
 		self.prg.setValue(0)
 		self.lbl_info.setVisible(False)
 

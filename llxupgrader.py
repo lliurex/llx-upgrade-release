@@ -296,13 +296,13 @@ def setSyemdUpgradeTarget():
 	service=os.path.join(systemdpath,"llx-upgrade.service")
 	targetContent=["[Unit]","Description=Upgrade Mode","Documentation=man:systemd.special(7)","Requires=llx-upgrade.service","After=llx-upgrade.service","AllowIsolate=yes"]
 	with open (target,"w") as f:
-		f.writelines(targetContent)
+		f.write("\n".join(targetContent))
 	unitContent=["[Unit]","Description=Upgrade environment","Documentation=man:sulogin(8)","DefaultDependencies=no","Conflicts=shutdown.target","Conflicts=llx-upgrade.service","Before=shutdown.target","Before=llx-upgrade.service"]
 	serviceContent=["[Service]","Environment=HOME=/root","Environment=QT_QPA_PLATFORMTHEME=linuxfb","WorkingDirectory=-/root","ExecStartPre=-/bin/plymouth --wait quit","ExecStart=-/usr/share/llx-upgrade-release/upgrader.py","Type=idle","StandardInput=tty-force","StandardOutput=inherit","StandardError=inherit","KillMode=process","IgnoreSIGPIPE=no","SendSIGHUP=yes"]
 	with open (service,"w") as f:
-		f.writelines(unitContent)
+		f.write("\n".join(unitContent))
 		f.write("\n")
-		f.writelines(serviceContent)
+		f.write("\n".join(serviceContent))
 #def setSyemdUpgradeTarget
 
 def unsetSyemdUpgradeTarget():

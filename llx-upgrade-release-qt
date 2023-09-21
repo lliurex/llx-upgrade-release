@@ -122,6 +122,10 @@ class QProgressBar(QWidget):
 		self.inc=inc
 	#def setInc
 
+	def setFinish(self):
+		self.setValue(self.range[1])
+	#def setFinish
+
 class QStepLine(QWidget):
 	clicked=Signal()
 	def __init__(self,parent=None):
@@ -247,6 +251,9 @@ class upgraderGui(QWidget):
 		sys.exit()
 		
 	def _endUpgrade(self):
+		item=self.lst_Steps.item(0)
+		wdg=self.lst_Steps.itemWidget(item)
+		wdg.prg.setFinish()
 		cursor=QtGui.QCursor(Qt.PointingHandCursor)
 		self.setCursor(cursor)
 		self._updatePrg(self.packagesToUpdate+1)

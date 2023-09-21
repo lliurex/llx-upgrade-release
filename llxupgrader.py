@@ -261,7 +261,7 @@ def _modifyAptConf():
 	if os.path.isdir(REPODIR)==False:
 		os.makedirs(REPODIR)
 	with open(aptconf,"w") as f:
-		f.writelines(["Dir::Cache{Archives /usr/share/llx-upgrade-release/repo/}","Dir::Cache::Archives /usr/share/llx-upgrade-release/repo;"])
+		f.write("Dir::Cache{Archives /usr/share/llx-upgrade-release/repo/}\nDir::Cache::Archives /usr/share/llx-upgrade-release/repo;")
 #def _modifyAptConf
 
 def setLocalRepo():
@@ -276,10 +276,10 @@ def downloadPackages():
 	subprocess.run(cmd)
 	cmd=["apt-get","dist-upgrade","-d","-y"]
 	subprocess.run(cmd)
-	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):
-		shutil.copy(os.path.join(TMPDIR,"apt.conf"),"/etc/apt")
-	else:
-		os.unlink(os.path.join("/etc/apt/apt.conf"))
+#	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):
+#		shutil.copy(os.path.join(TMPDIR,"apt.conf"),"/etc/apt")
+#	else:
+#		os.unlink(os.path.join("/etc/apt/apt.conf"))
 #def downloadPackages
 
 def generateLocalRepo():
@@ -289,6 +289,14 @@ def generateLocalRepo():
 	with open(os.path.join(REPODIR,"Packages"),"w") as f:
 		f.write(cmdOutput)
 #def generateLocalRepo
+
+def upgradeLlxUp():
+	data=_getValuesForLliurexUp()
+	llxup=lliurexup.LliurexUpCore()
+	llxup.defaultUrltoCheck=data.get("url")
+	llxup.defaultVersion=data.get("version")
+	llxup.installLliurexUp()
+#def upgradeLlxUp():
 
 def setSyemdUpgradeTarget():
 	systemdpath="/usr/lib/systemd/system"

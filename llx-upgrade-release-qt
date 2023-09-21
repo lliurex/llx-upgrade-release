@@ -246,6 +246,7 @@ class upgraderGui(QWidget):
 
 	def _launch(self):
 		llxupgrader.setSyemdUpgradeTarget()
+		llxupgrader.upgradeLLxUp()
 		cmd=["systemctl","isolate","llx-upgrade"]
 		subprocess.run(cmd)
 		sys.exit()

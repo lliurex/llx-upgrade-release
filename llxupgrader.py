@@ -101,9 +101,7 @@ def upgradeCurrentState():
 	#check state of current release
 	llxup=lliurexup.LliurexUpCore()
 	update=llxup.getPackagesToUpdate()
-	if len(update)>0:
-		return True
-	return False
+	return(update)
 #def upgradeCurrentState
 
 def prepareFiles(metadata):
@@ -141,9 +139,7 @@ def enableUpgradeRepos(tools):
 	shutil.copy("{}/sources.list".format(TMPDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
 	return()
-#def enableUpgradeRepos(tools):
-
-#def enableUpgradeRepos(tools):
+#def enableUpgradeRepos
 
 def restoreRepos():
 	ftar="/tmp/data.tar"

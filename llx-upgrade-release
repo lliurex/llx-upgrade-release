@@ -95,7 +95,8 @@ if disclaimerAgree()==False:
 	sys.exit(2)
 print()
 print(llxupgrader.i18n("BEGIN"))
-if llxupgrader.upgradeCurrentState():
+packagesToUpdate=llxupgrader.upgradeCurrentState()
+if len(packagesToUpdate)>0:
 	print(llxupgrader.i18n("PENDING"))
 	#sys.exit(3)
 print(llxupgrader.i18n("DISABLE"))
@@ -127,6 +128,7 @@ noreturn=0
 #self.upgradeTo=self.chkUpAvailable()
 #if len(self.upgradeTo)>0:
 #	_errorEnd()
+llxupgrader.setSyemdUpgradeTarget()
 cmd=["systemctl","isolate","llx-upgrade"]
 subprocess.run(cmd)
 sys.exit(noreturn)

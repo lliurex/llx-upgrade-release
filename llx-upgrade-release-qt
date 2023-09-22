@@ -115,7 +115,7 @@ class QProgressBar(QWidget):
 
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
-		self.img.setFixedSize(QSize(val/1,self.img.height()))
+		self.img.setFixedSize(QSize(val/1.01,self.img.height()))
 	#def setValue
 
 	def setInc(self,inc):
@@ -246,7 +246,7 @@ class upgraderGui(QWidget):
 
 	def _launch(self):
 		llxupgrader.setSyemdUpgradeTarget()
-		llxupgrader.upgradeLlxUp()
+		llxupgrader.upgradeLLxUp()
 		cmd=["systemctl","isolate","llx-upgrade"]
 		subprocess.run(cmd)
 		sys.exit()
@@ -262,15 +262,16 @@ class upgraderGui(QWidget):
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
 		lbl_info.clicked.connect(self._launch)
-		if self.packagesToUpdate>len(os.listdir("/usr/share/llx-upgrade-release/repo")) or self.packagesToUpdate==0:
-			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT_KO"),llxupgrader.i18n("REBOOT_KO1")))
-			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
-			lbl_info.btn_ok.setVisible(False)
-			lbl_info.btn_ko.setVisible(True)
-		else:
-			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
-			lbl_info.btn_ok.setVisible(True)
-			lbl_info.btn_ko.clicked.connect(self.close)
+		self.upgradeTo=self.chkUpAvailable()
+#		if len(self.upgradeTo)>0:
+#			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT2"),llxupgrader.i18n("REBOOT3")))
+#			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
+#			lbl_info.btn_ok.setVisible(False)
+#			lbl_info.btn_ko.setVisible(True)
+#		else:
+		lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("END")))
+		lbl_info.btn_ok.setVisible(True)
+		lbl_info.btn_ko.clicked.connect(self.close)
 		self.noreturn=0
 		self.lst_Steps.addItem(item)
 		self.lst_Steps.setItemWidget(item,lbl_info)
@@ -416,12 +417,10 @@ class upgraderGui(QWidget):
 	def chkUpAvailable(self):
 		url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
 		meta=llxupgrader.downloadFile(url)
-		upgradeTo={}
-		if os.path.isfile(meta):
-			with open(meta,"r") as f:
-				metadata=llxupgrader.processMetaRelease(f.readlines())
+		with open(meta,"r") as f:
+			metadata=llxupgrader.processMetaRelease(f.readlines())
 
-			upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
+		upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
 		return(upgradeTo)
 	#def chkUpAvailable
 #class upgraderGui

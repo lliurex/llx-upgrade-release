@@ -12,8 +12,7 @@ _ = gettext.gettext
 TMPDIR="/tmp/llx-upgrade-release"
 WRKDIR="/usr/share/llx-upgrade-release/"
 REPODIR="/usr/share/llx-upgrade-release/repo"
-LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
-LLXUP_POSTSCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
+LLXUPSCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 
 def i18n(raw):
 	imsg=({
@@ -30,7 +29,6 @@ def i18n(raw):
 		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
 		"DISMISS":_("If you don't know what are you doing abort now"),
 		"DOWNGRADE":_("¡¡UPGRADE FAILED!!. Wait while trying to recovery..."),
-		"END":_("System will go to upgrade mode. Don't poweroff the system."),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
 		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
@@ -39,10 +37,9 @@ def i18n(raw):
 		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
 		"READ":_("Read carefully all the info showed in the screen"),
-		"REBOOT":_("All files are downloaded. Press ACCEPT to begin the upgrade."),
-		"REBOOT1":_("Close all open applications for preventing data loss."),
-		"REBOOT_KO":_("It seems that the upgrade failed"),
-		"REBOOT_KO1":_("Check your network and retry."),
+		"REBOOT":_("System will reboot now to the new LliureX Release."), 
+		"REBOOT2":_("System is under big failure. Press CANCEL to begin system rescue."),
+		"REBOOT3":_("Call a technical assistant."),
 		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
 		"REPOS":_("All repositories configured in this system will be deleted."),
 		"REVERT":_("Reverting repositories to previous state"),
@@ -130,23 +127,10 @@ def _generateDemoteScript():
 			fcontent+="apt-get install -f -y\n"
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
-		with open(LLXUP_PRESCRIPT,"w") as f:
+		with open(LLXUPSCRIPT,"w") as f:
 			f.write(fcontent)
-		os.chmod(LLXUP_PRESCRIPT,0o755)
+		os.chmod(LLXUPSCRIPT,0o755)
 #def _generateDemoteScript
-
-def _generatePostInstallScript():
-		fcontent="#!/bin/bash\n"
-		fcontent+="ACTION=\"$1\"\n"
-		fcontent+="case \"$ACTION\" in\n" 
-		fcontent+="postActions)\n"
-		fcontent+="touch /tmp/.endUpdate\n"
-		fcontent+="rm $0\n"
-		fcontent+="\n;;\nesac"
-		with open(LLXUP_PRESCRIPT,"w") as f:
-			f.write(fcontent)
-		os.chmod(LLXUP_PRESCRIPT,0o755)
-#def _generatePostInstallScript
 
 def enableUpgradeRepos(tools):
 	try:
@@ -156,7 +140,6 @@ def enableUpgradeRepos(tools):
 		print(e)
 	shutil.copy("{}/sources.list".format(TMPDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
-	_generatePostInstallScript()
 	return()
 #def enableUpgradeRepos
 
@@ -175,10 +158,8 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
-	if os.path.isfile(LLXUP_PRESCRIPT):
-		os.unlink(LLXUP_PRESCRIPT)
-	if os.path.isfile(LLX_POSTCRIPT):
-		os.unlink(LLX_POSTSCRIPT)
+	if os.path.isfile(LLXUPSCRIPT):
+		os.unlink(LLXUPSCRIPT)
 #def restoreRepos
 
 def downgrade():
@@ -261,6 +242,7 @@ def downloadFile(url):
 	except Exception as e:
 		print(url)
 		print(e)
+		sys.exit(1)
 	return(meta)
 #def downloadFile
 

@@ -418,7 +418,7 @@ class upgraderGui(QWidget):
 	#def renderGui
 
 	def chkUpAvailable(self):
-		url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/src/meta-release"
+		url="https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/files/meta-release"
 		meta=llxupgrader.downloadFile(url)
 		upgradeTo={}
 		if os.path.isfile(meta):

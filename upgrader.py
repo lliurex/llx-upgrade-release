@@ -1,6 +1,7 @@
 #!/bin/bash
-Xdummy :0 &
-export DISPLAY=:0
-sleep 3
-echo .....
-DISPLAY=:0 lliurex-up -u -s -m
+xinit lliurex-up $* -- :0 vt$XDG_VTNR 
+while [ ! -e /tmp/.updateEnd ] 
+do
+	sleep 10
+done
+

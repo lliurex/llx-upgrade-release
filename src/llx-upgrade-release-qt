@@ -407,13 +407,18 @@ class upgraderGui(QWidget):
 			item = QListWidgetItem(self.lst_Steps)
 			self.lst_Steps.addItem(item)
 			self.lst_Steps.setItemWidget(item,lbl_info)
-			itemb.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
-			item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+		else:
+			lbl_info.setText("<i>{0}</i>".format(llxupgrader.i18n("NOAVAILABLE")))
+			item = QListWidgetItem(self.lst_Steps)
+			self.lst_Steps.addItem(item)
+			self.lst_Steps.setItemWidget(item,lbl_info)
+		itemb.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+		item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
 		self.setFixedSize(QSize(self.lst_Steps.width(),self.lst_Steps.height()))
 	#def renderGui
 
 	def chkUpAvailable(self):
-		url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/meta-release"
+		url="https://raw.githubusercontent.com/juanma1980/llx-upgrade-release/master/files/src/meta-release"
 		meta=llxupgrader.downloadFile(url)
 		upgradeTo={}
 		if os.path.isfile(meta):

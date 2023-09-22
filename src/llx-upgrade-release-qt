@@ -91,7 +91,6 @@ class QProgressBar(QWidget):
 		lay=QGridLayout()
 		lay.addWidget(self.bkgImg,0,0,1,1)
 		lay.addWidget(self.img,0,0,1,1)
-		self.img.setFixedSize(QSize(0,self.img.height()))
 		self.setLayout(lay)
 
 	def setRange(self,low,hi):
@@ -101,24 +100,27 @@ class QProgressBar(QWidget):
 	def setBkgImg(self,image):
 		lay=self.layout()
 		qimage=QtGui.QPixmap(image)
-		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left())+2,self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
+		qimage=qimage.scaled(self.width()-(7*lay.contentsMargins().left()),self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
 		self.bkgImg.setPixmap(qimage)
 		self.bkgImg.setStyleSheet("padding:0px;border:0px")
+		self.bkgImg.setFixedSize(QSize(self.width()-(7*lay.contentsMargins().left()),self.bkgImg.height()))
+		self.img.setFixedSize(QSize(0,self.bkgImg.height()))
 		#self.bkgImg.setScaledContents(True)
 	#def setBkgImg
 
 	def setImg(self,image):
 		lay=self.layout()
 		qimage=QtGui.QPixmap(image)
-		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left())+2,self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
+		qimage=qimage.scaled(self.width()-(7*lay.contentsMargins().left()),self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
 		self.img.setPixmap(qimage)
 		self.img.setStyleSheet("padding:0px;border:0px")
+		self.setFixedSize(QSize(self.bkgImg.width()-(1*lay.contentsMargins().left()),self.bkgImg.height()))
 		#self.img.setScaledContents(True)
 	#def setImg
 
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
-		self.img.setFixedSize(QSize(val/1.01,self.img.height()))
+		self.img.setFixedSize(QSize(val/1,self.bkgImg.height()))
 	#def setValue
 
 	def setInc(self,inc):
@@ -145,8 +147,8 @@ class QStepLine(QWidget):
 		lay.addWidget(self.btn_ko,1,1,1,1,Qt.AlignRight)
 		self.setLayout(lay)
 		self.prg=QProgressBar()
-		self.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
-		self.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
+		#self.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
+		#self.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
 		lay.addWidget(self.prg,0,0,1,2)
 		self.prg.setVisible(False)
 		return
@@ -154,7 +156,7 @@ class QStepLine(QWidget):
 
 	def enableImg(self,image):
 		self.prg.setVisible(True)
-		self.prg.setFixedHeight(self.height())
+		#self.prg.setFixedHeight(self.height())
 		#self.prg.setFixedWidth(self.width())
 		#self.setStyleSheet("QProgressBar {padding:0px;border:0px}\nQProgressBar::chunk {border-image:url('/usr/share/llx-upgrade-release/rsrc/bkg.png') 0 0 0 0 stretch}")
 		self.prg.setValue(0)
@@ -392,6 +394,8 @@ class upgraderGui(QWidget):
 		self.lst_Steps=QListWidget()
 		banner=QStepLine()
 		banner.enableImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
+		banner.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
+		banner.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
 		banner.btn_ok.setVisible(False)
 		banner.btn_ko.setVisible(False)
 		itemb = QListWidgetItem(self.lst_Steps)

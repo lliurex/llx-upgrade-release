@@ -35,6 +35,7 @@ def i18n(raw):
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
 		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
+		"NOAVAILABLE":_("There're no upgrades available"),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
 		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),

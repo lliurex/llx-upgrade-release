@@ -99,9 +99,12 @@ class QProgressBar(QWidget):
 	#def setRange
 
 	def setBkgImg(self,image):
+		lay=self.layout()
 		qimage=QtGui.QPixmap(image)
+		qimage=qimage.scaled(self.bkgImg.width()-(7*lay.contentsMargins().left())+2,self.height()+(lay.contentsMargins().top()/2.5),Qt.IgnoreAspectRatio,Qt.TransformationMode.FastTransformation)
 		self.bkgImg.setPixmap(qimage)
-		self.bkgImg.setScaledContents(True)
+		self.bkgImg.setStyleSheet("padding:0px;border:0px")
+		#self.bkgImg.setScaledContents(True)
 	#def setBkgImg
 
 	def setImg(self,image):

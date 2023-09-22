@@ -13,7 +13,8 @@ TMPDIR="/tmp/llx-upgrade-release"
 WRKDIR="/usr/share/llx-upgrade-release/"
 REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
-LLXUP_POSTSCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
+LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
+LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 
 def i18n(raw):
 	imsg=({
@@ -141,11 +142,12 @@ def _generatePostInstallScript():
 		fcontent+="case \"$ACTION\" in\n" 
 		fcontent+="postActions)\n"
 		fcontent+="touch /tmp/.endUpdate\n"
+		fcontent+="rm {} 2>/dev/null || true\n".format(LLXUP_TOKEN)
 		fcontent+="rm $0\n"
 		fcontent+="\n;;\nesac"
-		with open(LLXUP_PRESCRIPT,"w") as f:
+		with open(LLXUP_POSTSCRIPT,"w") as f:
 			f.write(fcontent)
-		os.chmod(LLXUP_PRESCRIPT,0o755)
+		os.chmod(LLXUP_POSTSCRIPT,0o755)
 #def _generatePostInstallScript
 
 def enableUpgradeRepos(tools):
@@ -177,8 +179,10 @@ def restoreRepos():
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
 	if os.path.isfile(LLXUP_PRESCRIPT):
 		os.unlink(LLXUP_PRESCRIPT)
-	if os.path.isfile(LLX_POSTCRIPT):
-		os.unlink(LLX_POSTSCRIPT)
+	if os.path.isfile(LLXUP_POSTSCRIPT):
+		os.unlink(LLXUP_POSTSCRIPT)
+	if os.path.isfile(LLXUP_TOKEN):
+		os.unlink(LLXUP_TOKEN)
 #def restoreRepos
 
 def downgrade():
@@ -310,6 +314,8 @@ def generateLocalRepo():
 
 def upgradeLlxUp():
 	data=_getValuesForLliurexUp()
+	a=open(LLXUP_TOKEN,"w")
+	a.close()
 	llxup=lliurexup.LliurexUpCore()
 	llxup.defaultUrltoCheck=data.get("url")
 	llxup.defaultVersion=data.get("version")

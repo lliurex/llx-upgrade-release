@@ -7,7 +7,7 @@ xinit $llxup $* -- :0 vt$XDG_VTNR &
 sleep 5
 service plymouth stop
 service plymouth-start stop
-chvt $XDG_VTNR
+#chvt $XDG_VTNR
 while [ ! -e /tmp/.updateEnd ] 
 do
 	echo "WAIT"

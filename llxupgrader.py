@@ -201,14 +201,14 @@ def downgrade():
 
 def _getValuesForLliurexUp():
 	data={"url":"http://lliurex.net/jammy","mirror":"llx23","version":"jammy"}
-	with open("/etc/apt/sources.list") as f:
-		for line in f.readlines():
-			l=line.strip().split()
-			for item in l:
-				if "://" in item:
-					data["url"]=item
-					data["version"]=os.path.basename(item)
-					break
+	#with open("/etc/apt/sources.list") as f:
+	#	for line in f.readlines():
+	#		l=line.strip().split()
+	#		for item in l:
+	#			if "://" in item:
+	#				data["url"]=item
+	#				data["version"]=os.path.basename(item)
+	#				break
 	return(data)
 #def _getValuesForLliurexUp
 

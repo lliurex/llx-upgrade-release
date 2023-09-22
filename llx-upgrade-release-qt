@@ -254,13 +254,13 @@ class upgraderGui(QWidget):
 		lbl_info=QStepLine()
 		lbl_info.clicked.connect(self._launch)
 		if self.packagesToUpdate>len(os.listdir("/usr/share/llx-upgrade-release/repo")) or self.packagesToUpdate==0:
-			llxupgrader.setSyemdUpgradeTarget()
-			llxupgrader.upgradeLlxUp()
 			lbl_info.setText("{0}<br>{1}".format(llxupgrader.i18n("REBOOT_KO"),llxupgrader.i18n("REBOOT_KO1")))
 			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
 			lbl_info.btn_ok.setVisible(False)
 			lbl_info.btn_ko.setVisible(True)
 		else:
+			llxupgrader.setSyemdUpgradeTarget()
+			llxupgrader.upgradeLlxUp()
 			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 			lbl_info.btn_ok.setVisible(True)
 			lbl_info.btn_ko.clicked.connect(self.close)

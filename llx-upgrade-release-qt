@@ -268,7 +268,7 @@ class upgraderGui(QWidget):
 			lbl_info.btn_ok.setVisible(False)
 			lbl_info.btn_ko.setVisible(True)
 		else:
-			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
+			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 			lbl_info.btn_ok.setVisible(True)
 			lbl_info.btn_ko.clicked.connect(self.close)
 		self.noreturn=0

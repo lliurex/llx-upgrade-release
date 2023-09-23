@@ -395,7 +395,7 @@ class upgraderGui(QWidget):
 		banner=QStepLine()
 		banner.enableImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
 		banner.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
-		banner.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
+		banner.prg.setImg("/usr/share/llx-upgrade-release/rsrc/1024x768.jpg")
 		banner.btn_ok.setVisible(False)
 		banner.btn_ko.setVisible(False)
 		itemb = QListWidgetItem(self.lst_Steps)

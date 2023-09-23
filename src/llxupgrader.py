@@ -95,7 +95,6 @@ def chkReleaseAvailable(metadata):
 	for release,releasedata in metadata.items():
 		version=releasedata.get("Version","").split(":")[1].strip()
 		majorNext=version.split(".")[0]
-		upgradeTo=releasedata
 		if (str(majorNext) > str(majorCurrent)):
 			upgradeTo=releasedata
 			break

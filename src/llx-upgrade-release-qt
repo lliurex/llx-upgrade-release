@@ -337,7 +337,7 @@ class upgraderGui(QWidget):
 			lbl_info.setText("{}".format(e))
 			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 			return(False)
-	#def doUpgrade
+	#def _doUpgrade
 
 	def _endBeginUpgrade(self,packages):
 		cursor=QtGui.QCursor(Qt.PointingHandCursor)

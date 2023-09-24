@@ -82,8 +82,12 @@ url="https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/fi
 meta=llxupgrader.downloadFile(url)
 with open(meta,"r") as f:
 	metadata=llxupgrader.processMetaRelease(f.readlines())
-upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
-print(upgradeTo)
+upgradeTo={}
+if os.path.isfile(meta):
+	with open(meta,"r") as f:
+		metadata=llxupgrader.processMetaRelease(f.readlines())
+
+	upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
 if len(upgradeTo)>0:
 	print("{0}: {1}".format(llxupgrader.i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
 	upgrade=input("{}? y/[n]: ".format(llxupgrader.i18n("ASK")))
@@ -98,7 +102,7 @@ print(llxupgrader.i18n("BEGIN"))
 packagesToUpdate=llxupgrader.upgradeCurrentState()
 if len(packagesToUpdate)>0:
 	print(llxupgrader.i18n("PENDING"))
-	#sys.exit(3)
+	sys.exit(3)
 print(llxupgrader.i18n("DISABLE"))
 print(llxupgrader.i18n("DEFAULT"))
 print("\n  **** {} **** \n".format(llxupgrader.i18n("UNDO").upper()))
@@ -106,10 +110,6 @@ abort=input("[n]/ok: ")
 if abort!="ok":
 	print(llxupgrader.i18n("ABORT"))
 	sys.exit(2)
-llxupgrader.disableRepos()
-tools=llxupgrader.prepareFiles(upgradeTo)
-print(llxupgrader.i18n("EXTRACT"))
-llxupgrader.enableUpgradeRepos(tools)
 noreturn=1
 if lastChance()==False:
 	llxupgrader.restoreRepos()
@@ -119,8 +119,12 @@ if lastChance()==False:
 	print(llxupgrader.i18n("PRESS"))
 	noreturn=2
 	input("")
-	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
-#llxupgrader.launchLliurexUpgrade()
+#	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
+llxupgrader.disableRepos()
+tools=llxupgrader.prepareFiles(upgradeTo)
+llxupgrader.enableUpgradeRepos(tools)
+pkgs=llxupgrader.upgradeCurrentState()
+print(llxupgrader.i18n("EXTRACT"))
 llxupgrader.downloadPackages()
 llxupgrader.generateLocalRepo()
 llxupgrader.setLocalRepo()
@@ -129,6 +133,10 @@ noreturn=0
 #if len(self.upgradeTo)>0:
 #	_errorEnd()
 llxupgrader.setSyemdUpgradeTarget()
-cmd=["systemctl","isolate","llx-upgrade"]
-subprocess.run(cmd)
+llxupgrader.upgradeLlxUp()
+print("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
+reboot=input("[y]/n: ")
+if upgrade!="n":
+	cmd=["systemctl","isolate","llx-upgrade"]
+	subprocess.run(cmd)
 sys.exit(noreturn)

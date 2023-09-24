@@ -107,6 +107,8 @@ def upgradeCurrentState():
 	cmd=["apt-get","clean"]
 	subprocess.run(cmd)
 	update=llxup.getPackagesToUpdate()
+	cmd=["apt","--fix-broken","install","-y"]
+	subprocess.run(cmd)
 	return(update)
 #def upgradeCurrentState
 

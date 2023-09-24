@@ -134,7 +134,7 @@ noreturn=0
 #	_errorEnd()
 llxupgrader.setSyemdUpgradeTarget()
 llxupgrader.upgradeLlxUp()
-print("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
+print("{0}\n{1}\n{2}\n".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 reboot=input("[y]/n: ")
 if upgrade!="n":
 	cmd=["systemctl","isolate","llx-upgrade"]

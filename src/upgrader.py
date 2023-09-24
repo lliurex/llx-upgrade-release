@@ -10,8 +10,8 @@ hostname lliurex.net
 /usr/share/llx-upgrade-release/fakenet.py &
 hostname lliurex.net
 $LLXUP 
-apt clean
 rm /etc/apt/apt.conf 2>/dev/null
-> /etc/apt/sources.list
+echo -n "" > /etc/apt/sources.list
+apt clean
 repoman-cli -e 0 -y
 kdialog --title "Lliurex Release Upgrade" --msgbox "Upgrade ended. Press to reboot"  && systemctl reboot || systemctl reboot

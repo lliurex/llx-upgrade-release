@@ -104,8 +104,7 @@ def chkReleaseAvailable(metadata):
 def upgradeCurrentState():
 	#check state of current release
 	llxup=lliurexup.LliurexUpCore()
-	cmd=["apt-get","clean"]
-	subprocess.run(cmd)
+	clean()
 	update=llxup.getPackagesToUpdate()
 	cmd=["apt","--fix-broken","install","-y"]
 	subprocess.run(cmd)
@@ -163,6 +162,11 @@ def enableUpgradeRepos(tools):
 	_generatePostInstallScript()
 	return()
 #def enableUpgradeRepos
+
+def clean():
+	cmd=["apt-get","clean"]
+	subprocess.run(cmd)
+#def clean
 
 def restoreRepos():
 	ftar="/tmp/data.tar"
@@ -296,8 +300,7 @@ def setLocalRepo():
 
 def downloadPackages():
 	_modifyAptConf()
-	cmd=["apt-get","clean"]
-	subprocess.run(cmd)
+	clean()
 	cmd=["apt-get","dist-upgrade","-d","-y"]
 	subprocess.run(cmd)
 #	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):

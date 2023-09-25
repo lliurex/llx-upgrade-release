@@ -1,16 +1,24 @@
 #!/bin/bash
 service plymouth stop
 service plymouth-start stop
+service apache2 stop
+service network-manager stop
+service systemd-networkd stop
 LLXUP='/sbin/lliurex-up -u -s -n'
-echo $? >/home/lliurex/result
 
 KWIN=$(which kwin)
 xinit $KWIN -- :0 vt1 &
-sleep 1
-#hostname lliurex.net
-#/usr/share/llx-upgrade-release/fakenet.py &
-#hostname lliurex.net
+export DISPLAY=:0
+sleep 3
+/usr/share/llx-upgrade-release/bkgimg.py &
+hostname lliurex.net
+/usr/share/llx-upgrade-release/fakenet.py &
+hostname lliurex.net
+echo $(date)>/home/lliurex/up.log
 $LLXUP 
+echo $?>>/home/lliurex/up.log
+echo "------">>/home/lliurex/up.log
+
 rm /etc/apt/apt.conf 2>/dev/null
 echo -n "" > /etc/apt/sources.list
 apt clean

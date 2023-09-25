@@ -61,6 +61,7 @@ class thRun(QThread):
 		if self.target=="doUpgrade":
 			tools=llxupgrader.prepareFiles(self.upgradeTo)
 			llxupgrader.enableUpgradeRepos(tools)
+			llxupgrader.clean()
 			pkgs=llxupgrader.upgradeCurrentState()
 			self.newstate.emit(len(pkgs))
 			llxupgrader.downloadPackages()
@@ -294,7 +295,6 @@ class upgraderGui(QWidget):
 		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 		cursor=QtGui.QCursor(Qt.WaitCursor)
 		self.setCursor(cursor)
-		llxupgrader.clean()
 		self.th.setTarget("doUpgrade")
 		self.th.newstate.connect(self._doProgress)
 		self.th.end.connect(self._endUpgrade)

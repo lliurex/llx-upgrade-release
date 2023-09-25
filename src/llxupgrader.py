@@ -10,6 +10,7 @@ import gettext
 _ = gettext.gettext
 
 TMPDIR="/tmp/llx-upgrade-release"
+TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
@@ -98,7 +99,6 @@ def chkReleaseAvailable(metadata):
 		if (str(majorNext) > str(majorCurrent)):
 			upgradeTo=releasedata
 			break
-	print(upgradeTo)
 	return(upgradeTo)
 #def chkReleaseAvailable
 
@@ -168,7 +168,7 @@ def clean():
 #def clean
 
 def restoreRepos():
-	ftar="/tmp/data.tar"
+	ftar=TARFILE
 	if os.path.isfile(ftar)==False:
 		return
 	try:
@@ -208,9 +208,6 @@ def downgrade():
 #def downgrade()
 
 def _getValuesForLliurexUp(metadata):
-	print("**********")
-	print(metadata)
-	print("**********")
 	data={"url":"http:/","mirror":"","version":""}
 	releaseurl=metadata.get("Release-File","").split()[-1]
 	for component in releaseurl.split("/")[1:]:
@@ -249,9 +246,9 @@ def downloadFile(url):
 #def downloadFile
 
 def copySystemFiles():
-	if os.path.isfile("/tmp/data.tar"):
-		os.unlink("/tmp/data.tar")
-	with tarfile.open("/tmp/data.tar","w") as tarf:
+	if os.path.isfile(TARFILE):
+		return()	
+	with tarfile.open(TARFILE,"w") as tarf:
 		tarf.add("/etc/apt/sources.list")
 		tarf.add("/etc/apt/sources.list.d/")
 #def copySystemFiles

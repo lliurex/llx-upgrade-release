@@ -18,7 +18,7 @@ class QServer(QThread):
 
 	def run(self):
 		hostname="localhost"
-		serverport=80
+		serverport=10080
 		try:
 			web=HTTPServer((hostname,serverport),Server)
 			web.serve_forever()
@@ -60,7 +60,7 @@ class bkgFixer(QWidget):
 		for line in output:
 			if line.startswith("Address:") and "127." not in line:
 				ip=line.split[-1]
-				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.1"]
+				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","10080","-j","DNAT","--to-destination","127.0.0.1"]
 				subprocess.run(cmd)
 	#def _enableIpRedirect
 

@@ -4,12 +4,13 @@ service plymouth-start stop
 service apache2 stop
 service network-manager stop
 service systemd-networkd stop
-systemctrl stop network.target
+systemctl stop network.target
 LLXUP='/sbin/lliurex-up -u -s -n'
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 LLXUP_SOURCES="/etc/apt/lliurexup_sources.list"
 HOSTS=/etc/hosts
 touch $LLXUP_TOKEN
+UPGRADER="/usr/share/llx-upgrade-release/bkgfixer.py"
 
 error()
 {
@@ -20,18 +21,14 @@ error()
 #Protect sources.list
 cp /etc/apt/sources.list $LLXUP_SOURCES
 #Fake host
-cp $HOSTS {HOSTS}.orig
-echo "127.0.0.1 lliurex.net" >> $HOSTS
-KWIN=$(which kwin)
-xinit $KWIN -- :0 vt1 &
+#echo "127.0.0.1 lliurex.net" >> $HOSTS
+xinit $UPGRADER -- :0 vt4 &
+sleep 1
 export DISPLAY=:0
-/usr/share/llx-upgrade-release/bkgimg.py &
-hostname lliurex.net
-/usr/share/llx-upgrade-release/fakenet.py &
-hostname lliurex.net
+KWIN=$(which kwin)
+$KWIN &
 $LLXUP
-$ERR=$?
-cp {HOSTS}.orig $HOSTS 
+ERR=$?
 if [[ $ERR -eq 0 ]]
 then
 	error 

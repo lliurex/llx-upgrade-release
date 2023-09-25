@@ -98,6 +98,7 @@ def chkReleaseAvailable(metadata):
 		if (str(majorNext) > str(majorCurrent)):
 			upgradeTo=releasedata
 			break
+	print(upgradeTo)
 	return(upgradeTo)
 #def chkReleaseAvailable
 
@@ -106,8 +107,6 @@ def upgradeCurrentState():
 	llxup=lliurexup.LliurexUpCore()
 	clean()
 	update=llxup.getPackagesToUpdate()
-	cmd=["apt","--fix-broken","install","-y"]
-	subprocess.run(cmd)
 	return(update)
 #def upgradeCurrentState
 
@@ -194,7 +193,6 @@ def restoreRepos():
 def downgrade():
 	#Update info
 	cmd=["apt-get","update"]
-	time.sleep(10)
 	subprocess.run(cmd)
 	#Get old version
 	cmd=["apt-cache","policy","lliurex-up"]
@@ -209,45 +207,21 @@ def downgrade():
 	subprocess.run(cmd)
 #def downgrade()
 
-def _getValuesForLliurexUp():
-	data={"url":"http://lliurex.net/jammy","mirror":"llx23","version":"jammy"}
-	#with open("/etc/apt/sources.list") as f:
-	#	for line in f.readlines():
-	#		l=line.strip().split()
-	#		for item in l:
-	#			if "://" in item:
-	#				data["url"]=item
-	#				data["version"]=os.path.basename(item)
-	#				break
+def _getValuesForLliurexUp(metadata):
+	print("**********")
+	print(metadata)
+	print("**********")
+	data={"url":"http:/","mirror":"","version":""}
+	releaseurl=metadata.get("Release-File","").split()[-1]
+	for component in releaseurl.split("/")[1:]:
+		if component=="dists":
+			break
+		data["url"]="{}/{}".format(data["url"],component)
+	data["version"]=os.path.basename(data["url"])
+		
 	return(data)
 #def _getValuesForLliurexUp
 
-def launchLliurexUp():
-	#data=_getValuesForLliurexUp()
-	#llxup=lliurexup.LliurexUpCore()
-	#llxup.defaultUrltoCheck=data.get("url")
-	#llxup.defaultVersion=data.get("version")
-	#llxup.installLliurexUp()
-	a=open("/var/run/disableMetaProtection.token","w")
-	a.close()
-	cmd=["/bin/bash","-c","/usr/sbin/lliurex-up","-s","-n"]
-	out=subprocess.run(cmd)
-	return(out)
-#def launchLliurexUp
-
-def launchLliurexUpgrade():
-	#data=_getValuesForLliurexUp()
-	#llxup=lliurexup.LliurexUpCore()
-	#llxup.defaultUrltoCheck=data.get("url")
-	#llxup.defaultVersion=data.get("version")
-	#llxup.installLliurexUp()
-	a=open("/var/run/disableMetaProtection.token","w")
-	a.close()
-	cmd=["/bin/bash","-c","/usr/sbin/lliurex-upgrade","-s","-n"]
-	out=subprocess.run(cmd)
-	return(out)
-#def launchLliurexUpgrade
-		
 def disableRepos():
 	copySystemFiles()
 	manager=repoman.manager()
@@ -289,7 +263,7 @@ def _modifyAptConf():
 	if os.path.isdir(REPODIR)==False:
 		os.makedirs(REPODIR)
 	with open(aptconf,"w") as f:
-		f.write("Dir::Cache{Archives /usr/share/llx-upgrade-release/repo/}\nDir::Cache::Archives /usr/share/llx-upgrade-release/repo;")
+		f.write("Dir::Cache{{Archives {0}}}\nDir::Cache::Archives {0};".format(REPODIR))
 #def _modifyAptConf
 
 def setLocalRepo():
@@ -303,10 +277,6 @@ def downloadPackages():
 	clean()
 	cmd=["apt-get","dist-upgrade","-d","-y"]
 	subprocess.run(cmd)
-#	if os.path.isfile(os.path.join(TMPDIR,"apt.conf")):
-#		shutil.copy(os.path.join(TMPDIR,"apt.conf"),"/etc/apt")
-#	else:
-#		os.unlink(os.path.join("/etc/apt/apt.conf"))
 #def downloadPackages
 
 def generateLocalRepo():
@@ -317,8 +287,8 @@ def generateLocalRepo():
 		f.write(cmdOutput)
 #def generateLocalRepo
 
-def upgradeLlxUp():
-	data=_getValuesForLliurexUp()
+def upgradeLlxUp(metadata):
+	data=_getValuesForLliurexUp(metadata)
 	a=open(LLXUP_TOKEN,"w")
 	a.close()
 	llxup=lliurexup.LliurexUpCore()
@@ -327,14 +297,14 @@ def upgradeLlxUp():
 	llxup.installLliurexUp()
 #def upgradeLlxUp():
 
-def setSyemdUpgradeTarget():
+def setSystemdUpgradeTarget():
 	systemdpath="/usr/lib/systemd/system"
 	target=os.path.join(systemdpath,"llx-upgrade.target")
 	service=os.path.join(systemdpath,"llx-upgrade.service")
 	targetContent=["[Unit]","Description=Upgrade Mode","Documentation=man:systemd.special(7)","Requires=llx-upgrade.service","After=llx-upgrade.service","AllowIsolate=yes"]
 	with open (target,"w") as f:
 		f.write("\n".join(targetContent))
-	unitContent=["[Unit]","Description=Upgrade environment","Documentation=man:sulogin(8)","DefaultDependencies=no","Conflicts=shutdown.target","Conflicts=llx-upgrade.service","Before=shutdown.target","Before=llx-upgrade.service"]
+	unitContent=["[Unit]","Description=Upgrade environment","Documentation=man:sulogin(8)","DefaultDependencies=no","Conflicts=network-manager.service","Conflicts=shutdown.target","Conflicts=llx-upgrade.service","Before=shutdown.target","Before=llx-upgrade.service"]
 	serviceContent=["[Service]","Environment=HOME=/root","WorkingDirectory=-/root","ExecStart=-/usr/share/llx-upgrade-release/upgrader.py","Type=idle","#StandardInput=tty-force","StandardOutput=inherit","StandardError=inherit","KillMode=process","IgnoreSIGPIPE=no","SendSIGHUP=yes"]
 	with open (service,"w") as f:
 		f.write("\n".join(unitContent))

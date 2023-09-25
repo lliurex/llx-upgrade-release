@@ -2,8 +2,10 @@
 service plymouth stop
 service plymouth-start stop
 LLXUP='/sbin/lliurex-up -u -s -n'
+echo $? >/home/lliurex/result
+
 KWIN=$(which kwin)
-xinit $KWIN -- :0 vt5 &
+xinit $KWIN -- :0 vt1 &
 sleep 1
 #hostname lliurex.net
 #/usr/share/llx-upgrade-release/fakenet.py &

@@ -3,7 +3,6 @@ import sys,os,subprocess
 import signal
 import llxupgrader
 
-
 noreturn=0
 
 def abort(*args):
@@ -86,8 +85,10 @@ upgradeTo={}
 if os.path.isfile(meta):
 	with open(meta,"r") as f:
 		metadata=llxupgrader.processMetaRelease(f.readlines())
-
 	upgradeTo=llxupgrader.chkReleaseAvailable(metadata)
+else:
+	print(llxupgrader.i18n("NETWORK"))
+	sys.exit(15)
 if len(upgradeTo)>0:
 	print("{0}: {1}".format(llxupgrader.i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
 	upgrade=input("{}? y/[n]: ".format(llxupgrader.i18n("ASK")))
@@ -119,7 +120,6 @@ if lastChance()==False:
 	print(llxupgrader.i18n("PRESS"))
 	noreturn=2
 	input("")
-#	os.execv("/usr/sbin/lliurex-upgrade",["-n"])
 llxupgrader.disableRepos()
 tools=llxupgrader.prepareFiles(upgradeTo)
 llxupgrader.enableUpgradeRepos(tools)
@@ -129,11 +129,8 @@ llxupgrader.downloadPackages()
 llxupgrader.generateLocalRepo()
 llxupgrader.setLocalRepo()
 noreturn=0
-#self.upgradeTo=self.chkUpAvailable()
-#if len(self.upgradeTo)>0:
-#	_errorEnd()
-llxupgrader.setSyemdUpgradeTarget()
-llxupgrader.upgradeLlxUp()
+llxupgrader.setSystemdUpgradeTarget()
+llxupgrader.upgradeLlxUp(upgradeTo)
 print("{0}\n{1}\n{2}\n".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 reboot=input("[y]/n: ")
 if upgrade!="n":

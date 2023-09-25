@@ -1,7 +1,6 @@
 #!/bin/bash
 service plymouth stop
 service plymouth-start stop
-service apache2 stop
 service network-manager stop
 service systemd-networkd stop
 systemctl stop network.target
@@ -20,8 +19,6 @@ error()
 
 #Protect sources.list
 cp /etc/apt/sources.list $LLXUP_SOURCES
-#Fake host
-#echo "127.0.0.1 lliurex.net" >> $HOSTS
 xinit $UPGRADER $* -- :0 vt1 &
 sleep 3
 export DISPLAY=:0

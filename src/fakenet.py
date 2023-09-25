@@ -2,7 +2,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 
-hostname="lliurex.net"
+hostname="localhost"
 serverport=80
 
 class Server(BaseHTTPRequestHandler):
@@ -12,6 +12,9 @@ class Server(BaseHTTPRequestHandler):
 		self.end_headers()
 		
 if __name__=="__main__":
-	web=HTTPServer((hostname,serverport),Server)
-	web.serve_forever()
+	try:
+		web=HTTPServer((hostname,serverport),Server)
+		web.serve_forever()
+	except Exception as e:
+		print(e)
 

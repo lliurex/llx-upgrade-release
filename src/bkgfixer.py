@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-import subprocess
+import os,subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout
 from PySide2 import QtGui
-from PySide2.QtCore import Qt,QThread,Signal
+from PySide2.QtCore import Qt,QThread,QObject,Signal
 import llxupgrader
 
 class Launcher(QThread):
-	end=Signal([])
+	processEnd=Signal(str,subprocess.CompletedProcess)
 	def __init__(self,parent=None):
 		super (Launcher,self).__init__(parent)
 		self.cmd=[]
@@ -17,7 +17,7 @@ class Launcher(QThread):
 		self.encoding="utf8"
 	#def __init__
 
-	def setCmd(cmd):
+	def setCmd(self,cmd):
 		if isinstance(cmd,str):
 			self.cmd=cmd.split()
 		elif isinstance(cmd,[]):
@@ -26,7 +26,10 @@ class Launcher(QThread):
 
 	def run(self):
 		prc=subprocess.run(self.cmd,universal_newlines=self.universal_newlines,encoding=self.encoding,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		self.end.emit([cmd,prc])
+		print("---")
+		print(self.cmd)
+		print("---")
+		self.processEnd.emit(" ".join(self.cmd),prc)
 	#def run
 #class Launcher
 
@@ -39,16 +42,16 @@ class Server(BaseHTTPRequestHandler):
 class QServer(QThread):
 	def __init__(self,parent=None):
 		super (QServer,self).__init__(parent)
+		self.hostname="localhost"
 
 	def run(self):
-		hostname="localhost"
 		serverport=10080
 		try:
-			web=HTTPServer((hostname,serverport),Server)
+			web=HTTPServer((self.hostname,serverport),Server)
 			web.serve_forever()
 		except Exception as e:
 			print(e)
-
+#class QServer
 
 class bkgFixer(QWidget):
 	def __init__(self,parent=None):
@@ -83,48 +86,86 @@ class bkgFixer(QWidget):
 		ln=Launcher()
 		cmd="/usr/bin/kwin"
 		ln.setCmd(cmd)
-		ln.end.connect(self._processEnd)
+		ln.processEnd.connect(self._processEnd)
 		ln.start()
 		self.processDict[cmd]=ln
 		fixer.fakeLliurexNet()
 		cmd='/sbin/lliurex-up -u -s -n'
 		ln=Launcher()
 		ln.setCmd(cmd)
-		ln.end.connect(self._processEnd)
+		ln.processEnd.connect(self._processEnd)
 		ln.start()
+		self.processDict[cmd]=ln
 	#def doFixes
 
-	def fixAptsources(self):
+	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"
 		if os.path.isfile(llxup_sources):
 			shutil.copy("/etc/apt/sources.list",llxup_sources)
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
-		self._enableIpRedirect()
+		if self._enableIpRedirect()==0:
+			pass
+			#cmd=["hostname","lliurex.net"]
+			#subprocess.run(cmd)
+			#self.qserver.hostname="lliurex.net"
+			#self._enableIpRedirect()
 		self.qserver.start()
 	#def fakeLliurexNet
 
 	def _enableIpRedirect(self):
 		cmd=["nslookup","lliurex.net"]
-		output=subprocess.check_output(cmd,encoding="utf8",universal_newlines=True)
-		for line in output:
-			if line.startswith("Address:") and "127." not in line:
-				ip=line.split[-1]
-				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","10080","-j","DNAT","--to-destination","127.0.0.1"]
+		local127=False
+		try:
+			output=subprocess.check_output(cmd,encoding="utf8",universal_newlines=True)
+		except Exception as e:
+			output=""
+		for line in output.split("\n"):
+			if line.startswith("Address:"):
+				ip=line.split()[-1]
+				if ip.startswith("127"):
+					if not ip.endswith(".1"):
+						continue
+					local127=True
+				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.1:10080"]
+				try:
+					print(cmd)
+					subprocess.run(cmd)
+				except Exception as e:
+					print("iptables: {}".format(e))
+		if local127==False:
+			cmd=["iptables","-t","nat","-A","OUTPUT","-d","127.0.0.1","-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.1:10080"]
+			try:
+				print(cmd)
 				subprocess.run(cmd)
+			except Exception as e:
+				print("iptables: {}".format(e))
+			
+		self._modHosts()
+		return(len(output))
 	#def _enableIpRedirect
 
-	def _processEnd(self,*args):
-		if "lliurex-up" in args[0].lower():
-			self.processDict[args[0]].wait()
-			print("ENDED: {}".format(args[1]))
-			if prc.returncode!=0:
-			#ERROR!!!!
-				self._errorMode()
-			else:
+	def _modHosts(self):
+		with open("/etc/apt/hosts","r") as f:
+			fcontent=f.readlines(f)
+		fcontent.append("127.0.0.1 lliurex.net")
+		with open("/tmp/.hosts","w") as f:
+			f.writelines(fcontent)
+		cmd=["mount","/tmp/.hosts","etc/hosts"]
+		os.subprocess.run(cmd)
+	def _modHosts(self):
+
+	def _processEnd(self,prc,prcdata):
+		if "lliurex-up" in prc.lower():
+			#self.processDict[prc].wait()
+			print("ENDED: {}".format(prcdata))
+			if prcdata.returncode==0 and len(llxupgrader.getPkgsToUpdate())==0:
 				self._undoFixes()
 				self.showEnd()
+			else:
+				#ERROR!!!!
+				self._errorMode()
 	#def _processEnd
 
 	def showEnd(self):
@@ -138,9 +179,11 @@ class bkgFixer(QWidget):
 		self.unfixAptSources()
 		self.removeAptConf()
 		llxupgrader.clean()
+		llxupgrader.unsetSystemdUpgradeTarget()
+		llxupgrader.cleanLLxUpActions()
 	#def _undoFixes()
 
-	def unfixAptsources(self):
+	def unfixAptSources(self):
 		sources="/etc/apt/sources.list"
 		f=open(sources,"w")
 		f.close()
@@ -160,9 +203,11 @@ class bkgFixer(QWidget):
 
 	def _errorMode(self):
 		ln=Launcher()
-		ln.setCmd("/usr/bin/konsole")
+		cmd="/usr/bin/konsole"
+		ln.setCmd(cmd)
 		ln.start()
-		ln.end.connect(self._endErrorMode)
+		ln.processEnd.connect(self._endErrorMode)
+		self.processDict[cmd]=ln
 	#def _errorMode
 
 	def _endErrorMode(self):
@@ -175,6 +220,6 @@ app=QApplication(["Llx-Upgrader"])
 if __name__=="__main__":
 	fixer=bkgFixer()
 	fixer.renderBkg()
-	fake.doFixes()
+	fixer.doFixes()
 app.exec_()
 

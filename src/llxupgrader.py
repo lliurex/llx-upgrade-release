@@ -104,11 +104,15 @@ def chkReleaseAvailable(metadata):
 
 def upgradeCurrentState():
 	#check state of current release
-	llxup=lliurexup.LliurexUpCore()
 	clean()
+	return(getPkgsToUpdate)
+#def upgradeCurrentState
+
+def getPkgsToUpdate():
+	llxup=lliurexup.LliurexUpCore()
 	update=llxup.getPackagesToUpdate()
 	return(update)
-#def upgradeCurrentState
+#def getPkgsToUpdate():
 
 def prepareFiles(metadata):
 	tools=downloadFile(metadata["UpgradeTool"].replace("UpgradeTool: ",""))
@@ -182,13 +186,16 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+	self.cleanLlxUpActions()
+#def restoreRepos
+
+def cleanLLxUpActions():
 	if os.path.isfile(LLXUP_PRESCRIPT):
 		os.unlink(LLXUP_PRESCRIPT)
 	if os.path.isfile(LLXUP_POSTSCRIPT):
 		os.unlink(LLXUP_POSTSCRIPT)
 	if os.path.isfile(LLXUP_TOKEN):
 		os.unlink(LLXUP_TOKEN)
-#def restoreRepos
 
 def downgrade():
 	#Update info

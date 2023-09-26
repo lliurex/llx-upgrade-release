@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3:
 import os,sys, tempfile, shutil
 import tarfile
 import time
@@ -52,6 +52,7 @@ def i18n(raw):
 		"ROOT":_("Must be root"),
 		"SETTINGUP":_("Setting up things. Be patient..."),
 		"UNDO":_("This operation could not be reversed"),
+		"UPGRADEEND":_("System upgrade completed. Now the system will reboot"),
 		"UPGRADE":_("Setting info for lliurex-up")})
 	return(imsg.get(raw,raw))
 
@@ -316,7 +317,7 @@ def setSystemdUpgradeTarget():
 		f.write("\n".join(serviceContent))
 #def setSyemdUpgradeTarget
 
-def unsetSyemdUpgradeTarget():
+def unsetSystemdUpgradeTarget():
 	systemdpath="/usr/lib/systemd/system"
 	target=os.path.join(systemdpath,"llx-upgrade.target")
 	service=os.path.join(systemdpath,"llx-upgrade.service")

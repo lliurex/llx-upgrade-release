@@ -1,17 +1,19 @@
 #!/bin/bash
+mount -o remount,defaults,nodelalloc /
 service plymouth stop
 service plymouth-start stop
-LLXUP='/sbin/lliurex-up -u -s -n'
-KWIN=$(which kwin)
-xinit $KWIN $* -- :0 vt1 &
-export DISPLAY=:0
-sleep 2
-hostname lliurex.net
-/usr/share/llx-upgrade-release/fakenet.py &
-hostname lliurex.net
-$LLXUP 
-apt clean
-rm /etc/apt/apt.conf 2>/dev/null
-> /etc/apt/sources.list
-repoman-cli -e 0 -y
-kdialog --title "Lliurex Release Upgrade" --msgbox "Upgrade ended. Press to reboot"  && systemctl reboot || systemctl reboot
+service network-manager stop
+service systemd-networkd stop
+systemctl stop network.target
+
+LLXUP_TOKEN="/var/run/disableMetaProtection.token"
+UPGRADER="/usr/share/llx-upgrade-release/bkgfixer.py"
+
+error()
+{
+	kdialog --title "Lliurex Release Upgrade" --msgbox "Upgrade ended with errors.<br>A terminal will be executed. Don't reboot till the system gets fixed"
+	konsole || xterm
+}
+
+touch $LLXUP_TOKEN
+xinit $UPGRADER $* -- :0 vt1 &

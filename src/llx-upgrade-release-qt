@@ -61,6 +61,7 @@ class thRun(QThread):
 		if self.target=="doUpgrade":
 			tools=llxupgrader.prepareFiles(self.upgradeTo)
 			llxupgrader.enableUpgradeRepos(tools)
+			llxupgrader.clean()
 			pkgs=llxupgrader.upgradeCurrentState()
 			self.newstate.emit(len(pkgs))
 			llxupgrader.downloadPackages()
@@ -264,8 +265,8 @@ class upgraderGui(QWidget):
 			lbl_info.btn_ok.setVisible(False)
 			lbl_info.btn_ko.setVisible(True)
 		else:
-			llxupgrader.setSyemdUpgradeTarget()
-			llxupgrader.upgradeLlxUp()
+			llxupgrader.setSystemdUpgradeTarget()
+			llxupgrader.upgradeLlxUp(self.upgradeTo)
 			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 			lbl_info.btn_ok.setVisible(True)
 			lbl_info.btn_ko.clicked.connect(self.close)
@@ -337,7 +338,7 @@ class upgraderGui(QWidget):
 			lbl_info.setText("{}".format(e))
 			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
 			return(False)
-	#def doUpgrade
+	#def _doUpgrade
 
 	def _endBeginUpgrade(self,packages):
 		cursor=QtGui.QCursor(Qt.PointingHandCursor)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os,subprocess
+import os,subprocess,shutil
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout
 from PySide2 import QtGui
@@ -26,9 +26,6 @@ class Launcher(QThread):
 
 	def run(self):
 		prc=subprocess.run(self.cmd,universal_newlines=self.universal_newlines,encoding=self.encoding,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		print("---")
-		print(self.cmd)
-		print("---")
 		self.processEnd.emit(" ".join(self.cmd),prc)
 	#def run
 #class Launcher
@@ -141,20 +138,20 @@ class bkgFixer(QWidget):
 				subprocess.run(cmd)
 			except Exception as e:
 				print("iptables: {}".format(e))
-			
 		self._modHosts()
 		return(len(output))
 	#def _enableIpRedirect
 
 	def _modHosts(self):
-		with open("/etc/apt/hosts","r") as f:
-			fcontent=f.readlines(f)
+		with open("/etc/hosts","r") as f:
+			fcontent=f.readlines()
 		fcontent.append("127.0.0.1 lliurex.net")
+		fcontent.append("")
 		with open("/tmp/.hosts","w") as f:
 			f.writelines(fcontent)
-		cmd=["mount","/tmp/.hosts","etc/hosts"]
-		os.subprocess.run(cmd)
-	def _modHosts(self):
+		cmd=["mount","/tmp/.hosts","/etc/hosts","--bind"]
+		subprocess.run(cmd)
+	#def _modHosts(self):
 
 	def _processEnd(self,prc,prcdata):
 		if "lliurex-up" in prc.lower():
@@ -166,10 +163,11 @@ class bkgFixer(QWidget):
 			else:
 				#ERROR!!!!
 				self._errorMode()
+		print("END")
 	#def _processEnd
 
 	def showEnd(self):
-		cmd=["kdialog","--title","Lliurex Release Upgrade","--msgbox","Upgrade ended. Press to reboot".format(i18n.get("REBOOT"))]
+		cmd=["kdialog","--title","Lliurex Release Upgrade","--msgbox","Upgrade ended. Press to reboot".format(llxupgrader.i18n("UPGRADEEND"))]
 		subprocess.run(cmd)
 		cmd=["systemctl","reboot"]
 		subprocess.run(cmd)

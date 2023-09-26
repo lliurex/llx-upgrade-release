@@ -105,7 +105,7 @@ def chkReleaseAvailable(metadata):
 def upgradeCurrentState():
 	#check state of current release
 	clean()
-	return(getPkgsToUpdate)
+	return(getPkgsToUpdate())
 #def upgradeCurrentState
 
 def getPkgsToUpdate():

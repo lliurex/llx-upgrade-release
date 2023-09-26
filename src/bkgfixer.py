@@ -154,7 +154,7 @@ class bkgFixer(QWidget):
 			f.writelines(fcontent)
 		cmd=["mount","/tmp/.hosts","etc/hosts"]
 		os.subprocess.run(cmd)
-	def _modHosts(self):
+	#def _modHosts(self):
 
 	def _processEnd(self,prc,prcdata):
 		if "lliurex-up" in prc.lower():

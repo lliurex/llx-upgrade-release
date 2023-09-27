@@ -1,6 +1,0 @@
-#!/usr/bin/python3
-import llxupgrader
-import threading
-
-llxupgrader.launchLliurexUp()
-print(llxupgrader.i18n("REBOOT")

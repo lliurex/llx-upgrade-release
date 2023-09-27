@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout
 from PySide2 import QtGui
 from PySide2.QtCore import Qt,QThread,QObject,Signal
 import llxupgrader
+from lliurex import lliurexup
 
 class Launcher(QThread):
 	processEnd=Signal(str,subprocess.CompletedProcess)
@@ -32,9 +33,23 @@ class Launcher(QThread):
 
 class Server(BaseHTTPRequestHandler):
 	def do_GET(self):
+		print(self.path)
 		self.send_response(200)
 		self.send_header("Content-type","text/html")
 		self.end_headers()
+		if self.path.endswith("Release"):
+			if "jammy-updates" in self.path:
+				print("SEND UP")
+				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
+					self.wfile.write(file.read())
+			if "jammy-security" in self.path:
+				print("SEND SE")
+				with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
+					self.wfile.write(file.read())
+			else:
+				print("SEND")
+				with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
+					self.wfile.write(file.read())
 
 class QServer(QThread):
 	def __init__(self,parent=None):
@@ -87,6 +102,7 @@ class bkgFixer(QWidget):
 		ln.start()
 		self.processDict[cmd]=ln
 		fixer.fakeLliurexNet()
+		fixer.disableSystemdServices()
 		cmd='/sbin/lliurex-up -u -s -n'
 		ln=Launcher()
 		ln.setCmd(cmd)
@@ -103,11 +119,10 @@ class bkgFixer(QWidget):
 
 	def fakeLliurexNet(self):
 		if self._enableIpRedirect()==0:
-			pass
-			#cmd=["hostname","lliurex.net"]
-			#subprocess.run(cmd)
-			#self.qserver.hostname="lliurex.net"
-			#self._enableIpRedirect()
+			cmd=["hostname","lliurex.net"]
+			subprocess.run(cmd)
+			self.qserver.hostname="lliurex.net"
+			self._enableIpRedirect()
 		self.qserver.start()
 	#def fakeLliurexNet
 
@@ -143,28 +158,57 @@ class bkgFixer(QWidget):
 	#def _enableIpRedirect
 
 	def _modHosts(self):
+		fcontent=[]
 		with open("/etc/hosts","r") as f:
-			fcontent=f.readlines()
+			for line in f.readlines():
+				if "lliurex.net" not in line:
+					fcontent.append(line)
+
 		fcontent.append("127.0.0.1 lliurex.net")
-		fcontent.append("")
 		with open("/tmp/.hosts","w") as f:
 			f.writelines(fcontent)
+			f.write("\n")
 		cmd=["mount","/tmp/.hosts","/etc/hosts","--bind"]
 		subprocess.run(cmd)
 	#def _modHosts(self):
 
+	def disableSystemdServices(self):
+		for i in ["network-manager","systemd-networkd"]:
+			cmd=["service",i,"stop"]
+			subprocess.run(cmd)
+		cmd=["systemctl","stop","network.target"]
+		subprocess.run(cmd)
+	#def disableSystemdServices
+
 	def _processEnd(self,prc,prcdata):
+		err=True
 		if "lliurex-up" in prc.lower():
 			#self.processDict[prc].wait()
 			print("ENDED: {}".format(prcdata))
-			if prcdata.returncode==0 and len(llxupgrader.getPkgsToUpdate())==0:
-				self._undoFixes()
-				self.showEnd()
-			else:
-				#ERROR!!!!
-				self._errorMode()
+			if prcdata.returncode==0:
+				if len(llxupgrader.getPkgsToUpdate())==0:
+					err=False
+					self._undoFixes()
+					self.showEnd()
+			if err==True:
+				if prcdata.returncode!=0:
+					self._relaunchLlxUp()
+				else:
+					self._errorMode()
 		print("END")
 	#def _processEnd
+
+	def _relaunchLlxUp(self):
+		a=lliurexup.LliurexUpCore()
+		a.cleanEnvironment()
+		a.cleanLliurexUpLock()
+		cmd='/sbin/lliurex-up -u -s -n'
+		ln=Launcher()
+		ln.setCmd(cmd)
+		ln.processEnd.connect(self._processEnd)
+		ln.start()
+		self.processDict[cmd]=ln
+	#def _relaunchLlxUp
 
 	def showEnd(self):
 		cmd=["kdialog","--title","Lliurex Release Upgrade","--msgbox","Upgrade ended. Press to reboot".format(llxupgrader.i18n("UPGRADEEND"))]

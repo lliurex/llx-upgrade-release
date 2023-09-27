@@ -1,10 +1,5 @@
 #!/bin/bash
 mount -o remount,defaults,nodelalloc /
-service plymouth stop
-service plymouth-start stop
-service network-manager stop
-service systemd-networkd stop
-systemctl stop network.target
 
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 UPGRADER="/usr/share/llx-upgrade-release/bkgfixer.py"

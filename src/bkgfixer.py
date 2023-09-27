@@ -54,10 +54,10 @@ class Server(BaseHTTPRequestHandler):
 class QServer(QThread):
 	def __init__(self,parent=None):
 		super (QServer,self).__init__(parent)
-		self.hostname="localhost"
+		self.hostname="lliurex.net"
 
 	def run(self):
-		serverport=10080
+		serverport=80
 		try:
 			web=HTTPServer((self.hostname,serverport),Server)
 			web.serve_forever()
@@ -119,10 +119,11 @@ class bkgFixer(QWidget):
 
 	def fakeLliurexNet(self):
 		if self._enableIpRedirect()==0:
-			cmd=["hostname","lliurex.net"]
-			subprocess.run(cmd)
-			self.qserver.hostname="lliurex.net"
-			self._enableIpRedirect()
+			pass
+		#	cmd=["hostname","lliurex.net"]
+		#	subprocess.run(cmd)
+		#	self.qserver.hostname="lliurex.net"
+		#	self._enableIpRedirect()
 		self.qserver.start()
 	#def fakeLliurexNet
 
@@ -134,26 +135,28 @@ class bkgFixer(QWidget):
 		except Exception as e:
 			output=""
 		for line in output.split("\n"):
+			print("* {}".format(line))
 			if line.startswith("Address:"):
 				ip=line.split()[-1]
 				if ip.startswith("127"):
 					if not ip.endswith(".1"):
 						continue
 					local127=True
-				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.1:10080"]
+				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.2"]
 				try:
 					print(cmd)
 					subprocess.run(cmd)
 				except Exception as e:
 					print("iptables: {}".format(e))
-		if local127==False:
-			cmd=["iptables","-t","nat","-A","OUTPUT","-d","127.0.0.1","-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.1:10080"]
-			try:
-				print(cmd)
-				subprocess.run(cmd)
-			except Exception as e:
-				print("iptables: {}".format(e))
+#		if local127==False:
+#			cmd=["iptables","-t","nat","-A","PREROUTING","-d","127.0.2.2","-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.2.2:10080"]
+#			try:
+#				print(cmd)
+#				subprocess.run(cmd)
+#			except Exception as e:
+#				print("iptables: {}".format(e))
 		self._modHosts()
+		self._modHttpd()
 		return(len(output))
 	#def _enableIpRedirect
 
@@ -164,13 +167,31 @@ class bkgFixer(QWidget):
 				if "lliurex.net" not in line:
 					fcontent.append(line)
 
-		fcontent.append("127.0.0.1 lliurex.net")
+		fcontent.append("127.0.0.2 lliurex.net")
 		with open("/tmp/.hosts","w") as f:
 			f.writelines(fcontent)
 			f.write("\n")
 		cmd=["mount","/tmp/.hosts","/etc/hosts","--bind"]
 		subprocess.run(cmd)
 	#def _modHosts(self):
+
+	def _modHttpd(self):
+		fcontent=[]
+		files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
+		for filen in files:
+			with open(filen,"r") as f:
+				for line in f.readlines():
+					if "Listen 80" in line or "<VirtualHost *:80>" in line:
+						line=line.replace("80","10080")
+					fcontent.append(line)
+				tmpfilen="/tmp/.{}".format(os.path.basename(filen))
+				with open(tmpfilen,"w") as f:
+					f.writelines(fcontent)
+					f.write("\n")
+				cmd=["mount",tmpfilen,filen,"--bind"]
+				subprocess.run(cmd)
+		cmd=["service","apache2","restart"]
+		subprocess.run(cmd)
 
 	def disableSystemdServices(self):
 		for i in ["network-manager","systemd-networkd"]:

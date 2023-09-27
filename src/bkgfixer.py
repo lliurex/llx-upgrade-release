@@ -37,6 +37,19 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/html")
 		self.end_headers()
+		if self.path.endswith("Release"):
+			if "jammy-updates" in self.path:
+				print("SEND UP")
+				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
+					self.wfile.write(file.read())
+			if "jammy-security" in self.path:
+				print("SEND SE")
+				with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
+					self.wfile.write(file.read())
+			else:
+				print("SEND")
+				with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
+					self.wfile.write(file.read())
 
 class QServer(QThread):
 	def __init__(self,parent=None):

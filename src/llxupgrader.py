@@ -273,8 +273,11 @@ def _modifyAptConf():
 
 def setLocalRepo():
 	sources="/etc/apt/sources.list"
-	with open(sources,"w") as f:
-		f.write("deb file:{} ./".format(REPODIR))
+	tmpsources="/tmp/.sources.list"
+	with open(tmpsources,"w") as f:
+		f.write("deb [trusted=yes] file:{} ./".format(REPODIR))
+	cmd=["mount",tmpsources,sources,"--bind"]
+	subprocess.run(cmd)
 #def setLocalRepo
 
 def downloadPackages():

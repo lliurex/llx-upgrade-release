@@ -190,13 +190,14 @@ def restoreRepos():
 	cleanLlxUpActions()
 #def restoreRepos
 
-def cleanLLxUpActions():
+def cleanLlxUpActions():
 	if os.path.isfile(LLXUP_PRESCRIPT):
 		os.unlink(LLXUP_PRESCRIPT)
 	if os.path.isfile(LLXUP_POSTSCRIPT):
 		os.unlink(LLXUP_POSTSCRIPT)
 	if os.path.isfile(LLXUP_TOKEN):
 		os.unlink(LLXUP_TOKEN)
+#def cleanLLxUpActions
 
 def downgrade():
 	#Update info

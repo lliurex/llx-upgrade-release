@@ -73,7 +73,7 @@ class bkgFixer(QWidget):
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
 		#self.setWindowModality(Qt.WindowModal)
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
-		self.wrkdir="/tmp/llx-upgrade-release")
+		self.wrkdir="/tmp/llx-upgrade-release"
 		if os.path.isdir(self.wrkdir)==False:
 			os.makedirs(self.wrkdir)
 		self.lbl=QLabel()

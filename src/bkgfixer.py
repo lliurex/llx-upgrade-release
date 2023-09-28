@@ -73,6 +73,9 @@ class bkgFixer(QWidget):
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
 		#self.setWindowModality(Qt.WindowModal)
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
+		self.wrkdir="/tmp/llx-upgrade-release")
+		if os.path.isdir(self.wrkdir)==False:
+			os.makedirs(self.wrkdir)
 		self.lbl=QLabel()
 		self.qserver=QServer()
 		self.processDict={}
@@ -112,8 +115,17 @@ class bkgFixer(QWidget):
 
 	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"
+		sources="/etc/apt/sources.list",
+		tmpsources=os.path.join(self.wrkdir,"sources.list")
 		if os.path.isfile(llxup_sources):
-			shutil.copy("/etc/apt/sources.list",llxup_sources)
+			shutil.copy(sources,llxup_sources)
+		fcontent=[]
+		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./")
+		fcontent.append("")
+		with open (tmpsources,"w") as f:
+			f.writelines(fcontent)
+		cmd=["mount",tmpsources,sources,"--bind"]
+		subprocess.run(cmd)
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
@@ -126,6 +138,7 @@ class bkgFixer(QWidget):
 
 	def _enableIpRedirect(self):
 		##DEPRECATED##
+		return
 		cmd=["nslookup","lliurex.net"]
 		local127=False
 		try:
@@ -149,16 +162,17 @@ class bkgFixer(QWidget):
 
 	def _modHosts(self):
 		fcontent=[]
+		tmphosts=os.path.join(self.wrkdir,"hosts")
 		with open("/etc/hosts","r") as f:
 			for line in f.readlines():
 				if "lliurex.net" not in line:
 					fcontent.append(line)
 
 		fcontent.append("127.0.0.2 lliurex.net")
-		with open("/tmp/.hosts","w") as f:
+		with open(tmphosts,"w") as f:
 			f.writelines(fcontent)
 			f.write("\n")
-		cmd=["mount","/tmp/.hosts","/etc/hosts","--bind"]
+		cmd=["mount",tmphosts,"/etc/hosts","--bind"]
 		subprocess.run(cmd)
 	#def _modHosts(self):
 
@@ -171,7 +185,7 @@ class bkgFixer(QWidget):
 					if "Listen 80" in line or "<VirtualHost *:80>" in line:
 						line=line.replace("80","10080")
 					fcontent.append(line)
-				tmpfilen="/tmp/.{}".format(os.path.basename(filen))
+				tmpfilen=os.path.join(self.wrkdir,os.path.basename(filen))
 				with open(tmpfilen,"w") as f:
 					f.writelines(fcontent)
 					f.write("\n")
@@ -244,16 +258,17 @@ class bkgFixer(QWidget):
 
 	def unfixAptSources(self):
 		sources="/etc/apt/sources.list"
+		cmd=["umount",sources]
+		subprocess.run(cmd)
 		f=open(sources,"w")
 		f.close()
 		cmd=["repoman-cli","-e","0","-y"]
 		subprocess.run(cmd)
-		self.fixAptSources()
 	#def unfixAptsources
 
 	def removeAptConf(self):
 		aptconf="/etc/apt/apt.conf"
-		tmpaptconf=os.path.join("/tmp/llx-update-release",os.path.basename(aptconf))
+		tmpaptconf=os.path.join(self.wrkdir,os.path.basename(aptconf))
 		if os.path.isfile(aptconf):
 			os.unlink(aptconf)
 		if os.path.isfile(tmpaptconf):

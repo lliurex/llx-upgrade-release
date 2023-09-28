@@ -187,7 +187,7 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
-	self.cleanLlxUpActions()
+	cleanLlxUpActions()
 #def restoreRepos
 
 def cleanLLxUpActions():

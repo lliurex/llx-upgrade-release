@@ -1,6 +1,7 @@
 #!/usr/bin/python3:
 import os,sys, tempfile, shutil
 import tarfile
+import hashlib
 import time
 import subprocess
 from repomanager import RepoManager as repoman
@@ -295,6 +296,32 @@ def generateLocalRepo():
 	with open(os.path.join(REPODIR,"Packages"),"w") as f:
 		f.write(cmdOutput)
 #def generateLocalRepo
+
+def generateReleaseFile(release,version,releasedate):
+	packages=os.path.join(REPODIR,"Packages")
+	releasef=os.path.join(REPODIR,"Release")
+	md5sum=hashlib.md5(open(packages,'rb').read()).hexdigest()
+	sha1sum=hashlib.sha1(open(packages,'rb').read()).hexdigest()
+	sha256sum=hashlib.sha256(open(packages,'rb').read()).hexdigest()
+	size=os.path.getsize(packages)
+	fcontent=[]
+	fcontent.append("Origin: LliureX")
+	fcontent.append("Label: LliureX")
+	fcontent.append("codename: {}".format(release))
+	fcontent.append("Version: {}".format(version))
+	fcontent.append("Date: {}".format(releasedate))
+	fcontent.append("Architecture: i386 amd64")
+	fcontent.append("Components: main")
+	fcontent.append("Description: Lliurex Release Packages")
+	fcontent.append("MD5Sum:")
+	fcontent.append("{0} {1} Packages".format(md5sum,size))
+	fcontent.append("SHA1:")
+	fcontent.append("{0} {1} Packages".format(sha1sum,size))
+	fcontent.append("SHA256:")
+	fcontent.append("{0} {1} Packages".format(sha256sum,size))
+	with open(releasef,"w") as f:
+		f.write("\n".join(fcontent))
+#def _generateReleaseFile
 
 def upgradeLlxUp(metadata):
 	data=_getValuesForLliurexUp(metadata)

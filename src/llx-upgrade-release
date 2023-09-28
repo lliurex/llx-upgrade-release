@@ -127,6 +127,7 @@ pkgs=llxupgrader.upgradeCurrentState()
 print(llxupgrader.i18n("EXTRACT"))
 llxupgrader.downloadPackages()
 llxupgrader.generateLocalRepo()
+llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
 llxupgrader.setLocalRepo()
 noreturn=0
 llxupgrader.setSystemdUpgradeTarget()

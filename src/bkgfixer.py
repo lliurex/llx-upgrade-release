@@ -33,28 +33,26 @@ class Launcher(QThread):
 
 class Server(BaseHTTPRequestHandler):
 	def do_GET(self):
-		print(self.path)
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
-		if self.path.endswith("Release"):
-			if "jammy-updates" in self.path:
-				print("SEND UP")
-				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
-					self.wfile.write(file.read())
-			if "jammy-security" in self.path:
-				print("SEND SE")
-				with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
-					self.wfile.write(file.read())
-			else:
-				print("SEND")
-				with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
-					self.wfile.write(file.read())
+		#if self.path.endswith("Release"):
+		#	if "jammy-updates" in self.path:
+		#		with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
+		#			self.wfile.write(file.read())
+		#	if "jammy-security" in self.path:
+		#		with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
+		#			self.wfile.write(file.read())
+		#	else:
+		#		with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
+		#			self.wfile.write(file.read())
+	#def do_GET
 
 class QServer(QThread):
 	def __init__(self,parent=None):
 		super (QServer,self).__init__(parent)
 		self.hostname="lliurex.net"
+	#def __init__
 
 	def run(self):
 		serverport=80
@@ -63,6 +61,7 @@ class QServer(QThread):
 			web.serve_forever()
 		except Exception as e:
 			print(e)
+	#def run(self):
 #class QServer
 
 class bkgFixer(QWidget):
@@ -103,7 +102,7 @@ class bkgFixer(QWidget):
 		self.processDict[cmd]=ln
 		fixer.fakeLliurexNet()
 		fixer.disableSystemdServices()
-		cmd='/sbin/lliurex-up -u -s -n'
+		cmd='/sbin/lliurex-up' #-u -s -n'
 		ln=Launcher()
 		ln.setCmd(cmd)
 		ln.processEnd.connect(self._processEnd)
@@ -118,16 +117,15 @@ class bkgFixer(QWidget):
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
-		if self._enableIpRedirect()==0:
-			pass
-		#	cmd=["hostname","lliurex.net"]
-		#	subprocess.run(cmd)
-		#	self.qserver.hostname="lliurex.net"
-		#	self._enableIpRedirect()
+		#self._enableIpRedirect()
+		self._modHosts()
+		self._modHttpd()
+		self._disableMirrorCheck()
 		self.qserver.start()
 	#def fakeLliurexNet
 
 	def _enableIpRedirect(self):
+		##DEPRECATED##
 		cmd=["nslookup","lliurex.net"]
 		local127=False
 		try:
@@ -135,7 +133,6 @@ class bkgFixer(QWidget):
 		except Exception as e:
 			output=""
 		for line in output.split("\n"):
-			print("* {}".format(line))
 			if line.startswith("Address:"):
 				ip=line.split()[-1]
 				if ip.startswith("127"):
@@ -144,19 +141,9 @@ class bkgFixer(QWidget):
 					local127=True
 				cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.2"]
 				try:
-					print(cmd)
 					subprocess.run(cmd)
 				except Exception as e:
 					print("iptables: {}".format(e))
-#		if local127==False:
-#			cmd=["iptables","-t","nat","-A","PREROUTING","-d","127.0.2.2","-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.2.2:10080"]
-#			try:
-#				print(cmd)
-#				subprocess.run(cmd)
-#			except Exception as e:
-#				print("iptables: {}".format(e))
-		self._modHosts()
-		self._modHttpd()
 		return(len(output))
 	#def _enableIpRedirect
 
@@ -192,6 +179,15 @@ class bkgFixer(QWidget):
 				subprocess.run(cmd)
 		cmd=["service","apache2","restart"]
 		subprocess.run(cmd)
+	#def _modHttpd(self)
+
+	def _disableMirror(self):
+		mirrorDir="/net/mirror"
+		srvPath="/srv"
+		if os.path.isdir(mirrorDir):
+			cmd=["mount",srvPath,mirrorDir,"--bind"]
+			subprocess.run(cmd)
+	#def _disableMirror
 
 	def disableSystemdServices(self):
 		for i in ["network-manager","systemd-networkd"]:

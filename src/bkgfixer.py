@@ -120,7 +120,7 @@ class bkgFixer(QWidget):
 		#self._enableIpRedirect()
 		self._modHosts()
 		self._modHttpd()
-		self._disableMirrorCheck()
+		self._disableMirror()
 		self.qserver.start()
 	#def fakeLliurexNet
 

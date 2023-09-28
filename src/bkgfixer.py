@@ -115,13 +115,14 @@ class bkgFixer(QWidget):
 
 	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"
+		tmpllxup_sources=os.path.join(self.wrkdir,"lliurexup_sources.list")
 		sources="/etc/apt/sources.list",
-		tmpsources=os.path.join(self.wrkdir,"sources.list")
 		if os.path.isfile(llxup_sources):
-			shutil.copy(sources,llxup_sources)
+			shutil.move(llxup_sources,tmpllxup_sources)
 		fcontent=[]
 		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./")
 		fcontent.append("")
+		tmpsources=os.path.join(self.wrkdir,"sources.list")
 		with open (tmpsources,"w") as f:
 			f.writelines(fcontent)
 		cmd=["mount",tmpsources,sources,"--bind"]
@@ -264,6 +265,9 @@ class bkgFixer(QWidget):
 		f.close()
 		cmd=["repoman-cli","-e","0","-y"]
 		subprocess.run(cmd)
+		tmpllxup_sources=os.path.join(self.wrkdir,"lliurexup_sources.list")
+		if os.path.isfile(tmpllup_sources):
+			shutil.move(tmpllxup_sources,"/etc/apt/lliurexup_sources.list")
 	#def unfixAptsources
 
 	def removeAptConf(self):

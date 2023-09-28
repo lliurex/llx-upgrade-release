@@ -258,7 +258,7 @@ class bkgFixer(QWidget):
 		self.removeAptConf()
 		llxupgrader.clean()
 		llxupgrader.unsetSystemdUpgradeTarget()
-		llxupgrader.cleanLLxUpActions()
+		llxupgrader.cleanLlxUpActions()
 	#def _undoFixes()
 
 	def unfixAptSources(self):

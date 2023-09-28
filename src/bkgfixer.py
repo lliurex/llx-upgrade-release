@@ -116,7 +116,7 @@ class bkgFixer(QWidget):
 	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"
 		tmpllxup_sources=os.path.join(self.wrkdir,"lliurexup_sources.list")
-		sources="/etc/apt/sources.list",
+		sources="/etc/apt/sources.list"
 		if os.path.isfile(llxup_sources):
 			shutil.move(llxup_sources,tmpllxup_sources)
 		fcontent=[]

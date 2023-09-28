@@ -36,16 +36,16 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
-		#if self.path.endswith("Release"):
-		#	if "jammy-updates" in self.path:
-		#		with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
-		#			self.wfile.write(file.read())
-		#	if "jammy-security" in self.path:
-		#		with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
-		#			self.wfile.write(file.read())
-		#	else:
-		#		with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
-		#			self.wfile.write(file.read())
+		if self.path.endswith("Release"):
+			if "jammy-updates" in self.path:
+				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
+					self.wfile.write(file.read())
+			if "jammy-security" in self.path:
+				with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
+					self.wfile.write(file.read())
+			else:
+				with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
+					self.wfile.write(file.read())
 	#def do_GET
 
 class QServer(QThread):
@@ -105,7 +105,7 @@ class bkgFixer(QWidget):
 		self.processDict[cmd]=ln
 		fixer.fakeLliurexNet()
 		fixer.disableSystemdServices()
-		cmd='/sbin/lliurex-up' #-u -s -n'
+		cmd='/sbin/lliurex-up -u -s -n'
 		ln=Launcher()
 		ln.setCmd(cmd)
 		ln.processEnd.connect(self._processEnd)
@@ -118,15 +118,19 @@ class bkgFixer(QWidget):
 		tmpllxup_sources=os.path.join(self.wrkdir,"lliurexup_sources.list")
 		sources="/etc/apt/sources.list"
 		if os.path.isfile(llxup_sources):
-			shutil.move(llxup_sources,tmpllxup_sources)
+			os.unlink(llxup_sources)
 		fcontent=[]
 		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./")
+		#with open(sources,"r") as f:
+		#	for line in f.readlines():
+		#		if "file:" in line:
+		#			continue
+		#		fcontent.append(line)
 		fcontent.append("")
 		tmpsources=os.path.join(self.wrkdir,"sources.list")
 		with open (tmpsources,"w") as f:
 			f.writelines(fcontent)
-		cmd=["mount",tmpsources,sources,"--bind"]
-		subprocess.run(cmd)
+		shutil.copy(tmpsources,sources)
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
@@ -197,7 +201,7 @@ class bkgFixer(QWidget):
 	#def _modHttpd(self)
 
 	def _disableMirror(self):
-		mirrorDir="/net/mirror"
+		mirrorDir="/etc/lliurex-mirror/conf"
 		srvPath="/srv"
 		if os.path.isdir(mirrorDir):
 			cmd=["mount",srvPath,mirrorDir,"--bind"]
@@ -259,15 +263,13 @@ class bkgFixer(QWidget):
 
 	def unfixAptSources(self):
 		sources="/etc/apt/sources.list"
-		cmd=["umount",sources]
-		subprocess.run(cmd)
+		llxup_sources="/etc/apt/lliurexup_sources.list"
 		f=open(sources,"w")
 		f.close()
 		cmd=["repoman-cli","-e","0","-y"]
 		subprocess.run(cmd)
-		tmpllxup_sources=os.path.join(self.wrkdir,"lliurexup_sources.list")
-		if os.path.isfile(tmpllup_sources):
-			shutil.move(tmpllxup_sources,"/etc/apt/lliurexup_sources.list")
+		if os.path.isfile(llxup_sources):
+			os.unlink(llxup_sources)
 	#def unfixAptsources
 
 	def removeAptConf(self):

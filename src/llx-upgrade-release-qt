@@ -288,7 +288,7 @@ class upgraderGui(QWidget):
 	def _doLastStepUpgrade(self):
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
-		#lbl_info.setText(llxupgrader.i18n("SETTINGUP"))
+		lbl_info.setText(llxupgrader.i18n("SETTINGUP"))
 		lbl_info.btn_ok.setVisible(False)
 		lbl_info.btn_ko.setVisible(False)
 		self.lst_Steps.addItem(item)

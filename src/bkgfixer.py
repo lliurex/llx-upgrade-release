@@ -134,7 +134,7 @@ class bkgFixer(QWidget):
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
-		#self._enableIpRedirect()
+		self._enableIpRedirect()
 		self._modHosts()
 		self._modHttpd()
 		self._disableMirror()
@@ -143,7 +143,6 @@ class bkgFixer(QWidget):
 
 	def _enableIpRedirect(self):
 		##DEPRECATED##
-		return
 		cmd=["nslookup","lliurex.net"]
 		local127=False
 		try:
@@ -182,9 +181,9 @@ class bkgFixer(QWidget):
 	#def _modHosts(self):
 
 	def _modHttpd(self):
-		fcontent=[]
 		files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
 		for filen in files:
+			fcontent=[]
 			with open(filen,"r") as f:
 				for line in f.readlines():
 					if "Listen 80" in line or "<VirtualHost *:80>" in line:

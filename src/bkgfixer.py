@@ -36,6 +36,7 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
+		return()
 		if self.path.endswith("Release"):
 			if "jammy-updates" in self.path:
 				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
@@ -134,7 +135,7 @@ class bkgFixer(QWidget):
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
-		#self._enableIpRedirect()
+		self._enableIpRedirect()
 		self._modHosts()
 		self._modHttpd()
 		self._disableMirror()
@@ -143,7 +144,6 @@ class bkgFixer(QWidget):
 
 	def _enableIpRedirect(self):
 		##DEPRECATED##
-		return
 		cmd=["nslookup","lliurex.net"]
 		local127=False
 		try:
@@ -182,9 +182,9 @@ class bkgFixer(QWidget):
 	#def _modHosts(self):
 
 	def _modHttpd(self):
-		fcontent=[]
 		files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
 		for filen in files:
+			fcontent=[]
 			with open(filen,"r") as f:
 				for line in f.readlines():
 					if "Listen 80" in line or "<VirtualHost *:80>" in line:

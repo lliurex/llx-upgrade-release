@@ -280,7 +280,7 @@ def setLocalRepo():
 		f.write("deb [trusted=yes] file:{} ./".format(REPODIR))
 	cmd=["mount",tmpsources,sources,"--bind"]
 	subprocess.run(cmd)
-	self._deleteAptLists()
+	_deleteAptLists()
 #def setLocalRepo
 
 def _deleteAptLists():

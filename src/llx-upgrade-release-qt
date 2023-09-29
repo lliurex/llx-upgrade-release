@@ -30,8 +30,12 @@ class thProgress(QThread):
 
 	def run(self):
 		val=0
+		repodir="/usr/share/llx-upgrade-release/repo"
+		for f in os.listdir(repodir):
+			if f.endswith("deb"):
+				os.unlink(os.path.join(repodir,f))
 		while val<self.prgValue:
-			val=len(os.listdir("/usr/share/llx-upgrade-release/repo"))
+			val=len(os.listdir(repodir))
 			if val>=self.prgValue+1:
 				val=self.prgValue
 			self.progress.emit(val)
@@ -62,7 +66,6 @@ class thRun(QThread):
 		if self.target=="doUpgrade":
 			tools=llxupgrader.prepareFiles(self.upgradeTo)
 			llxupgrader.enableUpgradeRepos(tools)
-			llxupgrader.clean()
 			pkgs=llxupgrader.upgradeCurrentState()
 			self.newstate.emit(len(pkgs))
 			llxupgrader.downloadPackages()

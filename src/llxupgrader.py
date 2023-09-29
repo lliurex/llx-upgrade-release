@@ -143,6 +143,8 @@ def _generateDemoteScript():
 #def _generateDemoteScript
 
 def _generatePostInstallScript():
+		#DEPRECATED
+		return
 		fcontent="#!/bin/bash\n"
 		fcontent+="ACTION=\"$1\"\n"
 		fcontent+="case \"$ACTION\" in\n" 
@@ -275,11 +277,12 @@ def _modifyAptConf():
 
 def setLocalRepo():
 	sources="/etc/apt/sources.list"
-	tmpsources="/tmp/.sources.list"
+	tmpsources=os.path.join(TMPDIR,".sources.list")
 	with open(tmpsources,"w") as f:
 		f.write("deb [trusted=yes] file:{} ./".format(REPODIR))
-	cmd=["mount",tmpsources,sources,"--bind"]
-	subprocess.run(cmd)
+	shutil.copy(tmpsources,sources)
+	#cmd=["mount",tmpsources,sources,"--bind"]
+	#subprocess.run(cmd)
 	_deleteAptLists()
 #def setLocalRepo
 

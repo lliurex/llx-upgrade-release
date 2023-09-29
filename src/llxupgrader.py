@@ -1,6 +1,7 @@
 #!/usr/bin/python3:
 import os,sys, tempfile, shutil
 import tarfile
+import hashlib
 import time
 import subprocess
 from repomanager import RepoManager as repoman
@@ -279,7 +280,16 @@ def setLocalRepo():
 		f.write("deb [trusted=yes] file:{} ./".format(REPODIR))
 	cmd=["mount",tmpsources,sources,"--bind"]
 	subprocess.run(cmd)
+	self._deleteAptLists()
 #def setLocalRepo
+
+def _deleteAptLists():
+	wrkdir="/var/lib/apt/lists/"
+	for f in os.listdir(wrkdir):
+		dest=os.path.join(wrkdir,f)
+		if os.path.isfile(dest) and f!="lock":
+			os.unlink(dest)
+#def _deleteAptLists
 
 def downloadPackages():
 	_modifyAptConf()
@@ -289,12 +299,65 @@ def downloadPackages():
 #def downloadPackages
 
 def generateLocalRepo():
-	cmd=["dpkg-scanpackages",REPODIR]
+	cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 	line=""
 	with open(os.path.join(REPODIR,"Packages"),"w") as f:
 		f.write(cmdOutput)
+	cmd=["gzip","--keep","--force","-9","Packages"] 
+	subprocess.run(cmd)
 #def generateLocalRepo
+
+def generateReleaseFile(release,version,releasedate):
+	return
+	#DEPRECATED
+	packages=os.path.join(REPODIR,"Packages")
+	md5sum=hashlib.md5(open(packages,'rb').read()).hexdigest()
+	sha1sum=hashlib.sha1(open(packages,'rb').read()).hexdigest()
+	sha256sum=hashlib.sha256(open(packages,'rb').read()).hexdigest()
+	size=os.path.getsize(packages)
+	packagesgz=os.path.join(REPODIR,"Packages.gz")
+	md5sumgz=hashlib.md5(open(packages,'rb').read()).hexdigest()
+	sha1sumgz=hashlib.sha1(open(packages,'rb').read()).hexdigest()
+	sha256sumgz=hashlib.sha256(open(packages,'rb').read()).hexdigest()
+	sizegz=os.path.getsize(packages)
+	releasef=os.path.join(REPODIR,"Release")
+#	rmd5sum=hashlib.md5(open(releasef,'rb').read()).hexdigest()
+#	rsha1sum=hashlib.sha1(open(releasef,'rb').read()).hexdigest()
+#	rsha256sum=hashlib.sha256(open(releasef,'rb').read()).hexdigest()
+#	rsize=os.path.getsize(releasef)
+#	inrelease=os.path.join(REPODIR,"InRelease")
+#	imd5sum=hashlib.md5(open(inrelease,'rb').read()).hexdigest()
+#	isha1sum=hashlib.sha1(open(inrelease,'rb').read()).hexdigest()
+#	isha256sum=hashlib.sha256(open(inrelease,'rb').read()).hexdigest()
+#	isize=os.path.getsize(inrelease)
+	fcontent=[]
+	fcontent.append("Origin: LliureX")
+	fcontent.append("Label: LliureX")
+	fcontent.append("codename: {}".format(release))
+	fcontent.append("Version: {}".format(version))
+	fcontent.append("Date: {}".format(releasedate))
+	fcontent.append("Architecture: i386 amd64")
+	fcontent.append("Components: main")
+	fcontent.append("Description: Lliurex Release Packages")
+	fcontent.append("MD5Sum:")
+	fcontent.append("{0} {1} Packages".format(md5sum,size))
+	fcontent.append("{0} {1} Packages.gz".format(md5sumgz,sizegz))
+#	fcontent.append("{0} {1} Release".format(rmd5sum,rsize))
+#	fcontent.append("{0} {1} InRelease".format(imd5sum,isize))
+	fcontent.append("SHA1:")
+	fcontent.append("{0} {1} Packages".format(sha1sum,size))
+	fcontent.append("{0} {1} Packages".format(sha1sumgz,sizegz))
+#	fcontent.append("{0} {1} Release".format(rsha1sum,rsize))
+#	fcontent.append("{0} {1} InRelease".format(isha1sum,isize))
+	fcontent.append("SHA256:")
+	fcontent.append("{0} {1} Packages".format(sha256sum,size))
+	fcontent.append("{0} {1} Packages.gz".format(sha256sumgz,sizegz))
+#	fcontent.append("{0} {1} Release".format(rsha256sum,rsize))
+#	fcontent.append("{0} {1} InRelease".format(isha256sum,isize))
+	with open(releasef,"w") as f:
+		f.write("\n".join(fcontent))
+#def _generateReleaseFile
 
 def upgradeLlxUp(metadata):
 	data=_getValuesForLliurexUp(metadata)

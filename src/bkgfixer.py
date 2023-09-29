@@ -36,6 +36,7 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
+		return()
 		if self.path.endswith("Release"):
 			if "jammy-updates" in self.path:
 				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:

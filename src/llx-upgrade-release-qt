@@ -68,9 +68,8 @@ class thRun(QThread):
 			llxupgrader.downloadPackages()
 			self.downloaded.emit()
 			llxupgrader.generateLocalRepo()
-			llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
+			#llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
 			llxupgrader.setLocalRepo()
-			#llxupgrader.launchLliurexUp()
 			self.end.emit()
 		if self.target=="downgrade":
 			llxupgrader.downgrade()

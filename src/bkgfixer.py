@@ -51,7 +51,7 @@ class Server(BaseHTTPRequestHandler):
 class QServer(QThread):
 	def __init__(self,parent=None):
 		super (QServer,self).__init__(parent)
-		self.hostname="lliurex.net"
+		self.hostname="localhost"
 	#def __init__
 
 	def run(self):

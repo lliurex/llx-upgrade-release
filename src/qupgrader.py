@@ -169,10 +169,10 @@ class bkgFixer(QWidget):
 		tmphosts=os.path.join(self.wrkdir,"hosts")
 		with open("/etc/hosts","r") as f:
 			for line in f.readlines():
-				if "lliurex.net" not in line:
-					fcontent.append(line)
+				if "localhost" in line:
+					line=line.replace("localhost","localhost lliurex.net")
+				fcontent.append(line)
 
-		fcontent.append("127.0.0.2 lliurex.net")
 		with open(tmphosts,"w") as f:
 			f.writelines(fcontent)
 			f.write("\n")

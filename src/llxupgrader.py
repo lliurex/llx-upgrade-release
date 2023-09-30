@@ -10,7 +10,7 @@ from lliurex import lliurexup
 import gettext
 _ = gettext.gettext
 
-TMPDIR="/tmp/llx-upgrade-release"
+TMPDIR="/usr/share/llx-upgrade-release/tmp"
 TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 REPODIR="/usr/share/llx-upgrade-release/repo"

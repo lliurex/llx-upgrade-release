@@ -173,6 +173,7 @@ class qupgrader(QWidget):
 			for line in f.readlines():
 				if "localhost" in line:
 					line=line.replace("localhost","localhost lliurex.net")
+					fcontent.append("127.0.0.2 lliurex.net\n")
 				fcontent.append(line)
 
 		with open(tmphosts,"w") as f:

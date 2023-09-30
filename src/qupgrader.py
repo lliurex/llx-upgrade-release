@@ -189,7 +189,7 @@ class qupgrader(QWidget):
 			with open(filen,"r") as f:
 				for line in f.readlines():
 					if "Listen 80" in line or "<VirtualHost *:80>" in line:
-						line=line.replace("80","10080")
+						line=line.replace("80","10880")
 					fcontent.append(line)
 				tmpfilen=os.path.join(self.wrkdir,os.path.basename(filen))
 				with open(tmpfilen,"w") as f:

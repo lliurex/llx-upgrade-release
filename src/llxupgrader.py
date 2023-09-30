@@ -306,25 +306,29 @@ def generateLocalRepo():
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 	line=""
 	with open(os.path.join(REPODIR,"Packages"),"w") as f:
-		f.write(cmdOutput)
-	cmd=["gzip","--keep","--force","-9","Packages"] 
+		for out in cmdOutput.split("\n"):
+			if out.startswith("Filename:"):
+				line=out.split(" ")
+				out=" ".join([line[0],"./{}".format(os.path.basename(line[1]))])
+			f.write("{}\n".format(out))
 	subprocess.run(cmd)
 #def generateLocalRepo
 
 def generateReleaseFile(release,version,releasedate):
 	return
 	#DEPRECATED
+	releasedate="Wed, 27 Sep 2023 15:32:39 UTC"
+	releasef=os.path.join(REPODIR,"Release")
 	packages=os.path.join(REPODIR,"Packages")
 	md5sum=hashlib.md5(open(packages,'rb').read()).hexdigest()
 	sha1sum=hashlib.sha1(open(packages,'rb').read()).hexdigest()
 	sha256sum=hashlib.sha256(open(packages,'rb').read()).hexdigest()
 	size=os.path.getsize(packages)
-	packagesgz=os.path.join(REPODIR,"Packages.gz")
-	md5sumgz=hashlib.md5(open(packages,'rb').read()).hexdigest()
-	sha1sumgz=hashlib.sha1(open(packages,'rb').read()).hexdigest()
-	sha256sumgz=hashlib.sha256(open(packages,'rb').read()).hexdigest()
-	sizegz=os.path.getsize(packages)
-	releasef=os.path.join(REPODIR,"Release")
+#	packagesgz=os.path.join(REPODIR,"Packages.gz")
+#	md5sumgz=hashlib.md5(open(packages,'rb').read()).hexdigest()
+#	sha1sumgz=hashlib.sha1(open(packages,'rb').read()).hexdigest()
+#	sha256sumgz=hashlib.sha256(open(packages,'rb').read()).hexdigest()
+#	sizegz=os.path.getsize(packages)
 #	rmd5sum=hashlib.md5(open(releasef,'rb').read()).hexdigest()
 #	rsha1sum=hashlib.sha1(open(releasef,'rb').read()).hexdigest()
 #	rsha256sum=hashlib.sha256(open(releasef,'rb').read()).hexdigest()
@@ -345,17 +349,17 @@ def generateReleaseFile(release,version,releasedate):
 	fcontent.append("Description: Lliurex Release Packages")
 	fcontent.append("MD5Sum:")
 	fcontent.append("{0} {1} Packages".format(md5sum,size))
-	fcontent.append("{0} {1} Packages.gz".format(md5sumgz,sizegz))
+#	fcontent.append("{0} {1} Packages.gz".format(md5sumgz,sizegz))
 #	fcontent.append("{0} {1} Release".format(rmd5sum,rsize))
 #	fcontent.append("{0} {1} InRelease".format(imd5sum,isize))
 	fcontent.append("SHA1:")
 	fcontent.append("{0} {1} Packages".format(sha1sum,size))
-	fcontent.append("{0} {1} Packages".format(sha1sumgz,sizegz))
+#	fcontent.append("{0} {1} Packages".format(sha1sumgz,sizegz))
 #	fcontent.append("{0} {1} Release".format(rsha1sum,rsize))
 #	fcontent.append("{0} {1} InRelease".format(isha1sum,isize))
 	fcontent.append("SHA256:")
 	fcontent.append("{0} {1} Packages".format(sha256sum,size))
-	fcontent.append("{0} {1} Packages.gz".format(sha256sumgz,sizegz))
+#	fcontent.append("{0} {1} Packages.gz".format(sha256sumgz,sizegz))
 #	fcontent.append("{0} {1} Release".format(rsha256sum,rsize))
 #	fcontent.append("{0} {1} InRelease".format(isha256sum,isize))
 	with open(releasef,"w") as f:

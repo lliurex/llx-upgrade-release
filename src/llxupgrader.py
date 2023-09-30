@@ -311,7 +311,6 @@ def generateLocalRepo():
 				line=out.split(" ")
 				out=" ".join([line[0],"./{}".format(os.path.basename(line[1]))])
 			f.write("{}\n".format(out))
-	subprocess.run(cmd)
 #def generateLocalRepo
 
 def generateReleaseFile(release,version,releasedate):

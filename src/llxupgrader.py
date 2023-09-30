@@ -11,6 +11,8 @@ import gettext
 _ = gettext.gettext
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"
+if os.path.isdir(TMPDIR)==False:
+	os.makedirs(TMPDIR)
 TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 REPODIR="/usr/share/llx-upgrade-release/repo"

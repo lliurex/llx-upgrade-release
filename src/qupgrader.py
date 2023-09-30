@@ -36,15 +36,17 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
-		if self.path.endswith("Release"):
-			if "jammy-updates" in self.path:
-				with open("/usr/share/llx-upgrade-release/files/InRelease_up","rb") as file:
-					self.wfile.write(file.read())
-			if "jammy-security" in self.path:
-				with open("/usr/share/llx-upgrade-release/files/InRelease_se","rb") as file:
-					self.wfile.write(file.read())
-			else:
-				with open("/usr/share/llx-upgrade-release/files/InRelease","rb") as file:
+		wkrfile="/usr/share/llx-upgrade-release/files/Release"
+		if os.path.isfile(wrkfile)==True:
+			if self.path.endswith("Release"):
+			#	if "jammy-updates" in self.path:
+			#		with open("{}_up".format(wrkfile),"rb") as file:
+			#			self.wfile.write(file.read())
+			#	if "jammy-security" in self.path:
+			#		with open("{}_se".format(wrkfile),"rb") as file:
+			#			self.wfile.write(file.read())
+			#	else:
+				with open(wrkfile,"rb") as file:
 					self.wfile.write(file.read())
 	#def do_GET
 
@@ -64,9 +66,9 @@ class QServer(QThread):
 	#def run(self):
 #class QServer
 
-class bkgFixer(QWidget):
+class qupgrader(QWidget):
 	def __init__(self,parent=None):
-		super (bkgFixer,self).__init__(parent)
+		super (qupgrader,self).__init__(parent)
 		#self.setWindowFlags(Qt.FramelessWindowHint)
 		self.setWindowFlags(Qt.X11BypassWindowManagerHint)
 		self.setWindowState(Qt.WindowFullScreen)
@@ -292,12 +294,12 @@ class bkgFixer(QWidget):
 	def _endErrorMode(self):
 		pass
 
-#def bkgFixer(self):
+#def qupgrader(self):
 		
 
 app=QApplication(["Llx-Upgrader"])
 if __name__=="__main__":
-	fixer=bkgFixer()
+	fixer=qupgrader()
 	fixer.renderBkg()
 	fixer.doFixes()
 app.exec_()

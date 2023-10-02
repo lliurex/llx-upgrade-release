@@ -33,7 +33,10 @@ class thProgress(QThread):
 		repodir="/usr/share/llx-upgrade-release/repo"
 		for f in os.listdir(repodir):
 			if f.endswith("deb"):
-				os.unlink(os.path.join(repodir,f))
+				try:
+					os.unlink(os.path.join(repodir,f))
+				except:
+					pass
 		while val<self.prgValue:
 			val=len(os.listdir(repodir))
 			if val>=self.prgValue+1:

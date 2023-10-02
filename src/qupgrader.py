@@ -1,12 +1,23 @@
 #!/usr/bin/python3
 
-import os,subprocess,shutil
+import os,subprocess,shutil,time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout
 from PySide2 import QtGui
 from PySide2.QtCore import Qt,QThread,QObject,Signal
 import llxupgrader
 from lliurex import lliurexup
+
+class Watchdog(QThread):
+	def __init__(self,parent=None):
+		super (Watchdog,self).__init__(parent)
+		self.file="/var/run/lliurex-up/sourceslist/default"
+
+	def run(self):
+		while os.path.isfile(self.file)==False:
+			time.sleep(0.1)
+		shutil.copy("/etc/apt/sources.list",self.file)
+#class Watchdog
 
 class Launcher(QThread):
 	processEnd=Signal(str,subprocess.CompletedProcess)
@@ -50,6 +61,7 @@ class Server(BaseHTTPRequestHandler):
 				with open(wrkfile,"rb") as file:
 					self.wfile.write(file.read())
 	#def do_GET
+#class Server
 
 class QServer(QThread):
 	def __init__(self,parent=None):
@@ -102,6 +114,7 @@ class qupgrader(QWidget):
 	def closeEvent(self,event):
 		if self.noreturn==1:
 			event.ignore()
+	#def closeEvent
 
 	def doFixes(self):
 		self.fixAptSources()
@@ -113,6 +126,10 @@ class qupgrader(QWidget):
 		self.processDict[cmd]=ln
 		self.fakeLliurexNet()
 		self.launchLlxUp()
+
+		wd=Watchdog()
+		wd.start()
+		self.processDict["wd"]=wd
 		self.disableSystemdServices()
 	#def doFixes
 
@@ -125,6 +142,7 @@ class qupgrader(QWidget):
 			f.write("\n")
 		ln.start()
 		self.processDict[cmd]=ln
+	#def launchLlxUp
 
 	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"

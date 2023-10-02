@@ -152,6 +152,8 @@ class qupgrader(QWidget):
 			os.unlink(llxup_sources)
 		fcontent=[]
 		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./\n")
+		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-updates/ ./\n")
+		fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-security/ ./\n")
 		#with open(sources,"r") as f:
 		#	for line in f.readlines():
 		#		if "file:" in line:

@@ -283,14 +283,15 @@ def _modifyAptConf():
 		f.write("Dir::Cache{{Archives {0}}}\nDir::Cache::Archives {0};".format(REPODIR))
 #def _modifyAptConf
 
-def setLocalRepo():
+def setLocalRepo(release="jammy"):
 	sources="/etc/apt/sources.list"
 	tmpsources=os.path.join(TMPDIR,".sources.list")
+	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	with open(tmpsources,"w") as f:
-		f.write("deb [trusted=yes] file:{} ./\n".format(REPODIR))
+		for dist in dists:
+			repo="{}{}".format(REPODIR,dist.replace(release,""))
+			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
 	shutil.copy(tmpsources,sources)
-	#cmd=["mount",tmpsources,sources,"--bind"]
-	#subprocess.run(cmd)
 	_deleteAptLists()
 #def setLocalRepo
 
@@ -306,20 +307,30 @@ def downloadPackages():
 	_modifyAptConf()
 	clean()
 	cmd=["apt-get","dist-upgrade","-d","-y"]
+	cmd=["echo","hola"]
 	subprocess.run(cmd)
 #def downloadPackages
 
-def generateLocalRepo():
-	packagesf=downloadFile("http://lliurex.net/jammy/dists/jammy/main/binary-amd64/Packages")
-	with open(packagesf,"r") as f:
-		fcontent=f.read()
-	line=""
-	with open(os.path.join(REPODIR,"Packages"),"w") as f:
-		for fline in fcontent.split("\n"):
-			if fline.startswith("Filename:"):
-				line=fline.split(" ")
-				fline=" ".join([line[0],"./{}".format(os.path.basename(line[1]))])
-			f.write("{}\n".format(fline))
+def generateLocalRepo(release="jammy"):
+	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
+	for dist in dists:
+		packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/main/binary-amd64/Packages".format(release,dist))
+		with open(packagesf,"r") as f:
+			fcontent=f.read()
+		line=""
+		repo="{}{}".format(REPODIR,dist.replace(release,""))
+		if repo!=REPODIR:
+			path="../repo/"
+		else:
+			path="./"
+		if os.path.isdir(repo)==False:
+			os.makedirs(repo)
+		with open(os.path.join(repo,"Packages"),"w") as f:
+			for fline in fcontent.split("\n"):
+				if fline.startswith("Filename:"):
+					line=fline.split(" ")
+					fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
+				f.write("{}\n".format(fline))
 	#cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
 	#cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 #def generateLocalRepo

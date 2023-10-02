@@ -129,7 +129,7 @@ def prepareFiles(metadata):
 def _generateDemoteScript():
 	if os.path.isfile("{}/demote.cfg".format(TMPDIR))==True:
 		demote=[]
-		fcontent=]
+		fcontent=[]
 		with open("{}/demote.cfg".format(TMPDIR),"r") as f:
 			for line in f.readlines():
 				if len(line.strip())>0:

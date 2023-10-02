@@ -12,9 +12,12 @@ _ = gettext.gettext
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"
 if os.path.isdir(TMPDIR)==False:
+	if os.path.exists(TMPDIR)==True:
+		os.unlink(TMPDIR)
 	os.makedirs(TMPDIR)
 TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
+DATADIR="/usr/share/llx-upgrade-release/files"
 REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
@@ -245,18 +248,18 @@ def disableRepos():
 #def disableRepos
 
 def downloadFile(url):
-	meta=os.path.basename(url)
-	meta=os.path.join(TMPDIR,meta)
+	f=os.path.basename(url)
+	f=os.path.join(TMPDIR,f)
 	if os.path.isdir(TMPDIR)==False:
 		os.makedirs(TMPDIR)
-	if os.path.isfile(meta):
-		os.unlink(meta)
+	if os.path.isfile(f):
+		os.unlink(f)
 	try:
-		urlretrieve(url, meta)
+		urlretrieve(url, f)
 	except Exception as e:
 		print(url)
 		print(e)
-	return(meta)
+	return(f)
 #def downloadFile
 
 def copySystemFiles():
@@ -304,67 +307,27 @@ def downloadPackages():
 #def downloadPackages
 
 def generateLocalRepo():
-	cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
-	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	packagesf=downloadFile("http://lliurex.net/jammy/dists/jammy/main/binary-amd64/Packages")
+	with open(packagesf,"r") as f:
+		fcontent=f.read()
 	line=""
 	with open(os.path.join(REPODIR,"Packages"),"w") as f:
-		for out in cmdOutput.split("\n"):
-			if out.startswith("Filename:"):
-				line=out.split(" ")
-				out=" ".join([line[0],"./{}".format(os.path.basename(line[1]))])
-			f.write("{}\n".format(out))
+		for fline in fcontent.split("\n"):
+			if fline.startswith("Filename:"):
+				line=fline.split(" ")
+				fline=" ".join([line[0],"./{}".format(os.path.basename(line[1]))])
+			f.write("{}\n".format(fline))
+	#cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
+	#cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 #def generateLocalRepo
 
-def generateReleaseFile(release,version,releasedate):
+def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):
+	releasef=downloadFile("http://lliurex.net/{0}/dists/{0}/main/binary-amd64/Release".format(release))
+	releasePath=os.path.join(DATADIR,"Release")
+	if os.path.isfile(releasePath):
+		os.unlink(releasePath)
+	shutil.copy(releasef,releasePath)
 	return
-	#DEPRECATED
-	releasedate="Wed, 27 Sep 2023 15:32:39 UTC"
-	releasef=os.path.join(REPODIR,"Release")
-	packages=os.path.join(REPODIR,"Packages")
-	md5sum=hashlib.md5(open(packages,'rb').read()).hexdigest()
-	sha1sum=hashlib.sha1(open(packages,'rb').read()).hexdigest()
-	sha256sum=hashlib.sha256(open(packages,'rb').read()).hexdigest()
-	size=os.path.getsize(packages)
-#	packagesgz=os.path.join(REPODIR,"Packages.gz")
-#	md5sumgz=hashlib.md5(open(packages,'rb').read()).hexdigest()
-#	sha1sumgz=hashlib.sha1(open(packages,'rb').read()).hexdigest()
-#	sha256sumgz=hashlib.sha256(open(packages,'rb').read()).hexdigest()
-#	sizegz=os.path.getsize(packages)
-#	rmd5sum=hashlib.md5(open(releasef,'rb').read()).hexdigest()
-#	rsha1sum=hashlib.sha1(open(releasef,'rb').read()).hexdigest()
-#	rsha256sum=hashlib.sha256(open(releasef,'rb').read()).hexdigest()
-#	rsize=os.path.getsize(releasef)
-#	inrelease=os.path.join(REPODIR,"InRelease")
-#	imd5sum=hashlib.md5(open(inrelease,'rb').read()).hexdigest()
-#	isha1sum=hashlib.sha1(open(inrelease,'rb').read()).hexdigest()
-#	isha256sum=hashlib.sha256(open(inrelease,'rb').read()).hexdigest()
-#	isize=os.path.getsize(inrelease)
-	fcontent=[]
-	fcontent.append("Origin: LliureX")
-	fcontent.append("Label: LliureX")
-	fcontent.append("codename: {}".format(release))
-	fcontent.append("Version: {}".format(version))
-	fcontent.append("Date: {}".format(releasedate))
-	fcontent.append("Architecture: i386 amd64")
-	fcontent.append("Components: main")
-	fcontent.append("Description: Lliurex Release Packages")
-	fcontent.append("MD5Sum:")
-	fcontent.append("{0} {1} Packages".format(md5sum,size))
-#	fcontent.append("{0} {1} Packages.gz".format(md5sumgz,sizegz))
-#	fcontent.append("{0} {1} Release".format(rmd5sum,rsize))
-#	fcontent.append("{0} {1} InRelease".format(imd5sum,isize))
-	fcontent.append("SHA1:")
-	fcontent.append("{0} {1} Packages".format(sha1sum,size))
-#	fcontent.append("{0} {1} Packages".format(sha1sumgz,sizegz))
-#	fcontent.append("{0} {1} Release".format(rsha1sum,rsize))
-#	fcontent.append("{0} {1} InRelease".format(isha1sum,isize))
-	fcontent.append("SHA256:")
-	fcontent.append("{0} {1} Packages".format(sha256sum,size))
-#	fcontent.append("{0} {1} Packages.gz".format(sha256sumgz,sizegz))
-#	fcontent.append("{0} {1} Release".format(rsha256sum,rsize))
-#	fcontent.append("{0} {1} InRelease".format(isha256sum,isize))
-	with open(releasef,"w") as f:
-		f.write("\n".join(fcontent))
 #def _generateReleaseFile
 
 def upgradeLlxUp(metadata):

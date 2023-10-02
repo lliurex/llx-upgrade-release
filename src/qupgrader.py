@@ -26,6 +26,7 @@ class Launcher(QThread):
 	#def setCmd
 
 	def run(self):
+		print("Launching {}".format(self.cmd))
 		prc=subprocess.run(self.cmd,universal_newlines=self.universal_newlines,encoding=self.encoding,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		self.processEnd.emit(" ".join(self.cmd),prc)
 	#def run
@@ -36,9 +37,9 @@ class Server(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type","text/ascii")
 		self.end_headers()
-		wkrfile="/usr/share/llx-upgrade-release/files/Release"
+		wrkfile="/usr/share/llx-upgrade-release/files/Release"
 		if os.path.isfile(wrkfile)==True:
-			if self.path.endswith("Release"):
+			if os.path.basename(self.path)=="Release":
 			#	if "jammy-updates" in self.path:
 			#		with open("{}_up".format(wrkfile),"rb") as file:
 			#			self.wfile.write(file.read())
@@ -59,23 +60,28 @@ class QServer(QThread):
 	def run(self):
 		serverport=80
 		try:
+			print("SERVER READY")
 			web=HTTPServer((self.hostname,serverport),Server)
 			web.serve_forever()
 		except Exception as e:
+			print("***********")
 			print(e)
+			print("***********")
+		finally:
+			print("server closed")
 	#def run(self):
 #class QServer
 
 class qupgrader(QWidget):
 	def __init__(self,parent=None):
 		super (qupgrader,self).__init__(parent)
-		#self.setWindowFlags(Qt.FramelessWindowHint)
+		self.setWindowFlags(Qt.FramelessWindowHint)
 		self.setWindowFlags(Qt.X11BypassWindowManagerHint)
 		self.setWindowState(Qt.WindowFullScreen)
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
 		#self.setWindowModality(Qt.WindowModal)
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
-		self.wrkdir="/tmp/llx-upgrade-release"
+		self.wrkdir="/usr/share/llx-upgrade-release/tmp"
 		if os.path.isdir(self.wrkdir)==False:
 			os.makedirs(self.wrkdir)
 		self.lbl=QLabel()
@@ -100,20 +106,25 @@ class qupgrader(QWidget):
 	def doFixes(self):
 		self.fixAptSources()
 		ln=Launcher()
-		cmd="/usr/bin/kwin"
+		cmd="/usr/bin/kwin --replace"
 		ln.setCmd(cmd)
 		ln.processEnd.connect(self._processEnd)
 		ln.start()
 		self.processDict[cmd]=ln
-		fixer.fakeLliurexNet()
-		fixer.disableSystemdServices()
+		self.fakeLliurexNet()
+		self.launchLlxUp()
+		self.disableSystemdServices()
+	#def doFixes
+
+	def launchLlxUp(self):
 		cmd='/sbin/lliurex-up -u -s -n'
 		ln=Launcher()
 		ln.setCmd(cmd)
 		ln.processEnd.connect(self._processEnd)
+		with open("/etc/hosts","a") as f:
+			f.write("\n")
 		ln.start()
 		self.processDict[cmd]=ln
-	#def doFixes
 
 	def fixAptSources(self):
 		llxup_sources="/etc/apt/lliurexup_sources.list"
@@ -133,6 +144,7 @@ class qupgrader(QWidget):
 		with open (tmpsources,"w") as f:
 			f.writelines(fcontent)
 		shutil.copy(tmpsources,sources)
+		shutil.copy(tmpsources,llxup_sources)
 	#def fixAptsources
 
 	def fakeLliurexNet(self):
@@ -140,6 +152,7 @@ class qupgrader(QWidget):
 		self._modHosts()
 		self._modHttpd()
 		self._disableMirror()
+		print("LAUNCH")
 		self.qserver.start()
 	#def fakeLliurexNet
 
@@ -169,18 +182,18 @@ class qupgrader(QWidget):
 	def _modHosts(self):
 		fcontent=[]
 		tmphosts=os.path.join(self.wrkdir,"hosts")
-		with open("/etc/hosts","r") as f:
+		hosts="/etc/hosts"
+		with open(hosts,"r") as f:
 			for line in f.readlines():
-				if "localhost" in line:
-					line=line.replace("localhost","localhost lliurex.net")
-					fcontent.append("127.0.0.2 lliurex.net\n")
+				if "localhost" in line and "lliurex.net" not in line:
+					line=line.replace("localhost","localhost lliurex.net",1)
 				fcontent.append(line)
 
-		with open(tmphosts,"w") as f:
+		with open(hosts,"w") as f:
 			f.writelines(fcontent)
 			f.write("\n")
-		cmd=["mount",tmphosts,"/etc/hosts","--bind"]
-		subprocess.run(cmd)
+		#cmd=["mount",tmphosts,"/etc/hosts","--bind"]
+		#subprocess.run(cmd)
 	#def _modHosts(self):
 
 	def _modHttpd(self):
@@ -197,9 +210,14 @@ class qupgrader(QWidget):
 					f.writelines(fcontent)
 					f.write("\n")
 				cmd=["mount",tmpfilen,filen,"--bind"]
-				subprocess.run(cmd)
+				print("CMD: {}".format(" ".join(cmd)))
+				try:
+					subprocess.run(cmd)
+				except Exception as e:
+					print (e)
 		cmd=["service","apache2","restart"]
 		subprocess.run(cmd)
+		print(cmd)
 	#def _modHttpd(self)
 
 	def _disableMirror(self):
@@ -226,13 +244,14 @@ class qupgrader(QWidget):
 			if prcdata.returncode==0:
 				if len(llxupgrader.getPkgsToUpdate())==0:
 					err=False
-					self._undoFixes()
-					self.showEnd()
 			if err==True:
 				if prcdata.returncode!=0:
 					self._relaunchLlxUp()
 				else:
 					self._errorMode()
+			else:
+				self._undoFixes()
+				self.showEnd()
 		print("END")
 	#def _processEnd
 
@@ -258,10 +277,24 @@ class qupgrader(QWidget):
 	def _undoFixes(self):
 		self.unfixAptSources()
 		self.removeAptConf()
+		self.undoHostsMod()
 		llxupgrader.clean()
 		llxupgrader.unsetSystemdUpgradeTarget()
 		llxupgrader.cleanLlxUpActions()
 	#def _undoFixes()
+
+	def undoHostsMod(self):
+		hosts="/etc/hosts"
+		fcontent=[]
+		with open(hosts,"r") as f:
+			for line in f.readlines():
+				if "localhost" in line and " lliurex.net" in line:
+					line=line.replace(" lliurex.net","")
+				fcontent.append(line)
+		with open(hosts,"w") as f:
+			f.writelines(fcontent)
+			f.write("\n")
+	#def undoHostsMod
 
 	def unfixAptSources(self):
 		sources="/etc/apt/sources.list"
@@ -272,6 +305,7 @@ class qupgrader(QWidget):
 		subprocess.run(cmd)
 		if os.path.isfile(llxup_sources):
 			os.unlink(llxup_sources)
+		os.copy(sources,llxup_sources)
 	#def unfixAptsources
 
 	def removeAptConf(self):
@@ -300,8 +334,8 @@ class qupgrader(QWidget):
 
 app=QApplication(["Llx-Upgrader"])
 if __name__=="__main__":
-	fixer=qupgrader()
-	fixer.renderBkg()
-	fixer.doFixes()
+	qup=qupgrader()
+	qup.renderBkg()
+	qup.doFixes()
 app.exec_()
 

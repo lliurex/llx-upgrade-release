@@ -307,7 +307,6 @@ def downloadPackages():
 	_modifyAptConf()
 	clean()
 	cmd=["apt-get","dist-upgrade","-d","-y"]
-	cmd=["echo","hola"]
 	subprocess.run(cmd)
 #def downloadPackages
 

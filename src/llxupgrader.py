@@ -287,7 +287,7 @@ def setLocalRepo():
 	sources="/etc/apt/sources.list"
 	tmpsources=os.path.join(TMPDIR,".sources.list")
 	with open(tmpsources,"w") as f:
-		f.write("deb [trusted=yes] file:{} ./".format(REPODIR))
+		f.write("deb [trusted=yes] file:{} ./\n".format(REPODIR))
 	shutil.copy(tmpsources,sources)
 	#cmd=["mount",tmpsources,sources,"--bind"]
 	#subprocess.run(cmd)

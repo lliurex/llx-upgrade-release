@@ -129,6 +129,7 @@ def prepareFiles(metadata):
 def _generateDemoteScript():
 	if os.path.isfile("{}/demote.cfg".format(TMPDIR))==True:
 		demote=[]
+		fcontent=]
 		with open("{}/demote.cfg".format(TMPDIR),"r") as f:
 			for line in f.readlines():
 				if len(line.strip())>0:
@@ -142,9 +143,11 @@ def _generateDemoteScript():
 			fcontent+="apt-get install -f -y\n"
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
-		with open(LLXUP_PRESCRIPT,"w") as f:
-			f.write(fcontent)
-		os.chmod(LLXUP_PRESCRIPT,0o755)
+
+		if len(fcontent)>0:
+			with open(LLXUP_PRESCRIPT,"w") as f:
+				f.write(fcontent)
+			os.chmod(LLXUP_PRESCRIPT,0o755)
 #def _generateDemoteScript
 
 def _generatePostInstallScript():

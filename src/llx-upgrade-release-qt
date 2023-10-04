@@ -298,9 +298,6 @@ class upgraderGui(QWidget):
 			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
 			lbl_info.btn_ok.setVisible(True)
 			lbl_info.btn_ko.clicked.connect(self._close)
-		bitem=self.lst_Steps.item(0)
-		wdg=self.lst_Steps.itemWidget(bitem)
-		wdg.prg.setFinish()
 		cursor=QtGui.QCursor(Qt.PointingHandCursor)
 		self.setCursor(cursor)
 		self._updatePrg(self.packagesToUpdate+1)
@@ -401,6 +398,9 @@ class upgraderGui(QWidget):
 	#def beginUpgrade
 
 	def _endDownload(self):
+		bitem=self.lst_Steps.item(0)
+		wdg=self.lst_Steps.itemWidget(bitem)
+		wdg.prg.setFinish()
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
 		lbl_info.setText(llxupgrader.i18n("SETTINGUP"))

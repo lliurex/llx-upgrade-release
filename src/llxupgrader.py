@@ -333,6 +333,7 @@ def downloadPackages(pkgs):
 	for pkg in pkgs:
 		cmd=["apt-get","install","-y","-d",pkg]
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
+		print("Get: {}".format(pkg))
 		if prc.returncode!=0:
 			print(prc)
 			try:

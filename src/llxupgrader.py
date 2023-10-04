@@ -111,7 +111,6 @@ def chkReleaseAvailable(metadata):
 #def chkReleaseAvailable
 
 def upgradeCurrentState():
-	#check state of current release
 	clean()
 	return(getPkgsToUpdate())
 #def upgradeCurrentState
@@ -340,7 +339,7 @@ def downloadPackages(pkgs):
 				f=open(repoerr,"r")
 				old=f.read().strip()
 				f.close()
-				new=int(old+1)
+				new=int(old)+1
 				f=open(repoerr,"w")
 				f.write(str(new))
 				f.close()
@@ -376,26 +375,28 @@ def _getMetaDepends():
 
 def generateLocalRepo(release="jammy"):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
+	components=["main","universe","multiverse"]
 	for dist in dists:
-		packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/main/binary-amd64/Packages".format(release,dist))
-		with open(packagesf,"r") as f:
-			fcontent=f.read()
-		line=""
 		repo="{}{}".format(REPODIR,dist.replace(release,""))
-		if repo!=REPODIR:
-			path="../repo/"
-		else:
-			path="./"
-		if os.path.isdir(repo)==False:
-			os.makedirs(repo)
-		with open(os.path.join(repo,"Packages"),"w") as f:
-			for fline in fcontent.split("\n"):
-				if fline.startswith("Filename:"):
-					line=fline.split(" ")
-					fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
-				f.write("{}\n".format(fline))
-	#cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
-	#cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+		f=open(os.path.join(repo,"Packages"),"w")
+		f.close()
+		for component in components:
+			packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/{2}/binary-amd64/Packages".format(release,dist,component))
+			with open(packagesf,"r") as f:
+				fcontent=f.read()
+			line=""
+			if repo!=REPODIR:
+				path="../repo/"
+			else:
+				path="./"
+			if os.path.isdir(repo)==False:
+				os.makedirs(repo)
+			with open(os.path.join(repo,"Packages"),"a") as f:
+				for fline in fcontent.split("\n"):
+					if fline.startswith("Filename:"):
+						line=fline.split(" ")
+						fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
+					f.write("{}\n".format(fline))
 #def generateLocalRepo
 
 def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):

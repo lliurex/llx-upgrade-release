@@ -1,4 +1,4 @@
-#!/usr/bin/python3:
+#!/usr/bin/python3
 import os,sys, tempfile, shutil
 import tarfile
 import hashlib
@@ -22,6 +22,7 @@ REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
+META_RDEPENDS=os.path.join(TMPDIR,"pkgs.list")
 
 def i18n(raw):
 	imsg=({
@@ -41,7 +42,7 @@ def i18n(raw):
 		"END":_("System will go to upgrade mode. Don't poweroff the system."),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
+		"LASTCHANCE":_("This is the last chance for aborting.<br>Don't poweroff the computer nor interrupt the upgrade in any way."),
 		"NOAVAILABLE":_("There're no upgrades available"),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
@@ -110,7 +111,6 @@ def chkReleaseAvailable(metadata):
 #def chkReleaseAvailable
 
 def upgradeCurrentState():
-	#check state of current release
 	clean()
 	return(getPkgsToUpdate())
 #def upgradeCurrentState
@@ -120,6 +120,25 @@ def getPkgsToUpdate():
 	update=llxup.getPackagesToUpdate()
 	return(update)
 #def getPkgsToUpdate():
+
+def getAllPackages():
+	llxupPkgs=getPkgsToUpdate()
+	tmp=[]
+	for pkg,data in llxupPkgs.items():
+		tmp.append(pkg)
+	_getMetaDepends()
+	if os.path.isfile(META_RDEPENDS):
+		with open(META_RDEPENDS,"r") as f:
+			tmp.extend(f.read().split("\n"))
+		tmp.extend(_getInstalledPkgs())
+	pkgset=set(tmp)
+	pkgs=[]
+	for pkg in pkgset:
+		if len(pkg.strip().replace("\n",""))>0:
+			pkgs.append(pkg.strip().replace("\n",""))
+	return(pkgs)
+#def getAllPackages
+
 
 def prepareFiles(metadata):
 	tools=downloadFile(metadata["UpgradeTool"].replace("UpgradeTool: ",""))
@@ -303,35 +322,101 @@ def _deleteAptLists():
 			os.unlink(dest)
 #def _deleteAptLists
 
-def downloadPackages():
+def downloadPackages(pkgs):
 	_modifyAptConf()
 	clean()
-	cmd=["apt-get","dist-upgrade","-d","-y"]
+	#_getMetaDepends()
+	#pkgs=llxup.getPackagesToUpdate()
+	cmd=["apt-get","dist-upgrade","-y","-d"]
 	subprocess.run(cmd)
+	repoerr="/usr/share/llx-upgrade-release/err"
+	f=open(repoerr,"w")
+	f.close()
+	for pkg in pkgs:
+		cmd=["apt-get","install","-y","-d","--reinstall",pkg]
+		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
+		print("Get: {}".format(pkg))
+		if prc.returncode!=0:
+			print("Err: {})".format(pkg))
+		try:
+			f=open(repoerr,"r")
+			old=f.read().strip()
+			f.close()
+			new=int(old)+1
+			f=open(repoerr,"w")
+			f.write(str(new))
+			f.close()
+		except:
+			pass
 #def downloadPackages
+
+def _getMetaDepends():
+	cmd=["lliurex-version","--history"]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	metas=[]
+	first=""
+	for out in cmdOutput.split("\n"):
+		line=out.replace("\t","").split(" ")
+		if len(line[0])==0:
+			line.pop(0)
+		pkg=line[1]
+		if "live" in pkg:
+			continue
+		cmd=["dpkg","-l",pkg]
+		state=subprocess.run(cmd)
+		if state.returncode==0:
+			metas.append(pkg)
+		if first=="":
+			first=pkg
+	if len(metas)==0:
+		metas.append(pkg)
+	#cmd=["apt-get","update"]
+	#subprocess.run(cmd)
+	for meta in metas:
+		cmd=["apt-cache","depends","--recurse","--no-recommends","--no-suggests","--no-conflicts","--no-breaks","--no-replaces","--no-enhances","--no-pre-depends",meta]
+		cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+		with open(META_RDEPENDS,"w") as f:
+			for line in cmdOutput.split("\n"):
+				if line[0].isalpha():
+					f.write("{}\n".format(line))
+#def _getMetaDepends
+
+def _getInstalledPkgs():
+	pkgs=[]
+	cmd=["dpkg","--get-selections"]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	for line in cmdOutput.split("\n"):
+			data=line.split()
+			pkgs.append(data[0])
+	return(pkgs)
+#def _getInstalledPkgs
 
 def generateLocalRepo(release="jammy"):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
+	components=["main","universe","multiverse"]
 	for dist in dists:
-		packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/main/binary-amd64/Packages".format(release,dist))
-		with open(packagesf,"r") as f:
-			fcontent=f.read()
-		line=""
 		repo="{}{}".format(REPODIR,dist.replace(release,""))
-		if repo!=REPODIR:
-			path="../repo/"
-		else:
-			path="./"
 		if os.path.isdir(repo)==False:
 			os.makedirs(repo)
-		with open(os.path.join(repo,"Packages"),"w") as f:
-			for fline in fcontent.split("\n"):
-				if fline.startswith("Filename:"):
-					line=fline.split(" ")
-					fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
-				f.write("{}\n".format(fline))
-	#cmd=["dpkg-scanpackages",REPODIR,"/dev/null"]
-	#cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+		f=open(os.path.join(repo,"Packages"),"w")
+		f.close()
+		for component in components:
+			packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/{2}/binary-amd64/Packages".format(release,dist,component))
+			with open(packagesf,"r") as f:
+				fcontent=f.read()
+			if repo!=REPODIR:
+				path="../repo/"
+			else:
+				path="./"
+			if os.path.isdir(repo)==False:
+				os.makedirs(repo)
+			line=[]
+			with open(os.path.join(repo,"Packages"),"a") as f:
+				for fline in fcontent.split("\n"):
+					if fline.startswith("Filename:"):
+						line=fline.split(" ")
+						fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
+					f.write("{}\n".format(fline))
 #def generateLocalRepo
 
 def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):

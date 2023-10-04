@@ -1,4 +1,4 @@
-#!/usr/bin/python3:
+#!/usr/bin/python3
 import os,sys, tempfile, shutil
 import tarfile
 import hashlib
@@ -126,6 +126,7 @@ def getAllPackages():
 	pkgs=[]
 	for pkg,data in llxupPkgs.items():
 		pkgs.append(pkg)
+	_getMetaDepends()
 	if os.path.isfile(META_RDEPENDS):
 		with open(META_RDEPENDS,"r") as f:
 			pkgs.extend(f.read().split("\n"))
@@ -331,21 +332,21 @@ def downloadPackages(pkgs):
 	f=open(repoerr,"w")
 	f.close()
 	for pkg in pkgs:
-		cmd=["apt-get","install","-y","-d",pkg]
+		cmd=["apt-get","install","-y","-d","--reinstall",pkg]
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 		print("Get: {}".format(pkg))
 		if prc.returncode!=0:
-			print(prc)
-			try:
-				f=open(repoerr,"r")
-				old=f.read().strip()
-				f.close()
-				new=int(old)+1
-				f=open(repoerr,"w")
-				f.write(str(new))
-				f.close()
-			except:
-				pass
+		    print("Err: {})".format(pkg))
+		try:
+			f=open(repoerr,"r")
+			old=f.read().strip()
+			f.close()
+			new=int(old)+1
+			f=open(repoerr,"w")
+			f.write(str(new))
+			f.close()
+		except:
+			pass
 #def downloadPackages
 
 def _getMetaDepends():
@@ -354,8 +355,12 @@ def _getMetaDepends():
 	metas=[]
 	first=""
 	for out in cmdOutput.split("\n"):
-		line=out.split(" ")
+		line=out.replace("\t","").split(" ")
+		if len(line[0])==0:
+			line.pop(0)
 		pkg=line[1]
+		if "live" in pkg:
+			continue
 		cmd=["dpkg","-l",pkg]
 		state=subprocess.run(cmd)
 		if state.returncode==0:
@@ -364,6 +369,8 @@ def _getMetaDepends():
 			first=pkg
 	if len(metas)==0:
 		metas.append(pkg)
+	#cmd=["apt-get","update"]
+	#subprocess.run(cmd)
 	for meta in metas:
 		cmd=["apt-cache","depends","--recurse","--no-recommends","--no-suggests","--no-conflicts","--no-breaks","--no-replaces","--no-enhances","--no-pre-depends",meta]
 		cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
@@ -379,19 +386,21 @@ def generateLocalRepo(release="jammy"):
 	components=["main","universe","multiverse"]
 	for dist in dists:
 		repo="{}{}".format(REPODIR,dist.replace(release,""))
+		if os.path.isdir(repo)==False:
+			os.makedirs(repo)
 		f=open(os.path.join(repo,"Packages"),"w")
 		f.close()
 		for component in components:
 			packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/{2}/binary-amd64/Packages".format(release,dist,component))
 			with open(packagesf,"r") as f:
 				fcontent=f.read()
-			line=""
 			if repo!=REPODIR:
 				path="../repo/"
 			else:
 				path="./"
 			if os.path.isdir(repo)==False:
 				os.makedirs(repo)
+			line=[]
 			with open(os.path.join(repo,"Packages"),"a") as f:
 				for fline in fcontent.split("\n"):
 					if fline.startswith("Filename:"):

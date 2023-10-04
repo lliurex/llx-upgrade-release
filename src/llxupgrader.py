@@ -123,14 +123,15 @@ def getPkgsToUpdate():
 
 def getAllPackages():
 	llxupPkgs=getPkgsToUpdate()
-	pkgs=[]
+	tmp=[]
 	for pkg,data in llxupPkgs.items():
-		pkgs.append(pkg)
+		tmp.append(pkg)
 	_getMetaDepends()
 	if os.path.isfile(META_RDEPENDS):
 		with open(META_RDEPENDS,"r") as f:
-			pkgs.extend(f.read().split("\n"))
-	pkgset=set(pkgs)
+			tmp.extend(f.read().split("\n"))
+		tmp.extend(_getInstalledPkgs())
+	pkgset=set(tmp)
 	pkgs=[]
 	for pkg in pkgset:
 		if len(pkg.strip().replace("\n",""))>0:
@@ -336,7 +337,7 @@ def downloadPackages(pkgs):
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 		print("Get: {}".format(pkg))
 		if prc.returncode!=0:
-		    print("Err: {})".format(pkg))
+			print("Err: {})".format(pkg))
 		try:
 			f=open(repoerr,"r")
 			old=f.read().strip()
@@ -380,6 +381,15 @@ def _getMetaDepends():
 					f.write("{}\n".format(line))
 #def _getMetaDepends
 
+def _getInstalledPkgs():
+	pkgs=[]
+	cmd=["dpkg","--get-selections"]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	for line in cmdOutput.split("\n"):
+			data=line.split()
+			pkgs.append(data[0])
+	return(pkgs)
+#def _getInstalledPkgs
 
 def generateLocalRepo(release="jammy"):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]

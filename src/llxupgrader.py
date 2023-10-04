@@ -130,7 +130,7 @@ def getAllPackages():
 	if os.path.isfile(META_RDEPENDS):
 		with open(META_RDEPENDS,"r") as f:
 			tmp.extend(f.read().split("\n"))
-		tmp.extend(_getInstalledPkgs())
+	tmp.extend(_getInstalledPkgs())
 	pkgset=set(tmp)
 	pkgs=[]
 	for pkg in pkgset:
@@ -138,7 +138,6 @@ def getAllPackages():
 			pkgs.append(pkg.strip().replace("\n",""))
 	return(pkgs)
 #def getAllPackages
-
 
 def prepareFiles(metadata):
 	tools=downloadFile(metadata["UpgradeTool"].replace("UpgradeTool: ",""))
@@ -337,17 +336,24 @@ def downloadPackages(pkgs):
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 		print("Get: {}".format(pkg))
 		if prc.returncode!=0:
-			print("Err: {})".format(pkg))
-		try:
-			f=open(repoerr,"r")
-			old=f.read().strip()
-			f.close()
-			new=int(old)+1
-			f=open(repoerr,"w")
-			f.write(str(new))
-			f.close()
-		except:
-			pass
+			olddir=os.getcwd()
+			os.chdir(REPODIR)
+			print("Download: {})".format(pkg))
+			cmd=["apt-get","download",pkg]
+			prc=subprocess.run(cmd)
+			os.chdir(olddir)
+		#	try:
+		#		new=1
+		#		old=0
+		#		if os.path.isfile(repoerr):
+		#			with open(repoerr,"r") as f:
+		#				old=f.read().strip()
+		#				if old.isdigit()==True:
+		#					new=int(old)+1
+		#		with open(repoerr,"w") as f:
+		#			f.write(str(new))
+		#	except Exception as e:
+		#		print(e)
 #def downloadPackages
 
 def _getMetaDepends():
@@ -373,7 +379,7 @@ def _getMetaDepends():
 	#cmd=["apt-get","update"]
 	#subprocess.run(cmd)
 	for meta in metas:
-		cmd=["apt-cache","depends","--recurse","--no-recommends","--no-suggests","--no-conflicts","--no-breaks","--no-replaces","--no-enhances","--no-pre-depends",meta]
+		cmd=["apt-cache","depends","--recurse","--no-suggests",meta]
 		cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 		with open(META_RDEPENDS,"w") as f:
 			for line in cmdOutput.split("\n"):
@@ -386,8 +392,8 @@ def _getInstalledPkgs():
 	cmd=["dpkg","--get-selections"]
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 	for line in cmdOutput.split("\n"):
-			data=line.split()
-			pkgs.append(data[0])
+		data=line.split()
+		pkgs.append(data[0])
 	return(pkgs)
 #def _getInstalledPkgs
 

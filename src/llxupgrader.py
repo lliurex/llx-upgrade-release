@@ -22,6 +22,7 @@ REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
+META_RDEPENDS=os.path.join(TMPDIR,"pkgs.list")
 
 def i18n(raw):
 	imsg=({
@@ -41,7 +42,7 @@ def i18n(raw):
 		"END":_("System will go to upgrade mode. Don't poweroff the system."),
 		"EXTRACT":_("Extracting upgrade files.."),
 		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("This is the last chance for aborting. Don't poweroff the computer nor interrupt this process in any way."),
+		"LASTCHANCE":_("This is the last chance for aborting.<br>Don't poweroff the computer nor interrupt the upgrade in any way."),
 		"NOAVAILABLE":_("There're no upgrades available"),
 		"PENDING":_("There're updates available. Install them before continue."),
 		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
@@ -120,6 +121,23 @@ def getPkgsToUpdate():
 	update=llxup.getPackagesToUpdate()
 	return(update)
 #def getPkgsToUpdate():
+
+def getAllPackages():
+	llxupPkgs=getPkgsToUpdate()
+	pkgs=[]
+	for pkg,data in llxupPkgs.items():
+		pkgs.append(pkg)
+	if os.path.isfile(META_RDEPENDS):
+		with open(META_RDEPENDS,"r") as f:
+			pkgs.extend(f.read().split("\n"))
+	pkgset=set(pkgs)
+	pkgs=[]
+	for pkg in pkgset:
+		if len(pkg.strip().replace("\n",""))>0:
+			pkgs.append(pkg.strip().replace("\n",""))
+	return(pkgs)
+#def getAllPackages
+
 
 def prepareFiles(metadata):
 	tools=downloadFile(metadata["UpgradeTool"].replace("UpgradeTool: ",""))
@@ -303,12 +321,58 @@ def _deleteAptLists():
 			os.unlink(dest)
 #def _deleteAptLists
 
-def downloadPackages():
+def downloadPackages(pkgs):
 	_modifyAptConf()
 	clean()
-	cmd=["apt-get","dist-upgrade","-d","-y"]
+	#_getMetaDepends()
+	#pkgs=llxup.getPackagesToUpdate()
+	cmd=["apt-get","dist-upgrade","-y","-d"]
 	subprocess.run(cmd)
+	repoerr="/usr/share/llx-upgrade-release/err"
+	f=open(repoerr,"w")
+	f.close()
+	for pkg in pkgs:
+		cmd=["apt-get","install","-y","-d",pkg]
+		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
+		if prc.returncode!=0:
+			print(prc)
+			try:
+				f=open(repoerr,"r")
+				old=f.read().strip()
+				f.close()
+				new=int(old+1)
+				f=open(repoerr,"w")
+				f.write(str(new))
+				f.close()
+			except:
+				pass
 #def downloadPackages
+
+def _getMetaDepends():
+	cmd=["lliurex-version","--history"]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	metas=[]
+	first=""
+	for out in cmdOutput.split("\n"):
+		line=out.split(" ")
+		pkg=line[1]
+		cmd=["dpkg","-l",pkg]
+		state=subprocess.run(cmd)
+		if state.returncode==0:
+			metas.append(pkg)
+		if first=="":
+			first=pkg
+	if len(metas)==0:
+		metas.append(pkg)
+	for meta in metas:
+		cmd=["apt-cache","depends","--recurse","--no-recommends","--no-suggests","--no-conflicts","--no-breaks","--no-replaces","--no-enhances","--no-pre-depends",meta]
+		cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+		with open(META_RDEPENDS,"w") as f:
+			for line in cmdOutput.split("\n"):
+				if line[0].isalpha():
+					f.write("{}\n".format(line))
+#def _getMetaDepends
+
 
 def generateLocalRepo(release="jammy"):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]

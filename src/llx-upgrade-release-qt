@@ -42,9 +42,10 @@ class thProgress(QThread):
 		while val<self.prgValue:
 			if os.path.isfile(repoerr):
 				try:
-					f=open(repoerr,"r")
-					inc=f.read().strip()
-					f.close()
+					with open(repoerr,"r") as f:
+						errinc=f.read().strip()
+						if errinc.isdigit()==False:
+							errinc=0
 				except:
 					pass
 			val=len(os.listdir(repodir))+int(errinc)

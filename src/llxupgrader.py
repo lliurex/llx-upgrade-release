@@ -339,7 +339,8 @@ def downloadPackages(pkgs):
 			olddir=os.getcwd()
 			os.chdir(REPODIR)
 			print("Download: {})".format(pkg))
-			cmd=["apt-get","download",pkg]
+			pkglist=_getDepends(pkg)
+			cmd=["apt-get","download"," ".join(pkglist)]
 			prc=subprocess.run(cmd)
 			os.chdir(olddir)
 		#	try:
@@ -378,14 +379,25 @@ def _getMetaDepends():
 		metas.append(pkg)
 	#cmd=["apt-get","update"]
 	#subprocess.run(cmd)
+	metaDepends=[]
 	for meta in metas:
-		cmd=["apt-cache","depends","--recurse","--no-suggests",meta]
-		cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
-		with open(META_RDEPENDS,"w") as f:
-			for line in cmdOutput.split("\n"):
-				if line[0].isalpha():
-					f.write("{}\n".format(line))
+		metaDepends.extend(self._getDepends(meta))
+	if len(metaDepends)>0:
+		setDepends=set(metaDepends)
+		with open(META_RDEPENDS,"a") as f:
+			for depen in setDepends:
+				f.write("{}\n".format(depen))
 #def _getMetaDepends
+
+def _getDepends(pkg):
+	depends=[]
+	cmd=["apt-cache","depends","--recurse","--no-suggests",pkg]
+	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
+	for line in cmdOutput.split("\n"):
+		if line[0].isalpha():
+			depends.append(line)
+	return(depends)
+#def _getDepends(pkg)
 
 def _getInstalledPkgs():
 	pkgs=[]

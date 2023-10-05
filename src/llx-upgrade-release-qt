@@ -81,6 +81,7 @@ class thRun(QThread):
 			llxupgrader.enableUpgradeRepos(tools)
 			pkgs=llxupgrader.getAllPackages()
 			self.newstate.emit(len(pkgs))
+			pkgs=llxupgrader.getDependPkgs()
 			llxupgrader.downloadPackages(pkgs)
 			self.downloaded.emit()
 			llxupgrader.generateLocalRepo()

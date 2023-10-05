@@ -339,8 +339,9 @@ def downloadPackages(pkgs):
 			olddir=os.getcwd()
 			os.chdir(REPODIR)
 			print("Download: {})".format(pkg))
-			pkglist=_getDepends(pkg)
-			cmd=["apt-get","download"," ".join(pkglist)]
+			#pkglist=_getDepends(pkg)
+			#cmd=["apt-get","download","{}".format(" ".join(pkglist))]
+			cmd=["apt-get","download","{}".format(pkg)]
 			prc=subprocess.run(cmd)
 			os.chdir(olddir)
 		#	try:

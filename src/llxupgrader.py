@@ -126,7 +126,7 @@ def getAllPackages():
 	tmp=[]
 	for pkg,data in llxupPkgs.items():
 		tmp.append(pkg)
-	tmp.extend(getDependPkgs)
+	tmp.extend(getDependPkgs())
 	pkgset=set(tmp)
 	pkgs=[]
 	for pkg in pkgset:

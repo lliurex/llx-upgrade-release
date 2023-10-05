@@ -154,6 +154,8 @@ class QProgressBar(QWidget):
 
 	def setFinish(self):
 		self.setValue(self.range[1])
+		self.img.setFixedSize(QSize(self.bkgImg.width(),self.bkgImg.height()))
+		self.txt.setText("100%")
 	#def setFinish
 
 class QStepLine(QWidget):

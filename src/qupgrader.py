@@ -118,7 +118,7 @@ class qupgrader(QWidget):
 	#def closeEvent
 
 	def doFixes(self):
-		self.fixAptSources()
+		llxupgrader.fixAptSources()
 		ln=Launcher()
 		cmd="/usr/bin/kwin --replace"
 		ln.setCmd(cmd)

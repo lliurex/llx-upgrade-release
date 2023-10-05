@@ -381,7 +381,7 @@ def _getMetaDepends():
 	#subprocess.run(cmd)
 	metaDepends=[]
 	for meta in metas:
-		metaDepends.extend(self._getDepends(meta))
+		metaDepends.extend(_getDepends(meta))
 	if len(metaDepends)>0:
 		setDepends=set(metaDepends)
 		with open(META_RDEPENDS,"a") as f:

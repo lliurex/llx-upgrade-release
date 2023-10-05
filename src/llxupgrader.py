@@ -126,7 +126,18 @@ def getAllPackages():
 	tmp=[]
 	for pkg,data in llxupPkgs.items():
 		tmp.append(pkg)
-	_getMetaDepends()
+	tmp.extend(getDependPkgs)
+	pkgset=set(tmp)
+	pkgs=[]
+	for pkg in pkgset:
+		if len(pkg.strip().replace("\n",""))>0:
+			pkgs.append(pkg.strip().replace("\n",""))
+	return(pkgs)
+#def getAllPackages
+
+def getDependPkgs():
+	tmp=[]
+	tmp.extend(_getMetaDepends())
 	if os.path.isfile(META_RDEPENDS):
 		with open(META_RDEPENDS,"r") as f:
 			tmp.extend(f.read().split("\n"))
@@ -137,7 +148,7 @@ def getAllPackages():
 		if len(pkg.strip().replace("\n",""))>0:
 			pkgs.append(pkg.strip().replace("\n",""))
 	return(pkgs)
-#def getAllPackages
+#def getDependPkgs
 
 def prepareFiles(metadata):
 	tools=downloadFile(metadata["UpgradeTool"].replace("UpgradeTool: ",""))
@@ -362,6 +373,7 @@ def _getMetaDepends():
 	cmd=["lliurex-version","--history"]
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 	metas=[]
+	depends=[]
 	first=""
 	for out in cmdOutput.split("\n"):
 		line=out.replace("\t","").split(" ")
@@ -385,9 +397,9 @@ def _getMetaDepends():
 		metaDepends.extend(_getDepends(meta))
 	if len(metaDepends)>0:
 		setDepends=set(metaDepends)
-		with open(META_RDEPENDS,"a") as f:
-			for depen in setDepends:
-				f.write("{}\n".format(depen))
+		for depen in setDepends:
+			depends.append(depen)
+	return(depends)
 #def _getMetaDepends
 
 def _getDepends(pkg):

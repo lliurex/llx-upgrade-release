@@ -566,6 +566,8 @@ def _modHosts():
 def _modHttpd():
 	files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
 	for filen in files:
+		if os.path.isfile(filen)==False:
+			continue
 		fcontent=[]
 		with open(filen,"r") as f:
 			for line in f.readlines():

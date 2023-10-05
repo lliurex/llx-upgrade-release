@@ -131,7 +131,7 @@ class qupgrader(QWidget):
 		wd=Watchdog()
 		wd.start()
 		self.processDict["wd"]=wd
-		self.disableSystemdServices()
+		llxupgrader.disableSystemdServices()
 	#def doFixes
 
 	def launchLlxUp(self):

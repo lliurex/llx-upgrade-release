@@ -29,13 +29,13 @@ class qrescue(QWidget):
 	#def __init__
 
 	def closeEvent(self,event):
-		if self.noreturn==1:
+		if self.noreturn==0:
 			event.ignore()
 	#def closeEvent
 
 	def _close(self):
 		self.setEnabled(False)
-		self.noreturn=0
+		self.noreturn=1
 	#def _close
 
 	def renderGui(self):
@@ -45,9 +45,15 @@ class qrescue(QWidget):
 		lbl2=QLabel(i18n.get("INFO"))
 		lay.addWidget(lbl,0,0,1,2)
 		lay.addWidget(lbl2,1,0,1,2)
-		btn_try=QPushButton(i18n.get("GO_ONLINE"))
+		btn_try=QPushButton()
+		lbl=QLabel(i18n.get("GO_ONLINE"))
+		lbl.setWordWrap(True)
 		btn_try.clicked.connect(self._tryLaunch)
-		lay.addWidget(btn_try,2,0,1,2)
+		laybtn=QGridLayout()
+		laybtn.addWidget(lbl,0,0,1,1,Qt.AlignTop)
+		btn_try.setLayout(laybtn)
+		btn_try.resize(lbl.size())
+		lay.addWidget(btn_try,2,0,1,2,Qt.AlignTop)
 		btn_net=QPushButton(i18n.get("NETWORK"))
 		btn_net.clicked.connect(self._goOnline)
 		lay.addWidget(btn_net,3,0,1,1)

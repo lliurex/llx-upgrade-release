@@ -143,6 +143,8 @@ class QProgressBar(QWidget):
 	#def setImg
 
 	def setValue(self,value):
+		if value>self.range[1]:
+			return
 		val=value*self.bkgImg.width()/self.range[1]
 		self.img.setFixedSize(QSize(val/1,self.bkgImg.height()))
 		if val>0:
@@ -157,6 +159,7 @@ class QProgressBar(QWidget):
 		self.setValue(self.range[1])
 		self.img.setFixedSize(QSize(self.bkgImg.width(),self.bkgImg.height()))
 		self.txt.setText("100%")
+		print("FINIsH")
 	#def setFinish
 
 class QStepLine(QWidget):
@@ -175,8 +178,6 @@ class QStepLine(QWidget):
 		lay.addWidget(self.btn_ko,1,1,1,1,Qt.AlignRight)
 		self.setLayout(lay)
 		self.prg=QProgressBar()
-		#self.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark.jpg")
-		#self.prg.setImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
 		lay.addWidget(self.prg,0,0,1,2,Qt.AlignLeft|Qt.AlignTop)
 		self.prg.setVisible(False)
 		return
@@ -184,9 +185,6 @@ class QStepLine(QWidget):
 
 	def enableImg(self,image):
 		self.prg.setVisible(True)
-		#self.prg.setFixedHeight(self.height())
-		#self.prg.setFixedWidth(self.width())
-		#self.setStyleSheet("QProgressBar {padding:0px;border:0px}\nQProgressBar::chunk {border-image:url('/usr/share/llx-upgrade-release/rsrc/bkg.png') 0 0 0 0 stretch}")
 		self.prg.setValue(0)
 		self.lbl_info.setVisible(False)
 
@@ -409,6 +407,7 @@ class upgraderGui(QWidget):
 	def _endDownload(self):
 		bitem=self.lst_Steps.item(0)
 		wdg=self.lst_Steps.itemWidget(bitem)
+		self.thProgress.prgValue=1
 		wdg.prg.setFinish()
 		item = QListWidgetItem(self.lst_Steps)
 		lbl_info=QStepLine()
@@ -505,4 +504,3 @@ gui=upgraderGui()
 gui.renderGui()
 gui.show()
 app.exec_()
-

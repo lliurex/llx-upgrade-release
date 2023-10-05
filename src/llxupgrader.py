@@ -339,8 +339,9 @@ def downloadPackages(pkgs):
 			olddir=os.getcwd()
 			os.chdir(REPODIR)
 			print("Download: {})".format(pkg))
-			pkglist=_getDepends(pkg)
-			cmd=["apt-get","download"," ".join(pkglist)]
+			#pkglist=_getDepends(pkg)
+			#cmd=["apt-get","download","{}".format(" ".join(pkglist))]
+			cmd=["apt-get","download","{}".format(pkg)]
 			prc=subprocess.run(cmd)
 			os.chdir(olddir)
 		#	try:
@@ -381,7 +382,7 @@ def _getMetaDepends():
 	#subprocess.run(cmd)
 	metaDepends=[]
 	for meta in metas:
-		metaDepends.extend(self._getDepends(meta))
+		metaDepends.extend(_getDepends(meta))
 	if len(metaDepends)>0:
 		setDepends=set(metaDepends)
 		with open(META_RDEPENDS,"a") as f:

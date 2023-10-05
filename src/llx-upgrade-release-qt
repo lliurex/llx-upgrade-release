@@ -99,6 +99,8 @@ class thRun(QThread):
 class QProgressBar(QWidget):
 	def __init__(self,parent=None):
 		super (QProgressBar,self).__init__(parent)
+		self.txt=QLabel()
+		self.txt.setStyleSheet("color:white;padding:0px;border:0px;margin:1px")
 		self.bkgImg=QLabel()
 		self.img=QLabel()
 		self.inc=1
@@ -110,6 +112,7 @@ class QProgressBar(QWidget):
 		lay=QGridLayout()
 		lay.addWidget(self.bkgImg,0,0,1,1)
 		lay.addWidget(self.img,0,0,1,1)
+		lay.addWidget(self.txt,0,0,1,1,Qt.AlignTop|Qt.AlignLeft)
 		self.setLayout(lay)
 		self.setStyleSheet("padding:0px;border:0px;margin:0px")
 
@@ -141,6 +144,8 @@ class QProgressBar(QWidget):
 	def setValue(self,value):
 		val=value*self.bkgImg.width()/self.range[1]
 		self.img.setFixedSize(QSize(val/1,self.bkgImg.height()))
+		if val>0:
+			self.txt.setText("{}/{}".format(int(val),self.range[1]))
 	#def setValue
 
 	def setInc(self,inc):

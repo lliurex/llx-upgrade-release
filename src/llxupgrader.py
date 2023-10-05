@@ -487,3 +487,146 @@ def chkUpgradeResult():
 	
 #def chkUpgradeResult
 
+def fixAptSources():
+	llxup_sources="/etc/apt/lliurexup_sources.list"
+	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")
+	sources="/etc/apt/sources.list"
+	if os.path.isfile(llxup_sources):
+		os.unlink(llxup_sources)
+	fcontent=[]
+	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./\n")
+	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-updates/ ./\n")
+	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-security/ ./\n")
+	#with open(sources,"r") as f:
+	#	for line in f.readlines():
+	#		if "file:" in line:
+	#			continue
+	#		fcontent.append(line)
+	fcontent.append("")
+	tmpsources=os.path.join(TMPDIR,"sources.list")
+	with open (tmpsources,"w") as f:
+		f.writelines(fcontent)
+	shutil.copy(tmpsources,sources)
+	shutil.copy(tmpsources,llxup_sources)
+#def fixAptsources
+
+
+def _enableIpRedirect():
+	##DEPRECATED##
+	cmd=["nslookup","lliurex.net"]
+	local127=False
+	try:
+		output=subprocess.check_output(cmd,encoding="utf8",universal_newlines=True)
+	except Exception as e:
+		output=""
+	for line in output.split("\n"):
+		if line.startswith("Address:"):
+			ip=line.split()[-1]
+			if ip.startswith("127"):
+				if not ip.endswith(".1"):
+					continue
+				local127=True
+			cmd=["iptables","-t","nat","-A","OUTPUT","-d",ip,"-p","tcp","--dport","80","-j","DNAT","--to-destination","127.0.0.2"]
+			try:
+				subprocess.run(cmd)
+			except Exception as e:
+				print("iptables: {}".format(e))
+	return(len(output))
+#def _enableIpRedirect
+
+def _modHosts():
+	fcontent=[]
+	tmphosts=os.path.join(TMPDIR,"hosts")
+	hosts="/etc/hosts"
+	with open(hosts,"r") as f:
+		for line in f.readlines():
+			if "localhost" in line and "lliurex.net" not in line:
+				line=line.replace("localhost","localhost lliurex.net",1)
+			fcontent.append(line)
+
+	with open(hosts,"w") as f:
+		f.writelines(fcontent)
+		f.write("\n")
+	#cmd=["mount",tmphosts,"/etc/hosts","--bind"]
+	#subprocess.run(cmd)
+#def _modHosts
+
+def _modHttpd():
+	files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
+	for filen in files:
+		fcontent=[]
+		with open(filen,"r") as f:
+			for line in f.readlines():
+				if "Listen 80" in line or "<VirtualHost *:80>" in line:
+					line=line.replace("80","10880")
+				fcontent.append(line)
+			tmpfilen=os.path.join(TMPDIR,os.path.basename(filen))
+			with open(tmpfilen,"w") as f:
+				f.writelines(fcontent)
+				f.write("\n")
+			cmd=["mount",tmpfilen,filen,"--bind"]
+			print("CMD: {}".format(" ".join(cmd)))
+			try:
+				subprocess.run(cmd)
+			except Exception as e:
+				print (e)
+	cmd=["service","apache2","restart"]
+	subprocess.run(cmd)
+	print(cmd)
+#def _modHttpd()
+
+def _disableMirror():
+	mirrorDir="/etc/lliurex-mirror/conf"
+	srvPath="/srv"
+	if os.path.isdir(mirrorDir):
+		cmd=["mount",srvPath,mirrorDir,"--bind"]
+		subprocess.run(cmd)
+#def _disableMirror
+
+def disableSystemdServices():
+	for i in ["network-manager","systemd-networkd"]:
+		cmd=["service",i,"stop"]
+		subprocess.run(cmd)
+	cmd=["systemctl","stop","network.target"]
+	subprocess.run(cmd)
+#def disableSystemdServices
+
+def undoHostsMod():
+	hosts="/etc/hosts"
+	fcontent=[]
+	with open(hosts,"r") as f:
+		for line in f.readlines():
+			if "localhost" in line and " lliurex.net" in line:
+				line=line.replace(" lliurex.net","")
+			fcontent.append(line)
+	with open(hosts,"w") as f:
+		f.writelines(fcontent)
+		f.write("\n")
+#def undoHostsMod
+
+def unfixAptSources():
+	sources="/etc/apt/sources.list"
+	llxup_sources="/etc/apt/lliurexup_sources.list"
+	f=open(sources,"w")
+	f.close()
+	cmd=["repoman-cli","-e","0","-y"]
+	subprocess.run(cmd)
+	if os.path.isfile(llxup_sources):
+		os.unlink(llxup_sources)
+	shutil.copy(sources,llxup_sources)
+#def unfixAptsources
+
+def removeAptConf():
+	aptconf="/etc/apt/apt.conf"
+	tmpaptconf=os.path.join(TMPDIR,os.path.basename(aptconf))
+	if os.path.isfile(aptconf):
+		os.unlink(aptconf)
+	if os.path.isfile(tmpaptconf):
+		shutil.copy(tmpaptconf,aptconf)
+#def removeAptConf
+
+def enableSystemdServices():
+	for i in ["network-manager","systemd-networkd"]:
+		cmd=["service",i,"start"]
+		subprocess.run(cmd)
+#def disableSystemdServices

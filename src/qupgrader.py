@@ -23,11 +23,17 @@ class Launcher(QThread):
 	processEnd=Signal(str,subprocess.CompletedProcess)
 	def __init__(self,parent=None):
 		super (Launcher,self).__init__(parent)
+		self.dbg=False
 		self.cmd=[]
 		self.check_output=False
 		self.universal_newlines=True
 		self.encoding="utf8"
 	#def __init__
+
+	def _debug(self,msg):
+		if self.dbg==True:
+			print("{}".format(msg))
+	#def _debug
 
 	def setCmd(self,cmd):
 		if isinstance(cmd,str):
@@ -37,7 +43,7 @@ class Launcher(QThread):
 	#def setCmd
 
 	def run(self):
-		print("Launching {}".format(self.cmd))
+		self._debug("Launching {}".format(self.cmd))
 		prc=subprocess.run(self.cmd,universal_newlines=self.universal_newlines,encoding=self.encoding,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		self.processEnd.emit(" ".join(self.cmd),prc)
 	#def run
@@ -66,13 +72,19 @@ class Server(BaseHTTPRequestHandler):
 class QServer(QThread):
 	def __init__(self,parent=None):
 		super (QServer,self).__init__(parent)
+		self.dbg=False
 		self.hostname="localhost"
 	#def __init__
+
+	def _debug(self,msg):
+		if self.dbg==True:
+			print("{}".format(msg))
+	#def _debug
 
 	def run(self):
 		serverport=80
 		try:
-			print("SERVER READY")
+			self._debug("Server at {}:{} ".format(self.hostname,serverport))
 			web=HTTPServer((self.hostname,serverport),Server)
 			web.serve_forever()
 		except Exception as e:
@@ -80,18 +92,20 @@ class QServer(QThread):
 			print(e)
 			print("***********")
 		finally:
-			print("server closed")
+			self._debug("server closed")
 	#def run(self):
 #class QServer
 
 class qupgrader(QWidget):
 	def __init__(self,parent=None):
 		super (qupgrader,self).__init__(parent)
+		self.dbg=False
 		self.setWindowFlags(Qt.FramelessWindowHint)
 		self.setWindowFlags(Qt.X11BypassWindowManagerHint)
 		self.setWindowState(Qt.WindowFullScreen)
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
-		#self.setWindowModality(Qt.WindowModal)
+		self.upgradeCmd='/sbin/lliurex-up'
+		#self.upgradeCmd='/usr/bin/konsole'
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
 		self.wrkdir="/usr/share/llx-upgrade-release"
 		self.tmpdir=os.path.join(self.wrkdir,"tmp")
@@ -101,7 +115,13 @@ class qupgrader(QWidget):
 		self.qserver=QServer()
 		self.processDict={}
 		self.noreturn=1
+		self.grabKeyboard()
 	#def __init__
+
+	def _debug(self,msg):
+		if self.dbg==True:
+			print("QUP: {}".format(msg))
+	#def _debug
 
 	def renderBkg(self):
 		lay=QGridLayout()
@@ -118,31 +138,30 @@ class qupgrader(QWidget):
 	#def closeEvent
 
 	def doFixes(self):
-		llxupgrader.fixAptSources()
 		ln=Launcher()
 		cmd="/usr/bin/kwin --replace"
 		ln.setCmd(cmd)
 		ln.processEnd.connect(self._processEnd)
 		ln.start()
 		self.processDict[cmd]=ln
+		llxupgrader.fixAptSources()
+		llxupgrader.disableSystemdServices()
 		self.fakeLliurexNet()
 		self.launchLlxUp()
 
 		wd=Watchdog()
 		wd.start()
 		self.processDict["wd"]=wd
-		llxupgrader.disableSystemdServices()
 	#def doFixes
 
 	def launchLlxUp(self):
-		cmd='/sbin/lliurex-up -u -s -n'
 		ln=Launcher()
-		ln.setCmd(cmd)
+		ln.setCmd(self.upgradeCmd)
 		ln.processEnd.connect(self._processEnd)
 		with open("/etc/hosts","a") as f:
 			f.write("\n")
 		ln.start()
-		self.processDict[cmd]=ln
+		self.processDict[self.upgradeCmd]=ln
 	#def launchLlxUp
 
 	def fakeLliurexNet(self):
@@ -150,18 +169,20 @@ class qupgrader(QWidget):
 		llxupgrader._modHosts()
 		llxupgrader._modHttpd()
 		llxupgrader._disableMirror()
-		print("LAUNCH")
 		self.qserver.start()
 	#def fakeLliurexNet
 
 	def _processEnd(self,prc,prcdata):
 		err=True
-		if "lliurex-up" in prc.lower():
-			#self.processDict[prc].wait()
-			print("ENDED: {}".format(prcdata))
+		#if "lliurex-up" in prc.lower():
+		self._debug("Check {}".format(prc))
+		self._debug("Return: {}".format(prcdata))
+		if os.path.basename(self.upgradeCmd).split()[0] in prc.lower():
 			if prcdata.returncode==0:
 				if len(llxupgrader.getPkgsToUpdate())==0:
 					err=False
+				else:
+					self._debug("Packages pending: {}".format(llxupgrader.getPkgsToUpdate()))
 			if err==True:
 				if prcdata.returncode!=0:
 					self._relaunchLlxUp()
@@ -170,7 +191,7 @@ class qupgrader(QWidget):
 			else:
 				self._undoFixes()
 				self.showEnd()
-		print("END")
+		self._debug("This is the end")
 	#def _processEnd
 
 	def _relaunchLlxUp(self):
@@ -193,6 +214,7 @@ class qupgrader(QWidget):
 	#def showEnd
 
 	def _undoFixes(self):
+		llxupgrader_disableIpRedirect()
 		llxupgrader.unfixAptSources()
 		llxupgrader.removeAptConf()
 		llxupgrader.undoHostsMod()
@@ -202,6 +224,7 @@ class qupgrader(QWidget):
 	#def _undoFixes()
 
 	def _errorMode(self):
+		self.releaseKeyboard()
 		ln=Launcher()
 		cmd=os.path.join(self.wrkdir,"qrescuer.py")
 		ln.setCmd(cmd)

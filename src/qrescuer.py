@@ -13,8 +13,10 @@ import gettext
 _ = gettext.gettext
 
 i18n={"WLC":_("Welcome to the recovery mode"),
-	"INFO":_("The upgrade process has ended with errors."),
-	"GO_ONLINE":_("Try to enable the network and download broken packages from http://lliurex.net"),
+	"INFO":_("The upgrade process has ended with errors"),
+	"INFO1":_("If there's a network connection then try to upgrade from lliurex.net"),
+	"INFO2":_("If you know about you're doing you can enable network and launch a konsole or retry the process."),
+	"GO_ONLINE":_("Upgrade from lliurex.net"),
 	"NETWORK":_("Enable network"),
 	"LOG":_("Show apt log"),
 	"RELAUNCH":_("Launch lliurex-up"),
@@ -41,31 +43,28 @@ class qrescue(QWidget):
 	def renderGui(self):
 		lay=QGridLayout()
 		self.setLayout(lay)
-		lbl=QLabel("<b>{}</b>".format(i18n.get("WLC")))
-		lbl2=QLabel(i18n.get("INFO"))
-		lay.addWidget(lbl,0,0,1,2)
-		lay.addWidget(lbl2,1,0,1,2)
-		btn_try=QPushButton()
-		lbl=QLabel(i18n.get("GO_ONLINE"))
-		lbl.setWordWrap(True)
+		lbl_inf=QLabel("<b>{0}. {1}</b><br>".format(i18n.get("WLC"),i18n.get("INFO")))
+		lay.addWidget(lbl_inf,0,0,1,2)
+		lbl_inf1=QLabel("<p>{0}</p>".format(i18n.get("INFO1")))
+		lbl_inf1.setWordWrap(True)
+		lay.addWidget(lbl_inf1,1,0,1,2)
+		btn_try=QPushButton("{}".format(i18n.get("GO_ONLINE")))
 		btn_try.clicked.connect(self._tryLaunch)
-		laybtn=QGridLayout()
-		laybtn.addWidget(lbl,0,0,1,1,Qt.AlignTop)
-		btn_try.setLayout(laybtn)
-		btn_try.resize(lbl.size())
-		lay.addWidget(btn_try,2,0,1,2,Qt.AlignTop)
+		lay.addWidget(btn_try,2,0,1,1)
+		lbl_inf2=QLabel("<br><p>{0}</p>".format(i18n.get("INFO2")))
+		lay.addWidget(lbl_inf2,3,0,1,2,Qt.AlignTop)
 		btn_net=QPushButton(i18n.get("NETWORK"))
 		btn_net.clicked.connect(self._goOnline)
-		lay.addWidget(btn_net,3,0,1,1)
+		lay.addWidget(btn_net,4,0,1,1)
 		btn_log=QPushButton(i18n.get("LOG"))
 		btn_log.clicked.connect(self._showLog)
-		lay.addWidget(btn_log,3,1,1,1)
+		lay.addWidget(btn_log,4,1,1,1)
 		btn_llx=QPushButton(i18n.get("RELAUNCH"))
 		btn_llx.clicked.connect(self._relaunch)
-		lay.addWidget(btn_llx,4,0,1,1)
+		lay.addWidget(btn_llx,5,0,1,1)
 		btn_tty=QPushButton(i18n.get("KONSOLE"))
 		btn_tty.clicked.connect(self._konsole)
-		lay.addWidget(btn_tty,4,1,1,1)
+		lay.addWidget(btn_tty,5,1,1,1)
 		self.show()
 	#def renderGui
 

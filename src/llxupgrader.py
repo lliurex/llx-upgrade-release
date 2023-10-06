@@ -32,6 +32,7 @@ def i18n(raw):
 		"AVAILABLE":_("There's a new LliureX release"),
 		"BEGIN":_("Upgrading Lliurex..."),
 		"CANCEL":_("Cancel"),
+		"CHKRESULTS":_("Checking upgrade results..."),
 		"DEFAULT":_("Default repositores will be resetted to Lliurex defaults.") ,
 		"DISABLE":_("All configured repositories will be disabled."),
 		"DISABLEREPOS":_("Disabling repos.."),
@@ -48,6 +49,7 @@ def i18n(raw):
 		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
 		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),
 		"PRESS":_("Press a key for launching Lliurex-Up"),
+		"PRESSREBOOT":_("Press to reboot"),
 		"READ":_("Read carefully all the info showed in the screen"),
 		"REBOOT":_("All files are downloaded. Press ACCEPT to begin the upgrade."),
 		"REBOOT1":_("Close all open applications for preventing data loss."),
@@ -60,6 +62,7 @@ def i18n(raw):
 		"SETTINGUP":_("Setting up things. Be patient..."),
 		"UNDO":_("This operation could not be reversed"),
 		"UPGRADEEND":_("System upgrade completed. Now the system will reboot"),
+		"UPGRADEOK":_("System upgrade completed."),
 		"UPGRADE":_("Setting info for lliurex-up")})
 	return(imsg.get(raw,raw))
 

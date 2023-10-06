@@ -597,6 +597,11 @@ def _disableMirror():
 		subprocess.run(cmd)
 #def _disableMirror
 
+def _disableIpRedirect():
+	cmd=["iptables","-t","nat","-F"]
+	subprocess.run(cmd)
+#def _disableIpRedirect
+
 def disableSystemdServices():
 	for i in ["network-manager","systemd-networkd"]:
 		cmd=["service",i,"stop"]

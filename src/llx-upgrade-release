@@ -74,7 +74,7 @@ def _errorEnd():
 def chkParms(args):
 	unattended=False
 	repo=""
-	for arg in args:
+	for arg in args[1:]:
 		if arg.lower()=="-u" or arg.lower()=="--unattended":
 			unattended=True
 		elif os.path.exists(arg):

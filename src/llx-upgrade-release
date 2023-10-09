@@ -143,10 +143,10 @@ llxupgrader.disableRepos()
 if repo=="":
 	tools=llxupgrader.prepareFiles(upgradeTo)
 	llxupgrader.enableUpgradeRepos(tools)
-	pkgs=llxupgrader.getAllPackages()
+	llxupgrader.getAllPackages()
 	print(llxupgrader.i18n("EXTRACT"))
 	pkgs=llxupgrader.getDependPkgs()
-	llxupgrader.downloadPackages()
+	llxupgrader.downloadPackages(pkgs)
 elif os.path.exists(repo)==False:
 	print("Repo not found at {}".format(repo))
 	llxupgrader.restoreRepos()

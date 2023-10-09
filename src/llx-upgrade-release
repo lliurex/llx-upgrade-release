@@ -71,11 +71,28 @@ def _errorEnd():
 	print()
 #def _errorEnd
 
-#### MAIN APP ####
+def chkParms(args):
+	unattended=False
+	repo=""
+	for arg in args:
+		if arg.lower()=="-u" or arg.lower()=="--unattended":
+			unattended=True
+		elif os.path.exists(arg):
+			repo=arg
+	return(unattended,repo)
+#def chkParms
 
+#### MAIN APP ####
+unattended=False
+repo=""
 if os.geteuid()!=0:
 	print(llxupgrader.i18n("ROOT"))
 	sys.exit(10)
+
+if len(sys.argv[0])>1:
+	(unattended,repo)=chkParms(sys.argv)
+if len(repo)>0:
+	print("Using {}".format(repo))
 
 url="https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/files/meta-release"
 meta=llxupgrader.downloadFile(url)
@@ -89,13 +106,13 @@ if os.path.isfile(meta):
 else:
 	print(llxupgrader.i18n("NETWORK"))
 	sys.exit(15)
-if len(upgradeTo)>0:
+if unattended==False and len(upgradeTo)>0:
 	print("{0}: {1}".format(llxupgrader.i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
 	upgrade=input("{}? y/[n]: ".format(llxupgrader.i18n("ASK")))
 	if upgrade!="y":
 		print(llxupgrader.i18n("ABORT"))
 		sys.exit(2)
-if disclaimerAgree()==False:
+if unattended==False and disclaimerAgree()==False:
 	print(llxupgrader.i18n("ABORT"))
 	sys.exit(2)
 print()
@@ -106,35 +123,53 @@ if len(packagesToUpdate)>0:
 	sys.exit(3)
 print(llxupgrader.i18n("DISABLE"))
 print(llxupgrader.i18n("DEFAULT"))
-print("\n  **** {} **** \n".format(llxupgrader.i18n("UNDO").upper()))
-abort=input("[n]/ok: ")
-if abort!="ok":
-	print(llxupgrader.i18n("ABORT"))
-	sys.exit(2)
+if unattended==False:
+	print("\n  **** {} **** \n".format(llxupgrader.i18n("UNDO").upper()))
+	abort=input("[n]/ok: ")
+	if abort!="ok":
+		print(llxupgrader.i18n("ABORT"))
+		sys.exit(2)
 noreturn=1
-if lastChance()==False:
-	llxupgrader.restoreRepos()
-	print(llxupgrader.i18n("ABORT"))
-	print(llxupgrader.i18n("REVERT"))
-	print(llxupgrader.i18n("RECOM"))
-	print(llxupgrader.i18n("PRESS"))
-	noreturn=2
-	input("")
+if unattended==False:
+	if lastChance()==False:
+		llxupgrader.restoreRepos()
+		print(llxupgrader.i18n("ABORT"))
+		print(llxupgrader.i18n("REVERT"))
+		print(llxupgrader.i18n("RECOM"))
+		print(llxupgrader.i18n("PRESS"))
+		noreturn=2
+		input("")
 llxupgrader.disableRepos()
-tools=llxupgrader.prepareFiles(upgradeTo)
-llxupgrader.enableUpgradeRepos(tools)
-pkgs=llxupgrader.upgradeCurrentState()
-print(llxupgrader.i18n("EXTRACT"))
-llxupgrader.downloadPackages()
-llxupgrader.generateLocalRepo()
-llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
-llxupgrader.setLocalRepo()
+if repo=="":
+	tools=llxupgrader.prepareFiles(upgradeTo)
+	llxupgrader.enableUpgradeRepos(tools)
+	pkgs=llxupgrader.getAllPackages()
+	print(llxupgrader.i18n("EXTRACT"))
+	pkgs=llxupgrader.getDependPkgs()
+	llxupgrader.downloadPackages()
+elif os.path.exists(repo)==False:
+	print("Repo not found at {}".format(repo))
+	llxupgrader.restoreRepos()
+	noreturn=2
+	sys.exit(0)
+llxupgrader.generateLocalRepo("jammy",repo)
+#llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
+llxupgrader.setLocalRepo(repo)
 noreturn=0
 llxupgrader.setSystemdUpgradeTarget()
 llxupgrader.upgradeLlxUp(upgradeTo)
-print("{0}\n{1}\n{2}\n".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
-reboot=input("[y]/n: ")
-if upgrade!="n":
+unattendedf="/tmp/.unattended"
+if unattended==False:
+	if os.path.exists(unattendedf):
+		os.unlink(unattendedf)
+	print("{0}\n{1}\n{2}\n".format(llxupgrader.i18n("REBOOT"),llxupgrader.i18n("REBOOT1"),llxupgrader.i18n("END")))
+	reboot=input("[y]/n: ")
+	if upgrade!="n":
+		cmd=["systemctl","isolate","llx-upgrade"]
+		subprocess.run(cmd)
+else:
+	f=open(unatenddedf,"w")
+	f.close()
 	cmd=["systemctl","isolate","llx-upgrade"]
 	subprocess.run(cmd)
 sys.exit(noreturn)

@@ -141,6 +141,8 @@ class qupgrader(QWidget):
 		self.processDict={}
 		self.noreturn=1
 		self.oldCursor=self.cursor()
+		cursor=QtGui.QCursor(Qt.WaitCursor)
+		self.setCursor(cursor)
 		self.grabKeyboard()
 	#def __init__
 
@@ -180,6 +182,7 @@ class qupgrader(QWidget):
 		wd=Watchdog()
 		wd.start()
 		self.processDict["wd"]=wd
+		self.setCursor(self.oldcursor)
 	#def doFixes
 
 	def launchLlxUp(self):

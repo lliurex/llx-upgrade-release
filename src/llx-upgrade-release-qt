@@ -33,12 +33,15 @@ class thProgress(QThread):
 		errinc=0
 		repodir="/usr/share/llx-upgrade-release/repo"
 		repoerr="/usr/share/llx-upgrade-release/err"
-		for f in os.listdir(repodir):
-			if f.endswith("deb"):
-				try:
-					os.unlink(os.path.join(repodir,f))
-				except:
-					pass
+		if os.path.exists(repodir)==False:
+			os.makedirs(repodir)
+		else:
+			for f in os.listdir(repodir):
+				if f.endswith("deb"):
+					try:
+						os.unlink(os.path.join(repodir,f))
+					except:
+						pass
 		while val<self.prgValue:
 			if os.path.isfile(repoerr):
 				try:

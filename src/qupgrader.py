@@ -136,6 +136,7 @@ class qupgrader(QWidget):
 		self.btn_end.setMinimumWidth(lbl.sizeHint().width()+2*(btnlay.contentsMargins().left()))
 		self.btn_end.setMinimumHeight(lbl.sizeHint().height()+2*(btnlay.contentsMargins().top()))
 		self.btn_end.setVisible(False)
+		self.btn_end.clicked.connect(self._reboot)
 		self.qserver=QServer()
 		self.processDict={}
 		self.noreturn=1
@@ -249,12 +250,11 @@ class qupgrader(QWidget):
 
 	def showEnd(self):
 		self.btn_end.setVisible(True)
-		self.btn_end.clicked.connect(self._reboot)
 	#def showEnd
 
 	def _reboot(self):
 		txt=self.lbl_txt.text()
-		self.lbl_txt.setText("<p>{0}</p><p>{1}</p>".format("Init 6"))
+		self.lbl_txt.setText("<p>{0}</p>".format("Init 6"))
 		print("Rebooting")
 		cmd=["systemctl","reboot"]
 		subprocess.run(cmd)

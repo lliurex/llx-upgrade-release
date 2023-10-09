@@ -168,7 +168,7 @@ if unattended==False:
 		cmd=["systemctl","isolate","llx-upgrade"]
 		subprocess.run(cmd)
 else:
-	f=open(unatenddedf,"w")
+	f=open(unattendedf,"w")
 	f.close()
 	cmd=["systemctl","isolate","llx-upgrade"]
 	subprocess.run(cmd)

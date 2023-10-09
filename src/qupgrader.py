@@ -182,7 +182,7 @@ class qupgrader(QWidget):
 		wd=Watchdog()
 		wd.start()
 		self.processDict["wd"]=wd
-		self.setCursor(self.oldcursor)
+		self.setCursor(self.oldCursor)
 	#def doFixes
 
 	def launchLlxUp(self):

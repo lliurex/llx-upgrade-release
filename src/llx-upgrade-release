@@ -159,6 +159,13 @@ noreturn=0
 llxupgrader.setSystemdUpgradeTarget()
 llxupgrader.upgradeLlxUp(upgradeTo)
 unattendedf="/tmp/.unattended"
+repof="/tmp/.repo"
+if repo=="":
+	if os.path.exists(repof):
+		os.unlink(repof)
+else:
+	with open(repof,"w") as f:
+		f.write("{}".format(repo))
 if unattended==False:
 	if os.path.exists(unattendedf):
 		os.unlink(unattendedf)

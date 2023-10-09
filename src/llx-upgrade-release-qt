@@ -33,7 +33,7 @@ class thProgress(QThread):
 		errinc=0
 		repodir="/usr/share/llx-upgrade-release/repo"
 		repoerr="/usr/share/llx-upgrade-release/err"
-		if os.path.isdir(repodir)==False:
+		if os.path.exists(repodir)==False:
 			os.makedirs(repodir)
 		else:
 			for f in os.listdir(repodir):

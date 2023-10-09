@@ -509,16 +509,18 @@ def chkUpgradeResult():
 	
 #def chkUpgradeResult
 
-def fixAptSources():
+def fixAptSources(repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
 	llxup_sources="/etc/apt/lliurexup_sources.list"
 	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")
 	sources="/etc/apt/sources.list"
 	if os.path.isfile(llxup_sources):
 		os.unlink(llxup_sources)
 	fcontent=[]
-	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo/ ./\n")
-	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-updates/ ./\n")
-	fcontent.append("deb [trusted=yes] file:/usr/share/llx-upgrade-release/repo-security/ ./\n")
+	fcontent.append("deb [trusted=yes] file:{}/ ./\n".format(repodir))
+	fcontent.append("deb [trusted=yes] file:{}-updates/ ./\n".format(repodir))
+	fcontent.append("deb [trusted=yes] file:{}-security/ ./\n".format(repodir))
 	#with open(sources,"r") as f:
 	#	for line in f.readlines():
 	#		if "file:" in line:

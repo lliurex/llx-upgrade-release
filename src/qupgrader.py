@@ -177,7 +177,12 @@ class qupgrader(QWidget):
 		ln.processEnd.connect(self._processEnd)
 		ln.start()
 		self.processDict[cmd]=ln
-		llxupgrader.fixAptSources()
+		repof="/tmp/.repo"
+		repo=""
+		if os.path.exists(repof):
+			with open(repof,"r") as f:
+				repo=f.read().strip()
+		llxupgrader.fixAptSources(repo)
 		llxupgrader.disableSystemdServices()
 		self.fakeLliurexNet()
 		self.launchLlxUp()

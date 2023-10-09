@@ -568,9 +568,11 @@ def _modHosts():
 
 def _modHttpd():
 	files=["/etc/apache2/ports.conf","/etc/apache2/sites-available/000-default.conf"]
+	swFound=False
 	for filen in files:
 		if os.path.isfile(filen)==False:
 			continue
+		swFound=True
 		fcontent=[]
 		with open(filen,"r") as f:
 			for line in f.readlines():
@@ -587,9 +589,13 @@ def _modHttpd():
 				subprocess.run(cmd)
 			except Exception as e:
 				print (e)
-	cmd=["service","apache2","restart"]
-	subprocess.run(cmd)
-	print(cmd)
+	if swFound==True:
+		cmd=["service","apache2","restart"]
+		try:
+			subprocess.run(cmd)
+		except:
+			pass
+	return()
 #def _modHttpd()
 
 def _disableMirror():
@@ -598,11 +604,13 @@ def _disableMirror():
 	if os.path.isdir(mirrorDir):
 		cmd=["mount",srvPath,mirrorDir,"--bind"]
 		subprocess.run(cmd)
+	return()
 #def _disableMirror
 
 def _disableIpRedirect():
 	cmd=["iptables","-t","nat","-F"]
 	subprocess.run(cmd)
+	return()
 #def _disableIpRedirect
 
 def disableSystemdServices():
@@ -611,6 +619,7 @@ def disableSystemdServices():
 		subprocess.run(cmd)
 	cmd=["systemctl","stop","network.target"]
 	subprocess.run(cmd)
+	return()
 #def disableSystemdServices
 
 def undoHostsMod():
@@ -624,6 +633,7 @@ def undoHostsMod():
 	with open(hosts,"w") as f:
 		f.writelines(fcontent)
 		f.write("\n")
+	return()
 #def undoHostsMod
 
 def unfixAptSources():
@@ -636,6 +646,7 @@ def unfixAptSources():
 	if os.path.isfile(llxup_sources):
 		os.unlink(llxup_sources)
 	shutil.copy(sources,llxup_sources)
+	return()
 #def unfixAptsources
 
 def removeAptConf():
@@ -645,10 +656,12 @@ def removeAptConf():
 		os.unlink(aptconf)
 	if os.path.isfile(tmpaptconf):
 		shutil.copy(tmpaptconf,aptconf)
+	return()
 #def removeAptConf
 
 def enableSystemdServices():
 	for i in ["network-manager","systemd-networkd"]:
 		cmd=["service",i,"start"]
 		subprocess.run(cmd)
+	return()
 #def disableSystemdServices

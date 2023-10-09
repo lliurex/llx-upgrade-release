@@ -125,7 +125,7 @@ class qupgrader(QWidget):
 		if os.path.isdir(self.tmpdir)==False:
 			os.makedirs(self.tmpdir)
 		self.lbl_img=QLabel()
-		self.lbl_txt=QLabel("LLX-UPGRADER v1.0.0")
+		self.lbl_txt=QLabel("LLX-UPGRADER v1.0.0<br>{}".format(llxupgrader.i18n("BEGIN")))
 		self.lbl_txt.setStyleSheet("color:white")
 		self.btn_end=QPushButton()
 		lbl=QLabel("<p>{0}</p><p><b>{1}</b></p>".format(llxupgrader.i18n("UPGRADEOK"),llxupgrader.i18n("PRESSREBOOT")))

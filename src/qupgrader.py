@@ -117,8 +117,11 @@ class qupgrader(QWidget):
 		self.setWindowFlags(Qt.X11BypassWindowManagerHint)
 		self.setWindowState(Qt.WindowFullScreen)
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
-		self.upgradeCmd='/sbin/lliurex-up'
-		#self.upgradeCmd='/usr/bin/konsole'
+		unattendedf="/tmp/.unattended"
+		if os.path.exists(unattendedf)==True:
+			self.upgradeCmd='konsole --hold -e /sbin/lliurex-upgrade -u -s -n'
+		else:
+			self.upgradeCmd='/sbin/lliurex-up'
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
 		self.wrkdir="/usr/share/llx-upgrade-release"
 		self.tmpdir=os.path.join(self.wrkdir,"tmp")
@@ -287,6 +290,8 @@ class qupgrader(QWidget):
 		if prcdata.returncode!=0:
 			cmd=["/usr/bin/konsole"]
 			subprocess.run(cmd)
+		print("LAUNCH")
+		print(prcdata)
 		self._undoFixes()
 		self.showEnd()
 	#def _endErrorMode

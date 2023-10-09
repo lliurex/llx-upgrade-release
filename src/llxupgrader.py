@@ -305,23 +305,27 @@ def copySystemFiles():
 		tarf.add("/etc/apt/sources.list.d/")
 #def copySystemFiles
 
-def _modifyAptConf():
+def _modifyAptConf(repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
 	aptconf="/etc/apt/apt.conf"
 	if os.path.isfile(aptconf)==True:
 		shutil.copy(aptconf,TMPDIR)
-	if os.path.isdir(REPODIR)==False:
-		os.makedirs(REPODIR)
+	if os.path.isdir(repodir)==False:
+		os.makedirs(repodir)
 	with open(aptconf,"w") as f:
-		f.write("Dir::Cache{{Archives {0}}}\nDir::Cache::Archives {0};".format(REPODIR))
+		f.write("Dir::Cache{{Archives {0}}}\nDir::Cache::Archives {0};".format(repodir))
 #def _modifyAptConf
 
-def setLocalRepo(release="jammy"):
+def setLocalRepo(release="jammy",repodir=""):
+	if repodir=="" and os.path.exists(repodir)==False:
+		repodir=REPODIR
 	sources="/etc/apt/sources.list"
 	tmpsources=os.path.join(TMPDIR,".sources.list")
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	with open(tmpsources,"w") as f:
 		for dist in dists:
-			repo="{}{}".format(REPODIR,dist.replace(release,""))
+			repo="{}{}".format(repodir,dist.replace(release,""))
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
 	shutil.copy(tmpsources,sources)
 	_deleteAptLists()
@@ -425,11 +429,14 @@ def _getInstalledPkgs():
 	return(pkgs)
 #def _getInstalledPkgs
 
-def generateLocalRepo(release="jammy"):
+def generateLocalRepo(release="jammy",repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
+		
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	components=["main","universe","multiverse"]
 	for dist in dists:
-		repo="{}{}".format(REPODIR,dist.replace(release,""))
+		repo="{}{}".format(repodir,dist.replace(release,""))
 		if os.path.isdir(repo)==False:
 			os.makedirs(repo)
 		f=open(os.path.join(repo,"Packages"),"w")
@@ -438,7 +445,7 @@ def generateLocalRepo(release="jammy"):
 			packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/{2}/binary-amd64/Packages".format(release,dist,component))
 			with open(packagesf,"r") as f:
 				fcontent=f.read()
-			if repo!=REPODIR:
+			if repo!=repodir:
 				path="../repo/"
 			else:
 				path="./"

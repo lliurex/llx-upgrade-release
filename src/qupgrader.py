@@ -40,8 +40,8 @@ class ChkResults(QThread):
 		pkglist=[]
 		if error[0]==True:
 			errlist=error[1].split(",")
-			pkglist.append(errlist[0].split(":")[1].split(" ")[2]
-			for line in error[1][1:].split(","):
+			pkglist.append(errlist[0].split(":")[1].split(" ")[2])
+			for line in errlist[1:]:
 				if line.startswith("Inst "):
 					pkglist.append(line.split(" ")[1])
 		return(pkglist)

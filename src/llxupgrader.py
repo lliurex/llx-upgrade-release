@@ -450,6 +450,7 @@ def generateLocalRepo(release="jammy",repodir=""):
 						line=fline.split(" ")
 						fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
 					f.write("{}\n".format(fline))
+	_modifyAptConf(repodir)
 #def generateLocalRepo
 
 def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):

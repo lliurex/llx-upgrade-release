@@ -65,6 +65,9 @@ class qrescue(QWidget):
 		btn_tty=QPushButton(i18n.get("KONSOLE"))
 		btn_tty.clicked.connect(self._konsole)
 		lay.addWidget(btn_tty,5,1,1,1)
+		btn_rbt=QPushButton(i18n.get("REBOOT"))
+		btn_rbt.clicked.connect(self._reboot)
+		lay.addWidget(btn_rbt,6,0,1,2,Qt.AlignCenter)
 		self.show()
 	#def renderGui
 
@@ -76,7 +79,6 @@ class qrescue(QWidget):
 	def _doFixes(self):
 		llxupgrader.unfixAptSources()
 		llxupgrader.removeAptConf()
-		llxupgrader.undoHostsMod()
 		llxupgrader.undoHostsMod()
 		llxupgrader._disableIpRedirect()
 	#def _doFixes
@@ -113,6 +115,13 @@ class qrescue(QWidget):
 		cmd=["konsole"]
 		subprocess.run(cmd)
 	#def _konsole
+
+	def _reboot(self):
+		self._doFixes()
+		self._doClean()
+		cmd=["systemctl","reboot"]
+		subprocess.run(cmd)
+	#def _reboot
 
 #class qrescuer
 

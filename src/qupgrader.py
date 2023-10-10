@@ -147,7 +147,7 @@ class qupgrader(QWidget):
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
 		unattendedf="/tmp/.unattended"
 		if os.path.exists(unattendedf)==True:
-			self.upgradeCmd='konsole --hold -e /sbin/lliurex-upgrade -u -s -n'
+			self.upgradeCmd='konsole -e /sbin/lliurex-upgrade -u -s -n'
 		else:
 			self.upgradeCmd='/sbin/lliurex-up'
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"

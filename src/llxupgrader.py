@@ -312,6 +312,7 @@ def _modifyAptConf(repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	aptconf="/etc/apt/apt.conf"
+	print("APT cache: {}".format(repodir))
 	if os.path.isfile(aptconf)==True:
 		shutil.copy(aptconf,TMPDIR)
 	if os.path.isdir(repodir)==False:

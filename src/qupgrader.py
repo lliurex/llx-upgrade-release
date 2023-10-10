@@ -30,20 +30,33 @@ class ChkResults(QThread):
 		pkgs=[]
 		toupdate=llxupgrader.getPkgsToUpdate()
 		pkgs.append(len(toupdate))
-		err=llxupgrader.checkErrorDistUpgrade()
+		llxup=lliurexup.LliurexUpCore()
+		llxup.startLliurexUp()
+		err=llxup.checkErrorDistUpgrade()
 		if len(err)>0:
-			pkgs=self._inspectError()
+			pkgs=self._inspectError(err)
+		print(pkgs)
 		self.processEnd.emit(pkgs)
 	#def run
 
-	def inspectError(self,error):
+	def _inspectError(self,error):
 		pkglist=[]
+		f=open("/tmp/err.log","w")
 		if error[0]==True:
 			errlist=error[1].split(",")
+			f.writelines(errlist[1:])
+			f.write("\n----\n")
 			pkglist.append(errlist[0].split(":")[1].split(" ")[2])
 			for line in errlist[1:]:
-				if line.startswith("Inst "):
-					pkglist.append(line.split(" ")[1])
+				l=line.strip()
+				l=l.replace("'","")
+				f.write("raw: {}*\n".format(line))
+				f.write("start: *{}*\n".format(l[0:5]))
+				if l.startswith("Inst"):
+					f.write("{}".format(l))
+					pkglist.append(l.split(" ")[1])
+		f.write("{}".format(pkglist))
+		f.close()
 		return(pkglist)
 #class chkResults 
 
@@ -242,7 +255,7 @@ class qupgrader(QWidget):
 			else:
 				self._relaunchLlxUp()
 
-		self._debug("This is the end")
+		self._debug("End process {}".format(prc))
 	#def _processEnd
 
 	def _doChkResults(self,pkgs):

@@ -74,10 +74,11 @@ class qrescue(QWidget):
 	#def tryLaunch
 
 	def _doFixes(self):
-		llxupgrader.enableSystemdServices()
 		llxupgrader.unfixAptSources()
 		llxupgrader.removeAptConf()
 		llxupgrader.undoHostsMod()
+		llxupgrader.undoHostsMod()
+		llxupgrader._disableIpRedirect()
 	#def _doFixes
 
 	def _doClean(self):
@@ -100,7 +101,6 @@ class qrescue(QWidget):
 	#def _showLog
 
 	def _relaunch(self):
-		self._doFixes()
 		self._doClean()
 		a=lliurexup.LliurexUpCore()
 		a.cleanEnvironment()

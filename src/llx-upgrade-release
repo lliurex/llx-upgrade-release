@@ -73,13 +73,16 @@ def _errorEnd():
 
 def chkParms(args):
 	unattended=False
+	download=False
 	repo=""
 	for arg in args[1:]:
 		if arg.lower()=="-u" or arg.lower()=="--unattended":
 			unattended=True
 		elif os.path.exists(arg):
 			repo=arg
-	return(unattended,repo)
+		elif arg.lower()=="-d" or arg.lower()=="--download":
+			download=True
+	return(unattended,repo,download)
 #def chkParms
 
 #### MAIN APP ####
@@ -90,7 +93,7 @@ if os.geteuid()!=0:
 	sys.exit(10)
 
 if len(sys.argv[0])>1:
-	(unattended,repo)=chkParms(sys.argv)
+	(unattended,repo,download)=chkParms(sys.argv)
 if len(repo)>0:
 	print("Using {}".format(repo))
 
@@ -132,7 +135,7 @@ if unattended==False:
 noreturn=1
 if unattended==False:
 	if lastChance()==False:
-		llxupgrader.restoreRepos()
+		#llxupgrader.restoreRepos()
 		print(llxupgrader.i18n("ABORT"))
 		print(llxupgrader.i18n("REVERT"))
 		print(llxupgrader.i18n("RECOM"))
@@ -148,11 +151,16 @@ if repo=="":
 	pkgs=llxupgrader.getDependPkgs()
 	llxupgrader.downloadPackages(pkgs)
 elif os.path.exists(repo)==False:
-	print("Repo not found at {}".format(repo))
+	print("{}: {}".format(llxupgrader.i18n("REPONOTFOUND"),repo))
 	llxupgrader.restoreRepos()
 	noreturn=2
-	sys.exit(0)
+	sys.exit(10)
+
 llxupgrader.generateLocalRepo("jammy",repo)
+if download==True:
+	print("{}".format(llxupgrader.i18n("DOWNLOADED")))
+	llxupgrader.restoreRepos()
+	sys.exit(0)
 #llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
 llxupgrader.setLocalRepo(repo)
 noreturn=0

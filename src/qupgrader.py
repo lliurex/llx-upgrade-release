@@ -27,10 +27,25 @@ class ChkResults(QThread):
 	#def __init__
 
 	def run(self):
-		pkgs=llxupgrader.getPkgsToUpdate()
+		pkgs=[]
+		toupdate=llxupgrader.getPkgsToUpdate()
+		pkgs.append(len(toupdate))
+		err=llxupgrader.checkErrorDistUpgrade()
+		if len(err)>0:
+			pkgs=self._inspectError()
 		self.processEnd.emit(pkgs)
 	#def run
-#class Launcher
+
+	def inspectError(self,error):
+		pkglist=[]
+		if error[0]==True:
+			errlist=error[1].split(",")
+			pkglist.append(errlist[0].split(":")[1].split(" ")[2]
+			for line in error[1][1:].split(","):
+				if line.startswith("Inst "):
+					pkglist.append(line.split(" ")[1])
+		return(pkglist)
+#class chkResults 
 
 class Launcher(QThread):
 	processEnd=Signal(str,subprocess.CompletedProcess)

@@ -232,6 +232,7 @@ def restoreRepos():
 		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
 			if f.endswith(".list"):
 				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+	removeAptConf()
 	cleanLlxUpActions()
 #def restoreRepos
 
@@ -331,6 +332,7 @@ def setLocalRepo(release="jammy",repodir=""):
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
 	shutil.copy(tmpsources,sources)
 	_deleteAptLists()
+	_modifyAptConf(repodir)
 #def setLocalRepo
 
 def _deleteAptLists():
@@ -341,8 +343,8 @@ def _deleteAptLists():
 			os.unlink(dest)
 #def _deleteAptLists
 
-def downloadPackages(pkgs):
-	_modifyAptConf()
+def downloadPackages(pkgs,repodir=""):
+	_modifyAptConf(repodir)
 	clean()
 	#_getMetaDepends()
 	#pkgs=llxup.getPackagesToUpdate()
@@ -362,20 +364,8 @@ def downloadPackages(pkgs):
 			#pkglist=_getDepends(pkg)
 			#cmd=["apt-get","download","{}".format(" ".join(pkglist))]
 			cmd=["apt-get","download","{}".format(pkg)]
-			prc=subprocess.run(cmd)
+			prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 			os.chdir(olddir)
-		#	try:
-		#		new=1
-		#		old=0
-		#		if os.path.isfile(repoerr):
-		#			with open(repoerr,"r") as f:
-		#				old=f.read().strip()
-		#				if old.isdigit()==True:
-		#					new=int(old)+1
-		#		with open(repoerr,"w") as f:
-		#			f.write(str(new))
-		#	except Exception as e:
-		#		print(e)
 #def downloadPackages
 
 def _getMetaDepends():
@@ -514,6 +504,7 @@ def chkUpgradeResult():
 def fixAptSources(repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
+	print("Setting dir for repo: {}".format(repodir))
 	llxup_sources="/etc/apt/lliurexup_sources.list"
 	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")
 	sources="/etc/apt/sources.list"
@@ -523,11 +514,6 @@ def fixAptSources(repodir=""):
 	fcontent.append("deb [trusted=yes] file:{}/ ./\n".format(repodir))
 	fcontent.append("deb [trusted=yes] file:{}-updates/ ./\n".format(repodir))
 	fcontent.append("deb [trusted=yes] file:{}-security/ ./\n".format(repodir))
-	#with open(sources,"r") as f:
-	#	for line in f.readlines():
-	#		if "file:" in line:
-	#			continue
-	#		fcontent.append(line)
 	fcontent.append("")
 	tmpsources=os.path.join(TMPDIR,"sources.list")
 	with open (tmpsources,"w") as f:
@@ -573,8 +559,6 @@ def _modHosts():
 	with open(hosts,"w") as f:
 		f.writelines(fcontent)
 		f.write("\n")
-	#cmd=["mount",tmphosts,"/etc/hosts","--bind"]
-	#subprocess.run(cmd)
 #def _modHosts
 
 def _modHttpd():

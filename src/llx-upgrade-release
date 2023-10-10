@@ -149,7 +149,7 @@ if repo=="":
 	llxupgrader.getAllPackages()
 	print(llxupgrader.i18n("EXTRACT"))
 	pkgs=llxupgrader.getDependPkgs()
-	llxupgrader.downloadPackages(pkgs)
+	llxupgrader.downloadPackages(pkgs,repo)
 elif os.path.exists(repo)==False:
 	print("{}: {}".format(llxupgrader.i18n("REPONOTFOUND"),repo))
 	llxupgrader.restoreRepos()

@@ -8,6 +8,7 @@ from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
 from lliurex import lliurexup
 import gettext
+gettext.textdomain('llx-upgrade-release')
 _ = gettext.gettext
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"

@@ -8,6 +8,7 @@ from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
 from lliurex import lliurexup
 import gettext
+gettext.textdomain('llx-upgrade-release')
 _ = gettext.gettext
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"
@@ -39,7 +40,7 @@ def i18n(raw):
 		"DISCLAIMER":_("This operation may destroy your system (or not)"),
 		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
 		"DISMISS":_("If you don't know what are you doing abort now"),
-		"DOWNGRADE":_("¡¡UPGRADE FAILED!!. Wait while trying to recovery..."),
+		"DOWNGRADE":_("UPGRADE FAILED!!. Wait while trying to recovery..."),
 		"DOWNLOADED":_("All packages has been downloaded"),
 		"END":_("System will go to upgrade mode. Don't poweroff the system."),
 		"EXTRACT":_("Extracting upgrade files.."),

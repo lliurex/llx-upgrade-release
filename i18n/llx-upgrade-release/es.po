@@ -1,0 +1,246 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-11 10:32+0200\n"
+"PO-Revision-Date: 2023-10-11 10:47+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.3\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: es\n"
+
+#: ../src/llxupgrader.py:29
+msgid "Operation canceled"
+msgstr "Operación cancelada"
+
+#: ../src/llxupgrader.py:30
+msgid "Accept"
+msgstr "Aceptar"
+
+#: ../src/llxupgrader.py:31
+msgid "Update?"
+msgstr "¿Actualizar?"
+
+#: ../src/llxupgrader.py:32
+msgid "There's a new LliureX release"
+msgstr "Hay una nueva versión de LliureX"
+
+#: ../src/llxupgrader.py:33
+msgid "Upgrading Lliurex..."
+msgstr "Actualizando Lliurex..."
+
+#: ../src/llxupgrader.py:34
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../src/llxupgrader.py:35
+msgid "Checking upgrade results..."
+msgstr "Verificando actualización..."
+
+#: ../src/llxupgrader.py:36
+msgid "Default repositores will be resetted to Lliurex defaults."
+msgstr "Los repositorios por defecto serán asignados a los de Lliurex"
+
+#: ../src/llxupgrader.py:37
+msgid "All configured repositories will be disabled."
+msgstr "Todos los repositorios se desactivarán"
+
+#: ../src/llxupgrader.py:38
+msgid "Disabling repos.."
+msgstr "Desactivando repos..."
+
+#: ../src/llxupgrader.py:39
+msgid "This operation may destroy your system (or not)"
+msgstr "Esta operación puede destruir el sistema (o no)"
+
+#: ../src/llxupgrader.py:40
+msgid "This operation may destroy the system, proceed anyway"
+msgstr ""
+"Esta operación puede ser peligrosa para el sistema, proceder de todas "
+"formas"
+
+#: ../src/llxupgrader.py:41
+msgid "If you don't know what are you doing abort now"
+msgstr "Si no sabes lo que estás haciendo aborta de inmediato"
+
+#: ../src/llxupgrader.py:42
+msgid "UPGRADE FAILED!!. Wait while trying to recovery..."
+msgstr "¡¡ERROR AL ACTUALIZAR!!. Entrando en modo de recuperación..."
+
+#: ../src/llxupgrader.py:43
+msgid "All packages has been downloaded"
+msgstr "Se han descargado todos los paquetes"
+
+#: ../src/llxupgrader.py:44
+msgid "System will go to upgrade mode. Don't poweroff the system."
+msgstr "El sistema va a entrar al modo de actualización. No apagar."
+
+#: ../src/llxupgrader.py:45
+msgid "Extracting upgrade files.."
+msgstr "Extrayendo ficheros de la actualización..."
+
+#: ../src/llxupgrader.py:46
+msgid "IMPORTANT"
+msgstr "IMPORTANTE"
+
+#: ../src/llxupgrader.py:47
+msgid ""
+"This is the last chance for aborting.<br>Don't poweroff the computer nor "
+"interrupt the upgrade in any way."
+msgstr ""
+"Ésta es la última oportunidad para aborar.<br>No apagar el equipo ni "
+"interrumpir el proceso en modo alguno."
+
+#: ../src/llxupgrader.py:48
+msgid "There're no upgrades available"
+msgstr "No hay actualizaciones disponibles"
+
+#: ../src/llxupgrader.py:49
+msgid "There're updates available. Install them before continue."
+msgstr ""
+"Hay actualizaciones pendientes. Deben instalarse para poder continuar."
+
+#: ../src/llxupgrader.py:50
+msgid ""
+"This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to "
+"original state"
+msgstr ""
+"Esto es catastrófico<br>. El actualizador ha intentado revertir Lliurex-Up "
+"a su estado original"
+
+#: ../src/llxupgrader.py:51
+msgid ""
+"The upgraded failed.<br>Call a technical assistant and try to manually "
+"downgrade through Lliurex-Up"
+msgstr ""
+"La actualización falló.<br>Es necesaria la intervención manual para "
+"desactualizar Lliurex-Up"
+
+#: ../src/llxupgrader.py:52
+msgid "Press a key for launching Lliurex-Up"
+msgstr "Pulsar una tecla para ejecutar Lliurex-Up"
+
+#: ../src/llxupgrader.py:53
+msgid "Press to reboot"
+msgstr "Pulsar para reiniciar"
+
+#: ../src/llxupgrader.py:54
+msgid "Read carefully all the info showed in the screen"
+msgstr "Leer detenidamente toda la información de la pantalla"
+
+#: ../src/llxupgrader.py:55
+msgid "All files are downloaded. Press ACCEPT to begin the upgrade."
+msgstr ""
+"Se han descargado todos los ficheros. Pulsar ACEPTAR para actualizar."
+
+#: ../src/llxupgrader.py:56
+msgid "Close all open applications for preventing data loss."
+msgstr ""
+"Para prevenir perdida de datos se recomienda cerrar el resto de ventanas"
+
+#: ../src/llxupgrader.py:57
+msgid "It seems that the upgrade failed"
+msgstr "Parece que surgió algún problema"
+
+#: ../src/llxupgrader.py:58
+msgid "Check your network and retry."
+msgstr "Comprobar la conexión a internet y reintentar"
+
+#: ../src/llxupgrader.py:59
+msgid ""
+"As result of this aborted upgrade may appear some problems with package "
+"management. Run lliurex-up now."
+msgstr ""
+"Debido a la actualización cancelada pueden aparecer problemas con la "
+"gestión de paquetes. Convendría ejecutar Lliurex-Up."
+
+#: ../src/llxupgrader.py:60
+msgid "No repo available at given path."
+msgstr "No se han encontrado repositorio en la ruta"
+
+#: ../src/llxupgrader.py:61
+msgid "All repositories configured in this system will be deleted."
+msgstr "Todos los repositorios van a eliminarse"
+
+#: ../src/llxupgrader.py:62
+msgid "Reverting repositories to previous state"
+msgstr "Revertiendo repositorios a su estado anterior"
+
+#: ../src/llxupgrader.py:63
+msgid "Must be root"
+msgstr "Es necesario ser root"
+
+#: ../src/llxupgrader.py:64
+msgid "Setting up things. Be patient..."
+msgstr "Preparando el proceso. Paciencia..."
+
+#: ../src/llxupgrader.py:65
+msgid "This operation could not be reversed"
+msgstr "Esta operación no puede deshacerse"
+
+#: ../src/llxupgrader.py:66
+msgid "System upgrade completed. Now the system will reboot"
+msgstr "Se ha completado la actualización. Ahora el sistema se reiniciará"
+
+#: ../src/llxupgrader.py:67
+msgid "System upgrade completed."
+msgstr "Actualización completada"
+
+#: ../src/llxupgrader.py:68
+msgid "Setting info for lliurex-up"
+msgstr "Configurando Lliurex-Up"
+
+#: ../src/qrescuer.py:15
+msgid "Welcome to the recovery mode"
+msgstr "Bienvenido al modo de recuperación"
+
+#: ../src/qrescuer.py:16
+msgid "The upgrade process has ended with errors"
+msgstr "El proceso ha terminado con errores"
+
+#: ../src/qrescuer.py:17
+msgid "If there's a network connection then try to upgrade from lliurex.net"
+msgstr ""
+"Si hay una conexión a internet se puede intentar actualizar desde lliurex."
+"net"
+
+#: ../src/qrescuer.py:18
+msgid ""
+"If you know about you're doing you can enable network and launch a konsole "
+"or retry the process."
+msgstr ""
+"Si se tienen conocimientos se puede activar la conexión a red y ejecutar "
+"una terminal o reintentar el proceso"
+
+#: ../src/qrescuer.py:19
+msgid "Upgrade from lliurex.net"
+msgstr "Actualizar desde lliurex.net"
+
+#: ../src/qrescuer.py:20
+msgid "Enable network"
+msgstr "Activar red"
+
+#: ../src/qrescuer.py:21
+msgid "Show apt log"
+msgstr "Ver log de apt"
+
+#: ../src/qrescuer.py:22
+msgid "Launch lliurex-up"
+msgstr "Abrir Lliurex-Up"
+
+#: ../src/qrescuer.py:23
+msgid "Launch a terminal"
+msgstr "Abrir una terminal"
+
+#: ../src/qrescuer.py:24
+msgid "Reboot"
+msgstr "Reiniciar"

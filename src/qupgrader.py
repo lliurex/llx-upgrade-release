@@ -4,7 +4,7 @@ import os,subprocess,shutil,time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
 from PySide2 import QtGui
-from PySide2.QtCore import Qt,QThread,QObject,Signal
+from PySide2.QtCore import Qt,QThread,QObject,Signal,QEvent
 import llxupgrader
 from lliurex import lliurexup
 
@@ -175,7 +175,15 @@ class qupgrader(QWidget):
 		cursor=QtGui.QCursor(Qt.WaitCursor)
 		self.setCursor(cursor)
 		self.grabKeyboard()
+		self.installEventFilter(self)
 	#def __init__
+
+	def eventFilter(self, source, event):
+		if event.type()==QEvent.KeyPress:
+			event.ignore()
+			return
+		return super().eventFilter(source, event)
+	#def eventFilter
 
 	def _debug(self,msg):
 		if self.dbg==True:
@@ -331,6 +339,7 @@ class qupgrader(QWidget):
 #def qupgrader(self):
 		
 app=QApplication(["Llx-Upgrader"])
+app.setWindowIcon(QtGui.QIcon("./llxupgrader.png"))
 if __name__=="__main__":
 	qup=qupgrader()
 	qup.renderBkg()

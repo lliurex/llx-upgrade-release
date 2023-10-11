@@ -128,6 +128,7 @@ class qrescue(QWidget):
 ##### MAIN APP ######
 
 app=QApplication(["Lliurex Release Upgrade - Repair"])
+app.setWindowIcon(QtGui.QIcon("./llxupgrader.png"))
 gui=qrescue()
 gui.renderGui()
 gui.show()

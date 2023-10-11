@@ -331,6 +331,7 @@ class qupgrader(QWidget):
 #def qupgrader(self):
 		
 app=QApplication(["Llx-Upgrader"])
+app.setWindowIcon(QtGui.QIcon("./llxupgrader.png"))
 if __name__=="__main__":
 	qup=qupgrader()
 	qup.renderBkg()

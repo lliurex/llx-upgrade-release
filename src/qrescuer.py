@@ -128,7 +128,8 @@ class qrescue(QWidget):
 ##### MAIN APP ######
 
 app=QApplication(["Lliurex Release Upgrade - Repair"])
-app.setWindowIcon(QtGui.QIcon("./llxupgrader.png"))
+rsrcdir=os.path.abspath(os.path.dirname(__file__))
+app.setWindowIcon(QtGui.QIcon(os.path.join(rsrcdir,"llxupgrader.png")))
 gui=qrescue()
 gui.renderGui()
 gui.show()

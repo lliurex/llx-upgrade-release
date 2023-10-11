@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-11 10:32+0200\n"
-"PO-Revision-Date: 2023-10-11 11:04+0200\n"
+"PO-Revision-Date: 2023-10-11 11:32+0200\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -48,11 +48,11 @@ msgstr "Verificant actualització..."
 
 #: ../src/llxupgrader.py:36
 msgid "Default repositores will be resetted to Lliurex defaults."
-msgstr "S'utilitzaran els repositoris per defecte de Lliurex"
+msgstr "S'utilitzaran els repositoris per defecte de Lliurex."
 
 #: ../src/llxupgrader.py:37
 msgid "All configured repositories will be disabled."
-msgstr "Es desactivar tots els repositoris"
+msgstr "Es desactivaran tots els repositoris."
 
 #: ../src/llxupgrader.py:38
 msgid "Disabling repos.."
@@ -64,11 +64,11 @@ msgstr "Aquesta operació pot destruir el sistema (o no)"
 
 #: ../src/llxupgrader.py:40
 msgid "This operation may destroy the system, proceed anyway"
-msgstr "Aquesta operació pot destuir el sistema, procedeix de totes maneres"
+msgstr "Aquesta operació pot destruir el sistema, procedeix de totes maneres"
 
 #: ../src/llxupgrader.py:41
 msgid "If you don't know what are you doing abort now"
-msgstr "Si no es sap que se està fent cancelar d'inmediat"
+msgstr "Si no es sap que s'està fent cancelar d'inmediat"
 
 #: ../src/llxupgrader.py:42
 msgid "UPGRADE FAILED!!. Wait while trying to recovery..."
@@ -95,8 +95,8 @@ msgid ""
 "This is the last chance for aborting.<br>Don't poweroff the computer nor "
 "interrupt the upgrade in any way."
 msgstr ""
-"Es l'última oportunitar per a avortar.<br>No apagar l'equip ni interrompre "
-"l'actulització de cap de les maneres."
+"Es l'última oportunitat per a avortar.<br>No apagar l'equip ni interrompre "
+"l'actualització de cap de les maneres."
 
 #: ../src/llxupgrader.py:48
 msgid "There're no upgrades available"
@@ -104,7 +104,7 @@ msgstr "No hi han actualitzacions"
 
 #: ../src/llxupgrader.py:49
 msgid "There're updates available. Install them before continue."
-msgstr "Hi han actualitzacions. Cal instalar-les per a continuar"
+msgstr "Hi han actualitzacions pendents. Cal instalar-les per a continuar."
 
 #: ../src/llxupgrader.py:50
 msgid ""
@@ -137,14 +137,12 @@ msgstr "Llegir atentament tota la informació mostrada a la pantalla"
 #: ../src/llxupgrader.py:55
 msgid "All files are downloaded. Press ACCEPT to begin the upgrade."
 msgstr ""
-"S'han descarregat tots els fitxers. Prémer ACEPTAR per a encetar "
-"l'actualització"
+"S'han descarregat els fitxers. Prémer ACEPTAR per encetar l'actualització."
 
 #: ../src/llxupgrader.py:56
 msgid "Close all open applications for preventing data loss."
 msgstr ""
-"Per tal de previndre perdida de dades es recomana tantar totes les "
-"finestres"
+"Per previndre perdida de dades es recomana tancar totes les finestres."
 
 #: ../src/llxupgrader.py:57
 msgid "It seems that the upgrade failed"
@@ -152,23 +150,23 @@ msgstr "Sembla que l'actualització ha fallat"
 
 #: ../src/llxupgrader.py:58
 msgid "Check your network and retry."
-msgstr "Verificar l'estat de la xarxa i reintentar"
+msgstr "Verificar l'estat de la xarxa i reintentar."
 
 #: ../src/llxupgrader.py:59
 msgid ""
 "As result of this aborted upgrade may appear some problems with package "
 "management. Run lliurex-up now."
 msgstr ""
-"Com resultat de l'actulització inconclosa poden apareixer problemes amb la "
-"gestió de paquets. Es recomana executar Lliurex-Up a continuació"
+"Com resultat de l'actualització inconclosa poden apareixer problemes amb "
+"la gestió de paquets. Es recomana executar Lliurex-Up a continuació."
 
 #: ../src/llxupgrader.py:60
 msgid "No repo available at given path."
-msgstr "No s'ha trobar un repositori a la ruta"
+msgstr "No s'ha trobat un repositori a la ruta."
 
 #: ../src/llxupgrader.py:61
 msgid "All repositories configured in this system will be deleted."
-msgstr "S'esborraran tots els repositoris"
+msgstr "S'esborraran tots els repositoris."
 
 #: ../src/llxupgrader.py:62
 msgid "Reverting repositories to previous state"
@@ -180,7 +178,7 @@ msgstr "Cal ser root"
 
 #: ../src/llxupgrader.py:64
 msgid "Setting up things. Be patient..."
-msgstr "Comrpovant configuració. Paciencia..."
+msgstr "Preparant actualització. Paciencia..."
 
 #: ../src/llxupgrader.py:65
 msgid "This operation could not be reversed"
@@ -217,7 +215,7 @@ msgid ""
 "or retry the process."
 msgstr ""
 "Si es tenen coneiximents técnics es pot activar la xarxa i obrir una "
-"terminal o reinciar el procés"
+"terminal o reiniciar el procés."
 
 #: ../src/qrescuer.py:19
 msgid "Upgrade from lliurex.net"

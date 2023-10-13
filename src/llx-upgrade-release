@@ -16,13 +16,13 @@ def abort(*args):
 signal.signal(signal.SIGINT, abort)
 
 def _help():
-	print("Usage: {} [-u] [-d] [path]".format(sys.argv[0]))
+	print("Usage: {} [--unattended] [-d] [path]".format(sys.argv[0]))
 	print("")
-	print("\t -u --unattended: Ask \"yes\" to all and upgrade without user interaction")
+	print("\t --unattended: Ask \"yes\" to all and upgrade without user interaction")
 	print("\t -d --download: Only download packages")
 	print("\t path: If a path to a valid repo is supplied upgrade from it")
 	print("")
-	print("For building a valid repository for upgrading other machines execute with download mode")
+	print("For building a valid repository for upgrading other machines execute in only-download mode")
 	print("When finished copy the generated repository to the desired storage medium.")
 	print("Then it's possible to upgrade other machines from that repo using its path as argument to llx-upgrade-release")
 	print("")
@@ -90,7 +90,7 @@ def chkParms(args):
 	download=False
 	repo=""
 	for arg in args[1:]:
-		if arg.lower()=="-u" or arg.lower()=="--unattended":
+		if arg.lower()=="--unattended":
 			unattended=True
 		elif os.path.exists(arg):
 			repo=arg
@@ -131,6 +131,9 @@ if unattended==False and len(upgradeTo)>0:
 	if upgrade!="y":
 		print(llxupgrader.i18n("ABORT"))
 		sys.exit(2)
+elif len(upgradeTo)<=0:
+	print(llxupgrader.i18n("NOAVAILABLE"))
+	sys.exit(0)
 if unattended==False and disclaimerAgree()==False:
 	print(llxupgrader.i18n("ABORT"))
 	sys.exit(2)

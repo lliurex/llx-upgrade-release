@@ -19,11 +19,12 @@ if os.path.isdir(TMPDIR)==False:
 TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 DATADIR="/usr/share/llx-upgrade-release/files"
-REPODIR="/usr/share/llx-upgrade-release/repo"
+REPODIR="/usr/share/llx-upgrade-release/repo/pool"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 META_RDEPENDS=os.path.join(TMPDIR,"pkgs.list")
+SOURCESF="/etc/apt/sources.list"
 
 def i18n(raw):
 	imsg=({
@@ -228,11 +229,13 @@ def restoreRepos():
 	except Exception as e:
 		print("Untar: {}".format(e))
 	wrkdir=os.path.join(TMPDIR,"etc/apt")
-	shutil.copy("{}/sources.list".format(wrkdir),"/etc/apt/sources.list")
-	if os.path.isdir("{}/sources.list.d".format(wrkdir)):
-		for f in os.listdir("{}/sources.list.d".format(wrkdir)):
+	shutil.copy(os.path.join(wrkdir,os.path.basename(SOURCESF)),SOURCESF)
+	wrksourcesd="{}.d".format(os.path.join(wrkdir,os.path.basename(SOURCESF)))
+	sourcesd="{}.d".format(os.path.join(SOURCESF))
+	if os.path.isdir(wrksourcesd):
+		for f in os.listdir(wrksourcesd):
 			if f.endswith(".list"):
-				shutil.copy("{0}/sources.list.d/{1}".format(wrkdir,f),"/etc/apt/sources.list.d/{}".format(f))
+				shutil.copy(os.path.join(wrksourcesd,f),os.path.join(sourcesd,f))
 	removeAptConf()
 	cleanLlxUpActions()
 #def restoreRepos
@@ -259,7 +262,11 @@ def downgrade():
 			break
 		line=out
 	uprelease=line.strip().split()[0]
-	cmd=["apt-get","install","-y","--allow-downgrades","--reinstall","lliurex-up={}".format(uprelease), "lliurex-up-core={}".format(uprelease), "lliurex-up-cli={}".format(uprelease), "lliurex-up-indicator={}".format(uprelease),"python3-lliurexup={}".format(uprelease)]
+	aptFlags=["install","-y","--alow-downgrades","--reinstall"]
+	pkgList="lliurex-up={0} lliurex-up-core={0} lliurex-up-cli={0} lliurex-up-indicator={0} python3-lliurexup={0}".format(uprelease)
+	cmd=["apt-get"]
+	cmd.extend(aptFlags)
+	cmd.extend(pkgList.split())
 	subprocess.run(cmd)
 #def downgrade()
 
@@ -271,7 +278,6 @@ def _getValuesForLliurexUp(metadata):
 			break
 		data["url"]="{}/{}".format(data["url"],component)
 	data["version"]=os.path.basename(data["url"])
-		
 	return(data)
 #def _getValuesForLliurexUp
 
@@ -305,8 +311,8 @@ def copySystemFiles():
 	if os.path.isfile(TARFILE):
 		return()	
 	with tarfile.open(TARFILE,"w") as tarf:
-		tarf.add("/etc/apt/sources.list")
-		tarf.add("/etc/apt/sources.list.d/")
+		tarf.add("{}/".format(SOURCESF))
+		tarf.add("{}.d/".format(SOURCESF))
 #def copySystemFiles
 
 def _modifyAptConf(repodir=""):
@@ -323,16 +329,15 @@ def _modifyAptConf(repodir=""):
 #def _modifyAptConf
 
 def setLocalRepo(release="jammy",repodir=""):
-	if repodir=="" and os.path.exists(repodir)==False:
+	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
-	sources="/etc/apt/sources.list"
-	tmpsources=os.path.join(TMPDIR,".sources.list")
+	tmpsources=os.path.join(TMPDIR,".{}".format(os.path.basename(SOURCESF)))
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	with open(tmpsources,"w") as f:
 		for dist in dists:
 			repo="{}{}".format(repodir,dist.replace(release,""))
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
-	shutil.copy(tmpsources,sources)
+	shutil.copy(tmpsources,SOURCESF)
 	_deleteAptLists()
 	_modifyAptConf(repodir)
 #def setLocalRepo
@@ -346,10 +351,10 @@ def _deleteAptLists():
 #def _deleteAptLists
 
 def downloadPackages(pkgs,repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
 	_modifyAptConf(repodir)
 	clean()
-	#_getMetaDepends()
-	#pkgs=llxup.getPackagesToUpdate()
 	cmd=["apt-get","dist-upgrade","-y","-d"]
 	subprocess.run(cmd)
 	repoerr="/usr/share/llx-upgrade-release/err"
@@ -361,10 +366,8 @@ def downloadPackages(pkgs,repodir=""):
 		print("Get: {}".format(pkg))
 		if prc.returncode!=0:
 			olddir=os.getcwd()
-			os.chdir(REPODIR)
+			os.chdir(repodir)
 			print("Download: {})".format(pkg))
-			#pkglist=_getDepends(pkg)
-			#cmd=["apt-get","download","{}".format(" ".join(pkglist))]
 			cmd=["apt-get","download","{}".format(pkg)]
 			prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 			os.chdir(olddir)
@@ -391,8 +394,6 @@ def _getMetaDepends():
 			first=pkg
 	if len(metas)==0:
 		metas.append(pkg)
-	#cmd=["apt-get","update"]
-	#subprocess.run(cmd)
 	metaDepends=[]
 	for meta in metas:
 		metaDepends.extend(_getDepends(meta))
@@ -455,6 +456,14 @@ def generateLocalRepo(release="jammy",repodir=""):
 	_modifyAptConf(repodir)
 #def generateLocalRepo
 
+def generateLocalRepo(repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
+	with open(SOURCESF,"r") as f:
+		fcontent=f.readlines()
+	for l in fcontent:
+		print(l)
+
 def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):
 	releasef=downloadFile("http://lliurex.net/{0}/dists/{0}/main/binary-amd64/Release".format(release))
 	releasePath=os.path.join(DATADIR,"Release")
@@ -508,9 +517,8 @@ def fixAptSources(repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	print("Setting dir for repo: {}".format(repodir))
-	llxup_sources="/etc/apt/lliurexup_sources.list"
+	llxup_sources=os.path.join(os.path.dirname(SOURCESF),"lliurexup_sources.list")
 	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")
-	sources="/etc/apt/sources.list"
 	if os.path.isfile(llxup_sources):
 		os.unlink(llxup_sources)
 	fcontent=[]
@@ -518,10 +526,10 @@ def fixAptSources(repodir=""):
 	fcontent.append("deb [trusted=yes] file:{}-updates/ ./\n".format(repodir))
 	fcontent.append("deb [trusted=yes] file:{}-security/ ./\n".format(repodir))
 	fcontent.append("")
-	tmpsources=os.path.join(TMPDIR,"sources.list")
+	tmpsources=os.path.join(TMPDIR,os.path.basename(SOURCESF))
 	with open (tmpsources,"w") as f:
 		f.writelines(fcontent)
-	shutil.copy(tmpsources,sources)
+	shutil.copy(tmpsources,SOURCESF)
 	shutil.copy(tmpsources,llxup_sources)
 #def fixAptsources
 
@@ -635,15 +643,14 @@ def undoHostsMod():
 #def undoHostsMod
 
 def unfixAptSources():
-	sources="/etc/apt/sources.list"
 	llxup_sources="/etc/apt/lliurexup_sources.list"
-	f=open(sources,"w")
+	f=open(SOURCESF,"w")
 	f.close()
 	cmd=["repoman-cli","-e","0","-y"]
 	subprocess.run(cmd)
 	if os.path.isfile(llxup_sources):
 		os.unlink(llxup_sources)
-	shutil.copy(sources,llxup_sources)
+	shutil.copy(SOURCESF,llxup_sources)
 	return()
 #def unfixAptsources
 

@@ -22,7 +22,7 @@ def _help():
 	print("\t -d --download: Only download packages")
 	print("\t path: If a path to a valid repo is supplied upgrade from it")
 	print("")
-	print("For building a valid repository for upgrading other machines execute in only-download mode")
+	print("For building a valid repository for upgrading other machines execute with --download")
 	print("When finished copy the generated repository to the desired storage medium.")
 	print("Then it's possible to upgrade other machines from that repo using its path as argument to llx-upgrade-release")
 	print("")

@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
 from PySide2 import QtGui
 from PySide2.QtCore import Qt,QThread,QObject,Signal,QEvent
+from i18n import i18n
 import llxupgrader
 from lliurex import lliurexup
 
@@ -98,13 +99,6 @@ class Server(BaseHTTPRequestHandler):
 		wrkfile="/usr/share/llx-upgrade-release/files/Release"
 		if os.path.isfile(wrkfile)==True:
 			if os.path.basename(self.path)=="Release":
-			#	if "jammy-updates" in self.path:
-			#		with open("{}_up".format(wrkfile),"rb") as file:
-			#			self.wfile.write(file.read())
-			#	if "jammy-security" in self.path:
-			#		with open("{}_se".format(wrkfile),"rb") as file:
-			#			self.wfile.write(file.read())
-			#	else:
 				with open(wrkfile,"rb") as file:
 					self.wfile.write(file.read())
 	#def do_GET
@@ -156,10 +150,10 @@ class qupgrader(QWidget):
 		if os.path.isdir(self.tmpdir)==False:
 			os.makedirs(self.tmpdir)
 		self.lbl_img=QLabel()
-		self.lbl_txt=QLabel("LLX-UPGRADER v1.0.0<br>{}".format(llxupgrader.i18n("BEGIN")))
+		self.lbl_txt=QLabel("LLX-UPGRADER v1.0.0<br>{}".format(i18n("BEGIN")))
 		self.lbl_txt.setStyleSheet("color:white")
 		self.btn_end=QPushButton()
-		lbl=QLabel("<p>{0}</p><p><b>{1}</b></p>".format(llxupgrader.i18n("UPGRADEOK"),llxupgrader.i18n("PRESSREBOOT")))
+		lbl=QLabel("<p>{0}</p><p><b>{1}</b></p>".format(i18n("UPGRADEOK"),i18n("PRESSREBOOT")))
 		btnlay=QGridLayout()
 		btnlay.addWidget(lbl,0,0,1,1,Qt.AlignCenter)
 		lbl.setStyleSheet("margin:3px;padding:3px;border:1px solid silver;")
@@ -251,7 +245,7 @@ class qupgrader(QWidget):
 		self._debug("Return: {}".format(prcdata))
 		if os.path.basename(self.upgradeCmd).split()[0] in prc.lower():
 			txt=self.lbl_txt.text()
-			self.lbl_txt.setText("{0}<br>{1}".format(txt,llxupgrader.i18n("CHKRESULTS")))
+			self.lbl_txt.setText("{0}<br>{1}".format(txt,i18n("CHKRESULTS")))
 			if prcdata.returncode==0:
 				self.oldCursor=self.cursor()
 				cursor=QtGui.QCursor(Qt.WaitCursor)
@@ -275,11 +269,11 @@ class qupgrader(QWidget):
 			err=False
 		else:
 			self._debug(txtpending)
-			self.lbl_txt.setText("<p>{0}</p><p>{1}</p><p>{2}</p>".format(txt,llxupgrader.i18n("DOWNGRADE"),txtpending))
+			self.lbl_txt.setText("<p>{0}</p><p>{1}</p><p>{2}</p>".format(txt,i18n("DOWNGRADE"),txtpending))
 		if err==True:
 			self._errorMode()
 		else:
-			self.lbl_txt.setText("<p>{0}</p><p>{1}</p><p>{2}</p>".format(txt,llxupgrader.i18n("UPGRADEEND"),llxupgrader.i18n("UPGRADEOK")))
+			self.lbl_txt.setText("<p>{0}</p><p>{1}</p><p>{2}</p>".format(txt,i18n("UPGRADEEND"),i18n("UPGRADEOK")))
 			self._undoFixes()
 			self.showEnd()
 	#def _doChkResults

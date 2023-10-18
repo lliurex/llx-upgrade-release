@@ -151,6 +151,19 @@ def _generateDemoteScript():
 			os.chmod(LLXUP_PRESCRIPT,0o755)
 #def _generateDemoteScript
 
+def _disablePinning():
+	pinf="/etc/apt/preferences.d/lliurex-pinning"
+	if os.path.isfile(pinf)==True:
+		with open(pinf,"r") as f:
+			lines=f.readlines()
+		disabled=[]
+		for line in lines:
+			disabled.append("#${}".format(line.strip()))
+		with open(pinf,"w") as f:
+			f.writelines(disabled)
+	return()
+#def _disablePinning
+
 def _generatePostInstallScript():
 		#DEPRECATED
 		return
@@ -176,6 +189,7 @@ def enableUpgradeRepos(tools):
 	shutil.copy("{}/sources.list".format(TMPDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
 	_generatePostInstallScript()
+	_disablepinning()
 	return()
 #def enableUpgradeRepos
 
@@ -183,6 +197,19 @@ def clean():
 	cmd=["apt-get","clean"]
 	subprocess.run(cmd)
 #def clean
+
+def _enablePinning():
+	pinf="/etc/apt/preferences.d/lliurex-pinning"
+	if os.path.isfile(pinf)==True:
+		with open(pinf,"r") as f:
+			lines=f.readlines()
+		enabled=[]
+		for line in lines:
+			enabled.append("{}".format(line.replace("#$","",1).strip()))
+		with open(pinf,"w") as f:
+			f.writelines(enabled)
+	return()
+#def _enablePinning
 
 def restoreRepos():
 	ftar=TARFILE
@@ -202,6 +229,7 @@ def restoreRepos():
 			if f.endswith(".list"):
 				shutil.copy(os.path.join(wrksourcesd,f),os.path.join(sourcesd,f))
 	removeAptConf()
+	_enablePinning()
 	cleanLlxUpActions()
 #def restoreRepos
 

@@ -227,11 +227,12 @@ def downgrade():
 			break
 		line=out
 	uprelease=line.strip().split()[0]
-	aptFlags=["install","-y","--alow-downgrades","--reinstall"]
+	aptFlags=["install","-y","--allow-downgrades","--reinstall"]
 	pkgList="lliurex-up={0} lliurex-up-core={0} lliurex-up-cli={0} lliurex-up-indicator={0} python3-lliurexup={0}".format(uprelease)
 	cmd=["apt-get"]
 	cmd.extend(aptFlags)
 	cmd.extend(pkgList.split())
+	print(cmd)
 	subprocess.run(cmd)
 #def downgrade()
 
@@ -302,6 +303,7 @@ def setLocalRepo(release="jammy",repodir=""):
 		for dist in dists:
 			repo="{}{}".format(repodir,dist)
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
+			_debug("LocalRepo deb [trusted=yes] file:{} ./".format(repo))
 	shutil.copy(tmpsources,SOURCESF)
 	_deleteAptLists()
 	_modifyAptConf(repodir)
@@ -538,6 +540,7 @@ def fixAptSources(repodir=""):
 	tmpsources=os.path.join(TMPDIR,os.path.basename(SOURCESF))
 	with open (tmpsources,"w") as f:
 		f.writelines(fcontent)
+		_debug("FixRepo {}".format(fcontent))
 	shutil.copy(tmpsources,SOURCESF)
 	shutil.copy(tmpsources,llxup_sources)
 #def fixAptsources

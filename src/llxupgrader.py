@@ -485,7 +485,9 @@ def upgradeLlxUp(metadata):
 	a=open(LLXUP_TOKEN,"w")
 	a.close()
 	llxup=lliurexup.LliurexUpCore()
+	_debug("LLXUP URL: {}".format(data.get("url")))
 	llxup.defaultUrltoCheck=data.get("url")
+	_debug("LLXUP RELEASE: {}".format(data.get("version")))
 	llxup.defaultVersion=data.get("version")
 	llxup.installLliurexUp()
 #def upgradeLlxUp():

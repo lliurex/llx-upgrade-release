@@ -329,7 +329,7 @@ def setLocalRepo(release="jammy",repodir=""):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	with open(tmpsources,"w") as f:
 		for dist in dists:
-			repo="{}{}".format(repodir,dist)
+			repo=os.path.join(repodir,dist)
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
 			_debug("LocalRepo deb [trusted=yes] file:{} ./".format(repo))
 	shutil.copy(tmpsources,SOURCESF)

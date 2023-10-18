@@ -417,7 +417,7 @@ def generateLocalRepo(release="jammy",repodir=""):
 					fcontent=f.read()
 				path="./"
 				if repo!=repodir:
-					path="../repo/"
+					path="../"
 				line=[]
 				_debug("Generating {0} PACKAGES in {1} for {2} ({3})".format(component,repo,dist,url))
 				with open(os.path.join(repo,"Packages"),"a") as f:

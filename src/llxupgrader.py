@@ -524,7 +524,7 @@ def chkUpgradeResult():
 	
 #def chkUpgradeResult
 
-def fixAptSources(repodir=""):
+def fixAptSources(repodir="",release="jammy"):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	_debug("Setting dir for repo: {}".format(repodir))
@@ -533,9 +533,9 @@ def fixAptSources(repodir=""):
 	if os.path.isfile(llxup_sources):
 		os.unlink(llxup_sources)
 	fcontent=[]
-	fcontent.append("deb [trusted=yes] file:{}/ ./\n".format(repodir))
-	fcontent.append("deb [trusted=yes] file:{}-updates/ ./\n".format(repodir))
-	fcontent.append("deb [trusted=yes] file:{}-security/ ./\n".format(repodir))
+	fcontent.append("deb [trusted=yes] file:{}/ ./\n".format(os.path.join(repodir,release)))
+	fcontent.append("deb [trusted=yes] file:{}-updates/ ./\n".format(os.path.join(repodir,release)))
+	fcontent.append("deb [trusted=yes] file:{}-security/ ./\n".format(os.path.join(repodir,release)))
 	fcontent.append("")
 	tmpsources=os.path.join(TMPDIR,os.path.basename(SOURCESF))
 	with open (tmpsources,"w") as f:

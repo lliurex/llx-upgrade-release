@@ -1,3 +1,9 @@
+llx-upgrade-release (21.03.01) focal; urgency=medium
+
+  * Add support for updating from third-party repositories
+
+ -- Juanma1980 <juanma1980@gmail.com>  Thu, 19 Oct 2023 00:06:29 +0200
+
 llx-upgrade-release (21.03) focal; urgency=medium
 
   * First release

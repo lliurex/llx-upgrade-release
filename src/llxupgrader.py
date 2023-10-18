@@ -300,7 +300,7 @@ def setLocalRepo(release="jammy",repodir=""):
 	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
 	with open(tmpsources,"w") as f:
 		for dist in dists:
-			repo="{}{}".format(repodir,dist.replace(release,""))
+			repo="{}{}".format(repodir,dist)
 			f.write("deb [trusted=yes] file:{} ./\n".format(repo))
 	shutil.copy(tmpsources,SOURCESF)
 	_deleteAptLists()

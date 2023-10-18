@@ -276,7 +276,7 @@ def copySystemFiles():
 	if os.path.isfile(TARFILE):
 		return()	
 	with tarfile.open(TARFILE,"w") as tarf:
-		tarf.add("{}/".format(SOURCESF))
+		tarf.add("{}".format(SOURCESF))
 		tarf.add("{}.d/".format(SOURCESF))
 #def copySystemFiles
 

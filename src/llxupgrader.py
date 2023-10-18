@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 import os,sys, tempfile, shutil
-import tarfile
+import tarfile,gzip
 import hashlib
 import time
 import subprocess
 from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
 from lliurex import lliurexup
-import gettext
-gettext.textdomain('llx-upgrade-release')
-_ = gettext.gettext
+
+DBG=True
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"
 if os.path.isdir(TMPDIR)==False:
@@ -19,56 +18,16 @@ if os.path.isdir(TMPDIR)==False:
 TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 DATADIR="/usr/share/llx-upgrade-release/files"
-REPODIR="/usr/share/llx-upgrade-release/repo/pool"
+REPODIR="/usr/share/llx-upgrade-release/repo"
 LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 META_RDEPENDS=os.path.join(TMPDIR,"pkgs.list")
 SOURCESF="/etc/apt/sources.list"
 
-def i18n(raw):
-	imsg=({
-		"ABORT":_("Operation canceled"),
-		"ACCEPT":_("Accept"),
-		"ASK":_("Update?"),
-		"AVAILABLE":_("There's a new LliureX release"),
-		"BEGIN":_("Upgrading Lliurex..."),
-		"CANCEL":_("Cancel"),
-		"CHKRESULTS":_("Checking upgrade results..."),
-		"DEFAULT":_("Default repositores will be resetted to Lliurex defaults.") ,
-		"DISABLE":_("All configured repositories will be disabled."),
-		"DISABLEREPOS":_("Disabling repos.."),
-		"DISCLAIMER":_("This operation may destroy your system (or not)"),
-		"DISCLAIMERGUI":_("This operation may destroy the system, proceed anyway"),
-		"DISMISS":_("If you don't know what are you doing abort now"),
-		"DOWNGRADE":_("UPGRADE FAILED!!. Wait while trying to recovery..."),
-		"DOWNLOADED":_("All packages has been downloaded"),
-		"END":_("System will go to upgrade mode. Don't poweroff the system."),
-		"EXTRACT":_("Extracting upgrade files.."),
-		"IMPORTANT":_("IMPORTANT"),
-		"LASTCHANCE":_("This is the last chance for aborting.<br>Don't poweroff the computer nor interrupt the upgrade in any way."),
-		"NOAVAILABLE":_("There're no upgrades available"),
-		"PENDING":_("There're updates available. Install them before continue."),
-		"PRAY":_("This is catastrophical.<br>Upgrader has tried to revert Lliurex-Up to original state"),
-		"PRAY2":_("The upgraded failed.<br>Call a technical assistant and try to manually downgrade through Lliurex-Up"),
-		"PRESS":_("Press a key for launching Lliurex-Up"),
-		"PRESSREBOOT":_("Press to reboot"),
-		"READ":_("Read carefully all the info showed in the screen"),
-		"REBOOT":_("All files are downloaded. Press ACCEPT to begin the upgrade."),
-		"REBOOT1":_("Close all open applications for preventing data loss."),
-		"REBOOT_KO":_("It seems that the upgrade failed"),
-		"REBOOT_KO1":_("Check your network and retry."),
-		"RECOM":_("As result of this aborted upgrade may appear some problems with package management. Run lliurex-up now."),
-		"REPONOTFOUND":_("No repo available at given path."),
-		"REPOS":_("All repositories configured in this system will be deleted."),
-		"REVERT":_("Reverting repositories to previous state"),
-		"ROOT":_("Must be root"),
-		"SETTINGUP":_("Setting up things. Be patient..."),
-		"UNDO":_("This operation could not be reversed"),
-		"UPGRADEEND":_("System upgrade completed. Now the system will reboot"),
-		"UPGRADEOK":_("System upgrade completed."),
-		"UPGRADE":_("Setting info for lliurex-up")})
-	return(imsg.get(raw,raw))
+def _debug(msg):
+	if DBG==True:
+		print("DBG: {}".format(msg))
 
 def processMetaRelease(meta):
 	content={}
@@ -103,11 +62,17 @@ def processMetaRelease(meta):
 	return(content)
 #def processMetaRelease
 
-def chkReleaseAvailable(metadata):
+def chkReleaseAvailable(url=""):
+	upgradeTo={}
+	if len(url)==0:
+		url="https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/files/meta-release"
+	meta=downloadFile(url)
+	if os.path.isfile(meta):
+		with open(meta,"r") as f:
+			metadata=processMetaRelease(f.readlines())
 	cmd=["lliurex-version","-n"]
 	cmdOutput=subprocess.check_output(cmd,encoding="utf8").strip()
 	majorCurrent=cmdOutput.split(".")[0]
-	upgradeTo={}
 	for release,releasedata in metadata.items():
 		version=releasedata.get("Version","").split(":")[1].strip()
 		majorNext=version.split(".")[0]
@@ -319,7 +284,7 @@ def _modifyAptConf(repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	aptconf="/etc/apt/apt.conf"
-	print("APT cache: {}".format(repodir))
+	_debug("APT cache: {}".format(repodir))
 	if os.path.isfile(aptconf)==True:
 		shutil.copy(aptconf,TMPDIR)
 	if os.path.isdir(repodir)==False:
@@ -363,11 +328,11 @@ def downloadPackages(pkgs,repodir=""):
 	for pkg in pkgs:
 		cmd=["apt-get","install","-y","-d","--reinstall",pkg]
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
-		print("Get: {}".format(pkg))
+		_debug("Get: {}".format(pkg))
 		if prc.returncode!=0:
 			olddir=os.getcwd()
 			os.chdir(repodir)
-			print("Download: {})".format(pkg))
+			_debug("Download: {})".format(pkg))
 			cmd=["apt-get","download","{}".format(pkg)]
 			prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 			os.chdir(olddir)
@@ -428,41 +393,83 @@ def generateLocalRepo(release="jammy",repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 		
-	dists=[release,"{}-updates".format(release),"{}-security".format(release)]
-	components=["main","universe","multiverse"]
-	for dist in dists:
-		repo="{}{}".format(repodir,dist.replace(release,""))
-		if os.path.isdir(repo)==False:
-			os.makedirs(repo)
-		f=open(os.path.join(repo,"Packages"),"w")
-		f.close()
-		for component in components:
-			packagesf=downloadFile("http://lliurex.net/{0}/dists/{1}/{2}/binary-amd64/Packages".format(release,dist,component))
-			with open(packagesf,"r") as f:
-				fcontent=f.read()
-			if repo!=repodir:
-				path="../repo/"
-			else:
+	repos=_readLocalRepo(repodir)
+	_cleanLocalRepo(repodir,repos)
+	for url,urldata in repos.items():
+		for data in urldata:
+			dist=data.get("dist","")
+			if len(dist)<=0:
+				continue
+			repo=os.path.join(repodir,dist)
+			for component in data.get("components",[]):
+				packagesf=downloadFile("{0}/dists/{2}/{3}/binary-amd64/Packages".format(url,dist.split("-")[0],dist,component))
+				if os.path.isfile(packagesf)==False:
+					packagesgz=downloadFile("{0}/dists/{2}/{3}/binary-amd64/Packages.gz".format(url,dist.split("-")[0],dist,component))
+					packagesf=packagesgz.replace(".gz","")
+					with gzip.open(packagesgz, 'rb') as f:
+						fcontent = f.read().decode()
+					with open(packagesf, 'a') as f:
+						f.write(fcontent)
+					
+				if os.path.isfile(packagesf)==False:
+					continue
+				with open(packagesf,"r") as f:
+					fcontent=f.read()
 				path="./"
-			if os.path.isdir(repo)==False:
-				os.makedirs(repo)
-			line=[]
-			with open(os.path.join(repo,"Packages"),"a") as f:
-				for fline in fcontent.split("\n"):
-					if fline.startswith("Filename:"):
-						line=fline.split(" ")
-						fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
-					f.write("{}\n".format(fline))
+				if repo!=repodir:
+					path="../repo/"
+				line=[]
+				_debug("Generating {0} PACKAGES in {1} for {2} ({3})".format(component,repo,dist,url))
+				with open(os.path.join(repo,"Packages"),"a") as f:
+					for fline in fcontent.split("\n"):
+						if fline.startswith("Filename:"):
+							line=fline.split(" ")
+							fline=" ".join([line[0],"{0}{1}".format(path,os.path.basename(line[1]))])
+						f.write("{}\n".format(fline))
 	_modifyAptConf(repodir)
+	return()
 #def generateLocalRepo
 
-def generateLocalRepo(repodir=""):
+def _cleanLocalRepo(repodir="",repos={}):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
+
+	for url,urldata in repos.items():
+		for data in urldata:
+			dist=data.get("dist","")
+			repo=os.path.join(repodir,dist)
+			_debug("Clean {}".format(repo))
+			if os.path.isdir(repo)==False:
+				os.makedirs(repo)
+			f=open(os.path.join(repo,"Packages"),"w")
+			f.close()
+	return()
+#def _cleanLocalRepo
+
+def _readLocalRepo(repodir=""):
+	if repodir=="" or os.path.exists(repodir)==False:
+		repodir=REPODIR
+
+	repos={}
+	print("BEGIN")
 	with open(SOURCESF,"r") as f:
 		fcontent=f.readlines()
 	for l in fcontent:
-		print(l)
+		line=l.strip().split()
+		url=""
+		components=[]
+		array_idx=[index for (index, item) in enumerate(line) if ":/" in item]
+		if len(array_idx)>0:
+			idx=array_idx[0]
+			url=line[idx]
+			dist=line[idx+1]
+			components=line[idx+2:]
+		if repos.get(url,"")=="":
+			repos[url]=[{"dist":dist,"components":components}]
+		else:
+			repos[url].append({"dist":dist,"components":components})
+	return(repos)
+#def _readLocalRepo
 
 def generateReleaseFile(release="jammy",version="23.06",releasedate="Mon, 18 Sep 2023 10:02:58 UTC"):
 	releasef=downloadFile("http://lliurex.net/{0}/dists/{0}/main/binary-amd64/Release".format(release))
@@ -516,7 +523,7 @@ def chkUpgradeResult():
 def fixAptSources(repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
-	print("Setting dir for repo: {}".format(repodir))
+	_debug("Setting dir for repo: {}".format(repodir))
 	llxup_sources=os.path.join(os.path.dirname(SOURCESF),"lliurexup_sources.list")
 	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")
 	if os.path.isfile(llxup_sources):
@@ -590,7 +597,7 @@ def _modHttpd():
 				f.writelines(fcontent)
 				f.write("\n")
 			cmd=["mount",tmpfilen,filen,"--bind"]
-			print("CMD: {}".format(" ".join(cmd)))
+			_debug("CMD: {}".format(" ".join(cmd)))
 			try:
 				subprocess.run(cmd)
 			except Exception as e:

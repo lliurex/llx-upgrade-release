@@ -189,7 +189,7 @@ def enableUpgradeRepos(tools):
 	shutil.copy("{}/sources.list".format(TMPDIR),"/etc/apt/sources.list")
 	_generateDemoteScript()
 	_generatePostInstallScript()
-	_disablepinning()
+	_disablePinning()
 	return()
 #def enableUpgradeRepos
 

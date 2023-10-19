@@ -552,7 +552,7 @@ def unsetSystemdUpgradeTarget():
 def chkUpgradeResult():
 	pass
 	
-#def chkUpgradeResult
+#def CHkUpgradeResult
 
 def fixAptSources(repodir="",release="jammy"):
 	if repodir=="" or os.path.exists(repodir)==False:

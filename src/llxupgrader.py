@@ -160,7 +160,7 @@ def _disablePinning():
 		for line in lines:
 			disabled.append("#${}".format(line.strip()))
 		with open(pinf,"w") as f:
-			f.writelines(disabled)
+			f.write("\n".join(disabled))
 	return()
 #def _disablePinning
 
@@ -207,7 +207,7 @@ def _enablePinning():
 		for line in lines:
 			enabled.append("{}".format(line.replace("#$","",1).strip()))
 		with open(pinf,"w") as f:
-			f.writelines(enabled)
+			f.write("\n".join(enabled))
 	return()
 #def _enablePinning
 

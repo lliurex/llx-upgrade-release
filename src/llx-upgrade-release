@@ -111,6 +111,7 @@ if os.geteuid()!=0:
 
 if len(sys.argv[0])>1:
 	(unattended,repo,download)=chkParms(sys.argv)
+upgradeTo=llxupgrader.chkReleaseAvailable()
 if len(repo)>0:
 	print("Using {}".format(repo))
 	if os.path.exists(repo)==False:
@@ -122,20 +123,18 @@ if len(repo)>0:
 		if upgrade!="y":
 			print(i18n("ABORT"))
 			sys.exit(2)
-else:
-	upgradeTo=llxupgrader.chkReleaseAvailable()
-	if unattended==False and len(upgradeTo)>0:
-		print("{0}: {1}".format(i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
-		upgrade=input("{}? y/[n]: ".format(i18n("ASK")))
-		if upgrade!="y":
-			print(i18n("ABORT"))
-			sys.exit(2)
-	elif len(upgradeTo)<=0:
-		print(i18n("NOAVAILABLE"))
-		sys.exit(0)
-	if unattended==False and disclaimerAgree()==False:
+elif unattended==False and len(upgradeTo)>0:
+	print("{0}: {1}".format(i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
+	upgrade=input("{}? y/[n]: ".format(i18n("ASK")))
+	if upgrade!="y":
 		print(i18n("ABORT"))
 		sys.exit(2)
+elif len(upgradeTo)<=0:
+	print(i18n("NOAVAILABLE"))
+	sys.exit(0)
+if unattended==False and disclaimerAgree()==False:
+	print(i18n("ABORT"))
+	sys.exit(2)
 print()
 print(i18n("BEGIN"))
 packagesToUpdate=llxupgrader.upgradeCurrentState()

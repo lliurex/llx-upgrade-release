@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 import os,sys, tempfile, shutil
+import filecmp
 import tarfile,gzip
-import hashlib
-import time
 import subprocess
 from repomanager import RepoManager as repoman
 from urllib.request import urlretrieve
@@ -28,6 +27,7 @@ SOURCESF="/etc/apt/sources.list"
 def _debug(msg):
 	if DBG==True:
 		print("DBG: {}".format(msg))
+#def _debug
 
 def processMetaRelease(meta):
 	content={}
@@ -160,7 +160,7 @@ def _disablePinning():
 		for line in lines:
 			disabled.append("#${}".format(line.strip()))
 		with open(pinf,"w") as f:
-			f.writelines(disabled)
+			f.write("\n".join(disabled))
 	return()
 #def _disablePinning
 
@@ -207,7 +207,7 @@ def _enablePinning():
 		for line in lines:
 			enabled.append("{}".format(line.replace("#$","",1).strip()))
 		with open(pinf,"w") as f:
-			f.writelines(enabled)
+			f.write("\n".join(enabled))
 	return()
 #def _enablePinning
 
@@ -316,6 +316,8 @@ def _modifyAptConf(repodir=""):
 	_debug("APT cache: {}".format(repodir))
 	if os.path.isfile(aptconf)==True:
 		shutil.copy(aptconf,TMPDIR)
+	elif os.path.exists(os.path.join(TMPDIR,os.path.basename(aptconf))):
+		os.unlink(os.path.join(TMPDIR,os.path.basename(aptconf)))
 	if os.path.isdir(repodir)==False:
 		os.makedirs(repodir)
 	with open(aptconf,"w") as f:
@@ -696,11 +698,13 @@ def unfixAptSources():
 
 def removeAptConf():
 	aptconf="/etc/apt/apt.conf"
-	tmpaptconf=os.path.join(TMPDIR,os.path.basename(aptconf))
 	if os.path.isfile(aptconf):
 		os.unlink(aptconf)
+	tmpaptconf=os.path.join(TMPDIR,os.path.basename(aptconf))
 	if os.path.isfile(tmpaptconf):
-		shutil.copy(tmpaptconf,aptconf)
+		if filecmp.cmp(aptconf,tmpaptconf,shallow=True)==False:
+			shutil.copy(tmpaptconf,aptconf)
+		os.unlink(tmpaptconf)
 	return()
 #def removeAptConf
 

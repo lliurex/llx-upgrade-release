@@ -113,20 +113,29 @@ if len(sys.argv[0])>1:
 	(unattended,repo,download)=chkParms(sys.argv)
 if len(repo)>0:
 	print("Using {}".format(repo))
-
-upgradeTo=llxupgrader.chkReleaseAvailable()
-if unattended==False and len(upgradeTo)>0:
-	print("{0}: {1}".format(i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
-	upgrade=input("{}? y/[n]: ".format(i18n("ASK")))
-	if upgrade!="y":
+	if os.path.exists(repo)==False:
+		print("{0}\n{1}".format(i18n("NOAVAILABLE"),repo))
+		sys.exit(0)
+	if unattended==False:
+		print("{0}".format(i18n("AVAILABLE")))
+		upgrade=input("{}? y/[n]: ".format(i18n("ASK")))
+		if upgrade!="y":
+			print(i18n("ABORT"))
+			sys.exit(2)
+else:
+	upgradeTo=llxupgrader.chkReleaseAvailable()
+	if unattended==False and len(upgradeTo)>0:
+		print("{0}: {1}".format(i18n("AVAILABLE"),upgradeTo["Name"].split(":")[1].strip()))
+		upgrade=input("{}? y/[n]: ".format(i18n("ASK")))
+		if upgrade!="y":
+			print(i18n("ABORT"))
+			sys.exit(2)
+	elif len(upgradeTo)<=0:
+		print(i18n("NOAVAILABLE"))
+		sys.exit(0)
+	if unattended==False and disclaimerAgree()==False:
 		print(i18n("ABORT"))
 		sys.exit(2)
-elif len(upgradeTo)<=0:
-	print(i18n("NOAVAILABLE"))
-	sys.exit(0)
-if unattended==False and disclaimerAgree()==False:
-	print(i18n("ABORT"))
-	sys.exit(2)
 print()
 print(i18n("BEGIN"))
 packagesToUpdate=llxupgrader.upgradeCurrentState()
@@ -159,19 +168,21 @@ if repo=="":
 	print(i18n("EXTRACT"))
 	pkgs=llxupgrader.getDependPkgs()
 	llxupgrader.downloadPackages(pkgs,repo)
+	llxupgrader.removeAptConf()
 elif os.path.exists(repo)==False:
 	print("{}: {}".format(i18n("REPONOTFOUND"),repo))
 	llxupgrader.restoreRepos()
 	noreturn=2
 	sys.exit(10)
-print("Local repo: {}".format(repo))
+else:
+	print("Local repo: {}".format(repo))
 llxupgrader.generateLocalRepo("jammy",repo)
 if download==True:
 	llxupgrader.restoreRepos()
 	print("{}".format(i18n("DOWNLOADED")))
 	sys.exit(0)
 #llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
-llxupgrader.upgradeLlxUp(upgradeTo)
+#llxupgrader.upgradeLlxUp(upgradeTo)
 noreturn=0
 llxupgrader.setLocalRepo("jammy",repo)
 llxupgrader.setSystemdUpgradeTarget()

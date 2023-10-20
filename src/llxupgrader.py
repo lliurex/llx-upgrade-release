@@ -142,6 +142,7 @@ def _generateDemoteScript():
 			fcontent+="preActions)\n"
 			fcontent+="dpkg --force-all --purge {} || true\n".format(" ".join(demote))
 			fcontent+="apt-get install -f -y\n"
+			fcontent+="dpkg --get-selections > {0}\n".format(os.path.join(TMPDIR,"dselect"))
 			fcontent+="rm $0\n"
 			fcontent+="\n;;\nesac"
 
@@ -165,14 +166,12 @@ def _disablePinning():
 #def _disablePinning
 
 def _generatePostInstallScript():
-		#DEPRECATED
-		return
 		fcontent="#!/bin/bash\n"
 		fcontent+="ACTION=\"$1\"\n"
 		fcontent+="case \"$ACTION\" in\n" 
 		fcontent+="postActions)\n"
-		fcontent+="touch /tmp/.endUpdate\n"
-		fcontent+="rm {} 2>/dev/null || true\n".format(LLXUP_TOKEN)
+		fcontent+="dpkg --set-selections < {0}\n".format(os.path.join(TMPDIR,"dselect"))
+		fcontent+="apt-get dselect-upgrade -y || true\n"
 		fcontent+="rm $0\n"
 		fcontent+="\n;;\nesac"
 		with open(LLXUP_POSTSCRIPT,"w") as f:
@@ -350,15 +349,14 @@ def _deleteAptLists():
 def downloadPackages(pkgs,repodir=""):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
-	_modifyAptConf(repodir)
 	clean()
-	cmd=["apt-get","dist-upgrade","-y","-d"]
+	cmd=["apt-get","dist-upgrade","-y","-d","-o","Dir::Cache::Archives={0}".format(repodir)]
 	subprocess.run(cmd)
 	repoerr="/usr/share/llx-upgrade-release/err"
 	f=open(repoerr,"w")
 	f.close()
 	for pkg in pkgs:
-		cmd=["apt-get","install","-y","-d","--reinstall",pkg]
+		cmd=["apt-get","install","-y","-d","--reinstall",pkg,"-o","Dir::Cache::Archives={0}".format(repodir)]
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 		_debug("Get: {}".format(pkg))
 		if prc.returncode!=0:

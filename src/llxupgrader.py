@@ -578,6 +578,7 @@ def fixAptSources(repodir="",release="jammy"):
 
 def _enableIpRedirect():
 	##DEPRECATED##
+	return
 	cmd=["nslookup","lliurex.net"]
 	local127=False
 	try:
@@ -698,12 +699,16 @@ def unfixAptSources():
 
 def removeAptConf():
 	aptconf="/etc/apt/apt.conf"
+	tmpaptconf=os.path.join(TMPDIR,os.path.basename(aptconf))
+	sw=False
+	if os.path.isfile(tmpaptconf)==True and os.path.isfile(aptconf)==True:
+		if filecmp.cmp(aptconf,tmpaptconf,shallow=True)==False:
+			sw=True
 	if os.path.isfile(aptconf):
 		os.unlink(aptconf)
-	tmpaptconf=os.path.join(TMPDIR,os.path.basename(aptconf))
+	if sw==True:
+		shutil.copy(tmpaptconf,aptconf)
 	if os.path.isfile(tmpaptconf):
-		if filecmp.cmp(aptconf,tmpaptconf,shallow=True)==False:
-			shutil.copy(tmpaptconf,aptconf)
 		os.unlink(tmpaptconf)
 	return()
 #def removeAptConf

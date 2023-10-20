@@ -152,14 +152,8 @@ class qupgrader(QWidget):
 		self.lbl_img=QLabel()
 		self.lbl_txt=QLabel("LLX-UPGRADER v1.0.0<br>{}".format(i18n("BEGIN")))
 		self.lbl_txt.setStyleSheet("color:white")
-		self.btn_end=QPushButton()
-		lbl=QLabel("<p>{0}</p><p><b>{1}</b></p>".format(i18n("UPGRADEOK"),i18n("PRESSREBOOT")))
-		btnlay=QGridLayout()
-		btnlay.addWidget(lbl,0,0,1,1,Qt.AlignCenter)
-		lbl.setStyleSheet("margin:3px;padding:3px;border:1px solid silver;")
-		self.btn_end.setLayout(btnlay)
-		self.btn_end.setMinimumWidth(lbl.sizeHint().width()+2*(btnlay.contentsMargins().left()))
-		self.btn_end.setMinimumHeight(lbl.sizeHint().height()+2*(btnlay.contentsMargins().top()))
+		self.btn_end=QPushButton("{0}\n{1}".format(i18n("UPGRADEOK"),i18n("PRESSREBOOT")))
+		self.btn_end.setStyleSheet("font-weight: bold;")
 		self.btn_end.setVisible(False)
 		self.btn_end.clicked.connect(self._reboot)
 		self.qserver=QServer()
@@ -294,9 +288,7 @@ class qupgrader(QWidget):
 	#def showEnd
 
 	def _reboot(self):
-		txt=self.lbl_txt.text()
-		self.lbl_txt.setText("<p>{0}</p>".format("Init 6"))
-		print("Rebooting")
+		self.lbl_txt.setText("<p>Init 6</p>")
 		cmd=["systemctl","reboot"]
 		subprocess.run(cmd)
 	#def _reboot
@@ -338,6 +330,6 @@ app.setWindowIcon(QtGui.QIcon(os.path.join(rsrcdir,"llxupgrader.png")))
 if __name__=="__main__":
 	qup=qupgrader()
 	qup.renderBkg()
-	qup.doFixes()
+#	qup.doFixes()
 app.exec_()
 

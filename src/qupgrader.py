@@ -169,8 +169,8 @@ class qupgrader(QWidget):
 	def eventFilter(self, source, event):
 		if event.type()==QEvent.KeyPress:
 			event.ignore()
-			return
-		return super().eventFilter(source, event)
+			return (False)
+		return (super().eventFilter(source, event))
 	#def eventFilter
 
 	def _debug(self,msg):
@@ -186,7 +186,7 @@ class qupgrader(QWidget):
 		lay.addWidget(self.lbl_img,0,0,1,1)
 		lay.addWidget(self.lbl_txt,0,0,1,1,Qt.AlignTop|Qt.AlignLeft)
 		lay.addWidget(self.btn_end,0,0,1,1,Qt.AlignCenter|Qt.AlignCenter)
-		self.show()
+		self.showFullScreen()
 	#def renderBkg
 
 	def closeEvent(self,event):
@@ -330,6 +330,6 @@ app.setWindowIcon(QtGui.QIcon(os.path.join(rsrcdir,"llxupgrader.png")))
 if __name__=="__main__":
 	qup=qupgrader()
 	qup.renderBkg()
-#	qup.doFixes()
+	qup.doFixes()
 app.exec_()
 

@@ -166,6 +166,8 @@ def _disablePinning():
 #def _disablePinning
 
 def _generatePostInstallScript():
+		#DISABLED
+		return
 		fcontent="#!/bin/bash\n"
 		fcontent+="ACTION=\"$1\"\n"
 		fcontent+="case \"$ACTION\" in\n" 

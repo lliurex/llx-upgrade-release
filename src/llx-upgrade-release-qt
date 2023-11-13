@@ -388,9 +388,10 @@ class upgraderGui(QWidget):
 		lbl_info.btn_ko.clicked.connect(self._close)
 		if self.packagesToUpdate>0:
 			self.noreturn=0
-			lbl_info.btn_ok.setVisible(False)
+			lbl_info.btn_ok.setVisible(True)
 			lbl_info.btn_ko.setVisible(False)
 			lbl_info.setText((i18n("PENDING")))
+			lbl_info.clicked.connect(self._launchUp)
 		else:
 			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(i18n("DISABLE"),i18n("DEFAULT"),i18n("UNDO")))
 			lbl_info.clicked.connect(self._doUpgrade)

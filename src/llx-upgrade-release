@@ -198,7 +198,7 @@ if unattended==False:
 		os.unlink(unattendedf)
 	print("{0}\n{1}\n{2}\n".format(i18n("REBOOT"),i18n("REBOOT1"),i18n("END")))
 	reboot=input("[y]/n: ")
-	if upgrade!="n":
+	if reboot!="n":
 		cmd=["systemctl","isolate","llx-upgrade"]
 		subprocess.run(cmd)
 else:

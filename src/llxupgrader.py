@@ -10,7 +10,7 @@ from lliurex import lliurexup
 DBG=True
 
 TMPDIR="/usr/share/llx-upgrade-release/tmp"
-if os.path.isdir(TMPDIR)==False:
+if os.path.isdir(TMPDIR)==False and os.geteuid()==0:
 	if os.path.exists(TMPDIR)==True:
 		os.unlink(TMPDIR)
 	os.makedirs(TMPDIR)

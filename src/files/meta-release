@@ -22,3 +22,15 @@ ReleaseNotesHtml: https://raw.githubusercontent.com/lliurex/llx-upgrade-release/
 UpgradeTool: https://github.com/lliurex/llx-upgrade-release/raw/master/src/llx23/llx23.tar
 UpgradeToolSignature: https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/llx23/llx23.tar.gpg
 
+Dist: llx25
+Name: LliureX 25
+Version: 25.241121.0
+Date: Thu, 21 Nov 2024 12:03:01 UTC
+Supported: 1
+Description: This is the LliureX 25 LTS release
+Release-File: http://lliurex.net/noble/dists/noble-updates/Release
+ReleaseNotes: https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/files/src/llx25/ReleaseAnnouncement
+ReleaseNotesHtml: https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/files/src/llx25/ReleaseAnnouncement.html
+UpgradeTool: https://github.com/lliurex/llx-upgrade-release/raw/master/src/llx25/llx25.tar
+UpgradeToolSignature: https://raw.githubusercontent.com/lliurex/llx-upgrade-release/master/src/llx25/llx25.tar.gpg
+

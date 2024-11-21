@@ -3,7 +3,7 @@ import os,sys, tempfile, shutil
 import filecmp
 import tarfile,gzip
 import subprocess
-from repomanager import RepoManager as repoman
+from repoman import repomanager as repoman
 from urllib.request import urlretrieve
 from lliurex import lliurexup
 

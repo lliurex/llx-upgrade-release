@@ -1,6 +1,13 @@
-llx-upgrade-release (21.03.02) UNRELEASED; urgency=medium
+llx-upgrade-release (23.01.01) noble; urgency=medium
+
+  * Test for llx25
+
+ -- Juanma1980 <juanma1980@gmail.com>  Thu, 21 Nov 2024 12:31:28 +0100
+
+llx-upgrade-release (21.03.02) focal; urgency=medium
 
   * wip
+  * 
 
  -- Juanma1980 <juanma1980@gmail.com>  Mon, 13 Nov 2023 16:21:29 +0100
 

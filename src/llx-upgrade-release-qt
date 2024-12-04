@@ -227,7 +227,7 @@ class upgraderGui(QWidget):
 		self.setVisible(False)
 		cmd=["/usr/sbin/lliurex-up","-n"]
 		subprocess.run(cmd)
-		self.setVisible=True
+		self.setVisible(True)
 		self.lst_Steps.takeItem(self.lst_Steps.count()-1)
 		self.beginUpgrade()
 	#def self._launchUp

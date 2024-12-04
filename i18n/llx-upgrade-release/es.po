@@ -122,8 +122,8 @@ msgid ""
 "The upgraded failed.<br>Call a technical assistant and try to manually "
 "downgrade through Lliurex-Up"
 msgstr ""
-"La actualización falló.<br>Es necesaria la intervención manual para "
-"desactualizar Lliurex-Up"
+"La actualización falló.<br>Se aconseja revisar la integridad del sistema "
+"mediante Lliurex-Up"
 
 #: ../src/llxupgrader.py:52
 msgid "Press a key for launching Lliurex-Up"

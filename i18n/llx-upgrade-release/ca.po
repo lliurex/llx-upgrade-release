@@ -112,15 +112,15 @@ msgid ""
 "original state"
 msgstr ""
 "Aço es catastròfic.<br>L'actualitzador ha intentat revertir Lliurex-Up al "
-"seu estar original"
+"seu estat original"
 
 #: ../src/llxupgrader.py:51
 msgid ""
 "The upgraded failed.<br>Call a technical assistant and try to manually "
 "downgrade through Lliurex-Up"
 msgstr ""
-"L'actualització ha fallat.<br>Pot ser calga fer una reparació manual del "
-"sistema per a desactualitzar Lliurex-Up"
+"L'actualització ha fallat.<br>Es recomana revisar la integritat del sistema"
+"mitjançant Lliurex-Up"
 
 #: ../src/llxupgrader.py:52
 msgid "Press a key for launching Lliurex-Up"

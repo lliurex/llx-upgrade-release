@@ -85,12 +85,12 @@ class thRun(QThread):
 			llxupgrader.enableUpgradeRepos(tools)
 			pkgs=llxupgrader.getAllPackages()
 			self.newstate.emit(len(pkgs))
-			pkgs=llxupgrader.getDependPkgs()
-			llxupgrader.downloadPackages(pkgs)
-			self.downloaded.emit()
-			llxupgrader.generateLocalRepo()
-			#llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
-			llxupgrader.setLocalRepo()
+			if len(pkgs):
+			#pkgs=llxupgrader.getDependPkgs()
+				llxupgrader.downloadPackages(pkgs)
+				self.downloaded.emit()
+				llxupgrader.generateLocalRepo()
+				llxupgrader.setLocalRepo()
 			self.end.emit()
 		if self.target=="downgrade":
 			llxupgrader.downgrade()
@@ -219,6 +219,19 @@ class upgraderGui(QWidget):
 		self.noreturn=0
 	#def __init__
 
+	def chkUpAvailable(self):
+		return(llxupgrader.chkReleaseAvailable())
+	#def chkUpAvailable
+
+	def _launchUp(self):
+		self.setVisible(False)
+		cmd=["/usr/sbin/lliurex-up","-n"]
+		subprocess.run(cmd)
+		self.setVisible(True)
+		self.lst_Steps.takeItem(self.lst_Steps.count()-1)
+		self.beginUpgrade()
+	#def self._launchUp
+
 	def closeEvent(self,event):
 		if self.noreturn==1:
 			event.ignore()
@@ -228,6 +241,188 @@ class upgraderGui(QWidget):
 		self.setEnabled(False)
 		self.noreturn=0
 	#def _close
+
+	def renderGui(self):
+		lay=QGridLayout()
+		self.setLayout(lay)
+		self.lst_Steps=QListWidget()
+		self.lst_Steps.currentRowChanged.connect(self._disableStep)
+		banner=QStepLine()
+		banner.enableImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
+		banner.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark_llx25.jpg")
+		banner.prg.setImg("/usr/share/llx-upgrade-release/rsrc/1024x768_llx25.jpg")
+		banner.btn_ok.setVisible(False)
+		banner.btn_ko.setVisible(False)
+		itemb = QListWidgetItem(self.lst_Steps)
+		self.lst_Steps.addItem(itemb)
+		self.lst_Steps.setItemWidget(itemb,banner)
+		lbl_info=QStepLine()
+		lbl_info.btn_ok.setEnabled(False)
+		lbl_info.btn_ko.clicked.connect(self._close)
+		lay.addWidget(self.lst_Steps,0,0,1,2)
+		self.chk_sure=QCheckBox(i18n("DISCLAIMERGUI"))
+		self.chk_sure.stateChanged.connect(lambda x:lbl_info.btn_ok.setEnabled(self.chk_sure.isChecked()))
+		lay.addWidget(self.chk_sure,3,0,1,2,Qt.AlignLeft)
+		if self.upgradeTo:
+			lbl_info.setText("<i>{0}: {1}</i><p><b>{3}</b></p>".format(i18n("AVAILABLE"),self.upgradeTo["Name"].split(":")[1].strip(),i18n("ASK"),i18n("DISMISS")))
+			lbl_info.clicked.connect(self.beginUpgrade)
+		else:
+			lbl_info.setText("<i>{0}</i>".format(i18n("NOAVAILABLE")))
+			lbl_info.clicked.connect(self._close)
+			self.chk_sure.setEnabled(False)
+		item = QListWidgetItem(self.lst_Steps)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		itemb.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+		item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
+		self.setFixedSize(QSize(self.lst_Steps.width(),self.lst_Steps.height()))
+	#def renderGui
+
+	def beginUpgrade(self):
+		self.chk_sure.setDisabled(True)
+		cursor=QtGui.QCursor(Qt.WaitCursor)
+		self.setCursor(cursor)
+		self.th.setTarget("currentstate")
+		self.th.currentstate.connect(self._endBeginUpgrade)
+		self.th.start()
+		self.noreturn=1	
+	#def beginUpgrade
+
+	def _endBeginUpgrade(self,packages):
+		cursor=QtGui.QCursor(Qt.PointingHandCursor)
+		self.setCursor(cursor)
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		self.packagesToUpdate=packages
+		lbl_info.btn_ko.clicked.connect(self._close)
+		if self.packagesToUpdate>0:
+			self.noreturn=0
+			lbl_info.btn_ok.setVisible(True)
+			lbl_info.btn_ko.setVisible(False)
+			lbl_info.setText((i18n("PENDING")))
+			lbl_info.clicked.connect(self._launchUp)
+		else:
+			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(i18n("DISABLE"),i18n("DEFAULT"),i18n("UNDO")))
+			lbl_info.clicked.connect(self._doUpgrade)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+	#def _endBeginUpgrade
+
+	def _doUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(i18n("SETTINGUP"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		try:
+			cursor=QtGui.QCursor(Qt.WaitCursor)
+			self.setCursor(cursor)
+			self.th.setTarget("disablerepos")
+			self.th.start()
+			self.th.disabled.connect(self._beginLastStepUpgrade)
+			self.noreturn=1	
+		except Exception as e:
+			print(e)
+			lbl_info.setText("{}".format(e))
+			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+			return(False)
+	#def _doUpgrade
+
+	def _beginLastStepUpgrade(self):
+		cursor=QtGui.QCursor(Qt.PointingHandCursor)
+		self.setCursor(cursor)
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText("{0}<br>{1}".format(i18n("LASTCHANCE"),i18n("DISMISS")))
+		lbl_info.clicked.connect(self._doLastStepUpgrade)
+		lbl_info.btn_ko.clicked.connect(self._revertAll)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
+	#def _beginLastStepUpgrade
+
+	def _doLastStepUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(i18n("SETTINGUP"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		cursor=QtGui.QCursor(Qt.WaitCursor)
+		self.setCursor(cursor)
+		self.th.setTarget("doUpgrade")
+		self.th.newstate.connect(self._doProgress)
+		self.th.downloaded.connect(self._endDownload)
+		self.th.end.connect(self._endUpgrade)
+		self.th.start()
+		self.noreturn=1	
+	#def _doLastStepUpgrade
+
+	def _doProgress(self,packages):
+		self.packagesToUpdate=packages
+		item=self.lst_Steps.item(0)
+		wdg=self.lst_Steps.itemWidget(item)
+		self.lst_Steps.setCurrentItem(item)
+		wdg.prg.setRange(0,self.packagesToUpdate+1)
+		self.thProgress.setValue(self.packagesToUpdate)
+		self.thProgress.setPrg(wdg.prg)
+		self.thProgress.progress.connect(self._updatePrg)
+		self.thProgress.start()
+	#def _doProgress
+		
+	def _endDownload(self):
+		bitem=self.lst_Steps.item(0)
+		wdg=self.lst_Steps.itemWidget(bitem)
+		self.thProgress.prgValue=1
+		wdg.prg.setFinish()
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.setText(i18n("SETTINGUP"))
+		lbl_info.btn_ok.setVisible(False)
+		lbl_info.btn_ko.setVisible(False)
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		self.lst_Steps.setCurrentItem(item)
+	#def _endDownload
+
+	def _endUpgrade(self):
+		item = QListWidgetItem(self.lst_Steps)
+		lbl_info=QStepLine()
+		lbl_info.clicked.connect(self._launch)
+		#if self.packagesToUpdate>len(os.listdir("/usr/share/llx-upgrade-release/repo")) or self.packagesToUpdate==0:
+		if  self.packagesToUpdate==0:
+			print("ERROR")
+			print("Pkgs tp update: {}".format(self.packagesToUpdate))
+			print("Pkgs downloaded: {}".format(len(os.listdir("/usr/share/llx-upgrade-release/repo"))))
+			lbl_info.setText("{0}<br>{1}".format(i18n("REBOOT_KO"),i18n("REBOOT_KO1")))
+			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
+			lbl_info.btn_ok.setVisible(False)
+			lbl_info.btn_ko.setVisible(True)
+		else:
+			llxupgrader.setSystemdUpgradeTarget()
+			#llxupgrader.upgradeLlxUp(self.upgradeTo)
+			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(i18n("REBOOT"),i18n("REBOOT1"),i18n("END")))
+			lbl_info.btn_ok.setVisible(True)
+			lbl_info.btn_ko.clicked.connect(self._close)
+		cursor=QtGui.QCursor(Qt.PointingHandCursor)
+		self.setCursor(cursor)
+		self._updatePrg(self.packagesToUpdate+1)
+		self.noreturn=0
+		self.lst_Steps.addItem(item)
+		self.lst_Steps.setItemWidget(item,lbl_info)
+		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
+		self.lst_Steps.setCurrentItem(item)
+	#def _endUpgrade
 
 	def _revertAll(self):
 		llxupgrader.restoreRepos()
@@ -243,10 +438,6 @@ class upgraderGui(QWidget):
 		self.lst_Steps.setCurrentItem(item)
 		self.noreturn=0
 	#def _revertAll
-
-	def _launchUp(self):
-		os.execv("/usr/sbin/lliurex-up",["-n"])
-	#def self._launchUp
 
 	def _endUpgradeFailed(self):
 		cursor=QtGui.QCursor(Qt.PointingHandCursor)
@@ -289,152 +480,6 @@ class upgraderGui(QWidget):
 		cmd=["systemctl","isolate","llx-upgrade"]
 		subprocess.run(cmd)
 		sys.exit()
-		
-	def _endUpgrade(self):
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.clicked.connect(self._launch)
-		#if self.packagesToUpdate>len(os.listdir("/usr/share/llx-upgrade-release/repo")) or self.packagesToUpdate==0:
-		if  self.packagesToUpdate==0:
-			print("ERROR")
-			print("Pkgs tp update: {}".format(self.packages.ToUpdate))
-			print("Pkgs downloaded: {}".format(len(os.listdir("/usr/share/llx-upgrade-release/repo"))))
-			lbl_info.setText("{0}<br>{1}".format(i18n("REBOOT_KO"),i18n("REBOOT_KO1")))
-			lbl_info.btn_ko.clicked.connect(self._beginUpgradeFailed)
-			lbl_info.btn_ok.setVisible(False)
-			lbl_info.btn_ko.setVisible(True)
-		else:
-			llxupgrader.setSystemdUpgradeTarget()
-			#llxupgrader.upgradeLlxUp(self.upgradeTo)
-			lbl_info.setText("{0}<br>{1}<p>{2}</p>".format(i18n("REBOOT"),i18n("REBOOT1"),i18n("END")))
-			lbl_info.btn_ok.setVisible(True)
-			lbl_info.btn_ko.clicked.connect(self._close)
-		cursor=QtGui.QCursor(Qt.PointingHandCursor)
-		self.setCursor(cursor)
-		self._updatePrg(self.packagesToUpdate+1)
-		self.noreturn=0
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-		self.lst_Steps.setCurrentItem(item)
-	#def _endUpgrade
-
-	def _doLastStepUpgrade(self):
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.setText(i18n("SETTINGUP"))
-		lbl_info.btn_ok.setVisible(False)
-		lbl_info.btn_ko.setVisible(False)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
-		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-		cursor=QtGui.QCursor(Qt.WaitCursor)
-		self.setCursor(cursor)
-		self.th.setTarget("doUpgrade")
-		self.th.newstate.connect(self._doProgress)
-		self.th.downloaded.connect(self._endDownload)
-		self.th.end.connect(self._endUpgrade)
-		self.th.start()
-		self.noreturn=1	
-	#def _doLastStepUpgrade
-
-	def _beginLastStepUpgrade(self):
-		cursor=QtGui.QCursor(Qt.PointingHandCursor)
-		self.setCursor(cursor)
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.setText("{0}<br>{1}".format(i18n("LASTCHANCE"),i18n("DISMISS")))
-		lbl_info.clicked.connect(self._doLastStepUpgrade)
-		lbl_info.btn_ko.clicked.connect(self._revertAll)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-		self.lst_Steps.setCurrentItem(item)
-	#def _beginLastStepUpgrade
-
-	def _doUpgrade(self):
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.setText(i18n("SETTINGUP"))
-		lbl_info.btn_ok.setVisible(False)
-		lbl_info.btn_ko.setVisible(False)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
-		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-		try:
-			cursor=QtGui.QCursor(Qt.WaitCursor)
-			self.setCursor(cursor)
-			self.th.setTarget("disablerepos")
-			self.th.start()
-			self.th.disabled.connect(self._beginLastStepUpgrade)
-			self.noreturn=1	
-		except Exception as e:
-			print(e)
-			lbl_info.setText("{}".format(e))
-			item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-			return(False)
-	#def _doUpgrade
-
-	def _endBeginUpgrade(self,packages):
-		cursor=QtGui.QCursor(Qt.PointingHandCursor)
-		self.setCursor(cursor)
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.packagesToUpdate=packages
-		lbl_info.btn_ko.clicked.connect(self._close)
-		if self.packagesToUpdate>0:
-			self.noreturn=0
-			lbl_info.btn_ok.setVisible(True)
-			lbl_info.btn_ko.setVisible(False)
-			lbl_info.setText((i18n("PENDING")))
-			lbl_info.clicked.connect(self._launchUp)
-		else:
-			lbl_info.setText("<p>{0}</p><p>{1}</p><p><b>{2}</b></p>".format(i18n("DISABLE"),i18n("DEFAULT"),i18n("UNDO")))
-			lbl_info.clicked.connect(self._doUpgrade)
-		item.setSizeHint(QSize(lbl_info.lbl_info.width(), lbl_info.sizeHint().height()))
-		self.lst_Steps.setCurrentItem(item)
-	#def _endBeginUpgrade
-
-	def beginUpgrade(self):
-		self.chk_sure.setDisabled(True)
-		cursor=QtGui.QCursor(Qt.WaitCursor)
-		self.setCursor(cursor)
-		self.th.setTarget("currentstate")
-		self.th.currentstate.connect(self._endBeginUpgrade)
-		self.th.start()
-		self.noreturn=1	
-	#def beginUpgrade
-
-	def _endDownload(self):
-		bitem=self.lst_Steps.item(0)
-		wdg=self.lst_Steps.itemWidget(bitem)
-		self.thProgress.prgValue=1
-		wdg.prg.setFinish()
-		item = QListWidgetItem(self.lst_Steps)
-		lbl_info=QStepLine()
-		lbl_info.setText(i18n("SETTINGUP"))
-		lbl_info.btn_ok.setVisible(False)
-		lbl_info.btn_ko.setVisible(False)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		self.lst_Steps.setCurrentItem(item)
-	#def _endDownload
-
-	def _doProgress(self,packages):
-		self.packagesToUpdate=packages
-		item=self.lst_Steps.item(0)
-		wdg=self.lst_Steps.itemWidget(item)
-		self.lst_Steps.setCurrentItem(item)
-		wdg.prg.setRange(0,self.packagesToUpdate+1)
-		self.thProgress.setValue(self.packagesToUpdate)
-		self.thProgress.setPrg(wdg.prg)
-		self.thProgress.progress.connect(self._updatePrg)
-		self.thProgress.start()
-	#def _doProgress
 
 	def _updatePrg(self,val):
 		item=self.lst_Steps.item(0)
@@ -449,45 +494,6 @@ class upgraderGui(QWidget):
 			wdg.setEnabled(False)
 	#def _disableStep
 
-	def renderGui(self):
-		lay=QGridLayout()
-		self.setLayout(lay)
-		self.lst_Steps=QListWidget()
-		self.lst_Steps.currentRowChanged.connect(self._disableStep)
-		banner=QStepLine()
-		banner.enableImg("/usr/share/llx-upgrade-release/rsrc/bkg.png")
-		banner.prg.setBkgImg("/usr/share/llx-upgrade-release/rsrc/dark_llx25.jpg")
-		banner.prg.setImg("/usr/share/llx-upgrade-release/rsrc/1024x768_llx25.jpg")
-		banner.btn_ok.setVisible(False)
-		banner.btn_ko.setVisible(False)
-		itemb = QListWidgetItem(self.lst_Steps)
-		self.lst_Steps.addItem(itemb)
-		self.lst_Steps.setItemWidget(itemb,banner)
-		lbl_info=QStepLine()
-		lbl_info.btn_ok.setEnabled(False)
-		lbl_info.btn_ko.clicked.connect(self._close)
-		lay.addWidget(self.lst_Steps,0,0,1,2)
-		self.chk_sure=QCheckBox(i18n("DISCLAIMERGUI"))
-		self.chk_sure.stateChanged.connect(lambda x:lbl_info.btn_ok.setEnabled(self.chk_sure.isChecked()))
-		lay.addWidget(self.chk_sure,3,0,1,2,Qt.AlignLeft)
-		if self.upgradeTo:
-			lbl_info.setText("<i>{0}: {1}</i><p><b>{3}</b></p>".format(i18n("AVAILABLE"),self.upgradeTo["Name"].split(":")[1].strip(),i18n("ASK"),i18n("DISMISS")))
-			lbl_info.clicked.connect(self.beginUpgrade)
-		else:
-			lbl_info.setText("<i>{0}</i>".format(i18n("NOAVAILABLE")))
-			lbl_info.clicked.connect(self._close)
-			self.chk_sure.setEnabled(False)
-		item = QListWidgetItem(self.lst_Steps)
-		self.lst_Steps.addItem(item)
-		self.lst_Steps.setItemWidget(item,lbl_info)
-		itemb.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
-		item.setSizeHint(QSize(lbl_info.width(), lbl_info.height()))
-		self.setFixedSize(QSize(self.lst_Steps.width(),self.lst_Steps.height()))
-	#def renderGui
-
-	def chkUpAvailable(self):
-		return(llxupgrader.chkReleaseAvailable())
-	#def chkUpAvailable
 #class upgraderGui
 
 ##### MAIN APP ######

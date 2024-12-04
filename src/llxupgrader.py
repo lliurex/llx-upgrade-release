@@ -94,16 +94,17 @@ def getPkgsToUpdate():
 #def getPkgsToUpdate():
 
 def getAllPackages():
-	llxupPkgs=getPkgsToUpdate()
-	tmp=[]
-	for pkg,data in llxupPkgs.items():
-		tmp.append(pkg)
-	tmp.extend(getDependPkgs())
-	pkgset=set(tmp)
 	pkgs=[]
-	for pkg in pkgset:
-		if len(pkg.strip().replace("\n",""))>0:
-			pkgs.append(pkg.strip().replace("\n",""))
+	llxupPkgs=getPkgsToUpdate()
+	if len(llxupPkgs)>0:
+		tmp=[]
+		for pkg,data in llxupPkgs.items():
+			tmp.append(pkg)
+		tmp.extend(getDependPkgs())
+		pkgset=set(tmp)
+		for pkg in pkgset:
+			if len(pkg.strip().replace("\n",""))>0:
+				pkgs.append(pkg.strip().replace("\n",""))
 	return(pkgs)
 #def getAllPackages
 
@@ -279,12 +280,7 @@ def _getValuesForLliurexUp(metadata):
 def disableRepos():
 	copySystemFiles()
 	manager=repoman.manager()
-	for repo,data in manager.list_sources().items():
-		repos={}
-		repos[repo]=data
-		repos[repo]['enabled']='false'
-		manager.write_repo_json(repos)
-		manager.write_repo(repos)
+	manager.disableAll()
 #def disableRepos
 
 def downloadFile(url):
@@ -438,10 +434,11 @@ def generateLocalRepo(release="jammy",repodir=""):
 				if os.path.isfile(packagesf)==False:
 					packagesgz=downloadFile("{0}/dists/{2}/{3}/binary-amd64/Packages.gz".format(url,dist.split("-")[0],dist,component))
 					packagesf=packagesgz.replace(".gz","")
-					with gzip.open(packagesgz, 'rb') as f:
-						fcontent = f.read().decode()
-					with open(packagesf, 'a') as f:
-						f.write(fcontent)
+					if os.path.isfile(packagesgz)==True:
+						with gzip.open(packagesgz, 'rb') as f:
+							fcontent = f.read().decode()
+						with open(packagesf, 'a') as f:
+							f.write(fcontent)
 					
 				if os.path.isfile(packagesf)==False:
 					continue

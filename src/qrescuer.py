@@ -6,9 +6,9 @@
 import os,sys,subprocess,time
 from i18n import i18n
 import llxupgrader
-from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem
-from PySide6 import QtGui
-from PySide6.QtCore import QSize,Qt,QThread,Signal,QObject
+from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem
+from PySide2 import QtGui
+from PySide2.QtCore import QSize,Qt,QThread,Signal,QObject
 from lliurex import lliurexup
 import gettext
 _ = gettext.gettext

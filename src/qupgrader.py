@@ -148,7 +148,7 @@ class qupgrader(QWidget):
 		codenamef="/tmp/.codename"
 		if os.path.exists(codenamef)==True:
 			with open(codenamef,"r") as f:
-				codename=codenamef.read().strip().split(":")[0]
+				codename=f.read().strip().split(":")[0]
 		else:
 			codename="llx25"
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768_{}.jpg".format(codename)

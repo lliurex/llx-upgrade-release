@@ -2,9 +2,9 @@
 
 import os,subprocess,shutil,time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
-from PySide2 import QtGui
-from PySide2.QtCore import Qt,QThread,QObject,Signal,QEvent
+from PySide6.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
+from PySide6 import QtGui
+from PySide6.QtCore import Qt,QThread,QObject,Signal,QEvent
 from i18n import i18n
 import llxupgrader
 from lliurex import lliurexup

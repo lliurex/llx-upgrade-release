@@ -92,8 +92,8 @@ class thRun(QThread):
 				llxupgrader.generateLocalRepo(self.upgradeTo["Codename"])
 				llxupgrader.setLocalRepo(self.upgradeTo["Codename"])
 				codenamef="/tmp/.codename"
-				with open(codename,"w") as f:
-					f.write("{}:{}".format(self.updateTo["Dist"],self.updateTo["Codename"]))
+				with open(codenamef,"w") as f:
+					f.write("{}:{}".format(self.updateTo["Dist"].lower(),self.updateTo["Codename"].lower()))
 			self.end.emit()
 		if self.target=="downgrade":
 			llxupgrader.downgrade()

@@ -137,6 +137,7 @@ class qupgrader(QWidget):
 		self.dbg=False
 		self.setWindowFlags(Qt.FramelessWindowHint)
 		self.setWindowFlags(Qt.X11BypassWindowManagerHint)
+		self.setWindowFlags(Qt.BypassWindowManagerHint)
 		self.setWindowState(Qt.WindowFullScreen)
 		self.setWindowFlags(Qt.WindowStaysOnBottomHint)
 		unattendedf="/tmp/.unattended"
@@ -144,7 +145,13 @@ class qupgrader(QWidget):
 			self.upgradeCmd='konsole -e /sbin/lliurex-upgrade -u -s -n'
 		else:
 			self.upgradeCmd='/sbin/lliurex-up'
-		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768.jpg"
+		codenamef="/tmp/.codename"
+		if os.path.exists(codenamef)==True:
+			with open(codenamef,"r") as f:
+				codename=codenamef.read().strip().split(":")[0]
+		else:
+			codename="llx25"
+		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768_{}.jpg".format(codename)
 		self.wrkdir="/usr/share/llx-upgrade-release"
 		self.tmpdir=os.path.join(self.wrkdir,"tmp")
 		if os.path.isdir(self.tmpdir)==False:

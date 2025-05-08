@@ -175,7 +175,7 @@ elif os.path.exists(repo)==False:
 	sys.exit(10)
 else:
 	print("Local repo: {}".format(repo))
-llxupgrader.generateLocalRepo("jammy",repo)
+llxupgrader.generateLocalRepo(upgradeTo["Codename"],repo)
 if download==True:
 	llxupgrader.restoreRepos()
 	print("{}".format(i18n("DOWNLOADED")))
@@ -183,7 +183,7 @@ if download==True:
 #llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
 #llxupgrader.upgradeLlxUp(upgradeTo)
 noreturn=0
-llxupgrader.setLocalRepo("jammy",repo)
+llxupgrader.setLocalRepo(upgradeTo["codename" ],repo)
 llxupgrader.setSystemdUpgradeTarget()
 unattendedf="/tmp/.unattended"
 repof="/tmp/.repo"

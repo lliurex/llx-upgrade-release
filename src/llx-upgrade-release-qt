@@ -89,8 +89,11 @@ class thRun(QThread):
 			#pkgs=llxupgrader.getDependPkgs()
 				llxupgrader.downloadPackages(pkgs)
 				self.downloaded.emit()
-				llxupgrader.generateLocalRepo()
-				llxupgrader.setLocalRepo()
+				llxupgrader.generateLocalRepo(self.upgradeTo["Codename"])
+				llxupgrader.setLocalRepo(self.upgradeTo["Codename"])
+				codenamef="/tmp/.codename"
+				with open(codename,"w") as f:
+					f.write("{}:{}".format(self.updateTo["Dist"],self.updateTo["Codename"]))
 			self.end.emit()
 		if self.target=="downgrade":
 			llxupgrader.downgrade()

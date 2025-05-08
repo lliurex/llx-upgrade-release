@@ -53,6 +53,8 @@ def processMetaRelease(meta):
 			dist["Version"]=line.strip()
 		elif "Name" in line:
 			dist["Name"]=line.strip()
+		elif "Codename" in line:
+			dist["Codename"]=line.strip()
 		elif "Dist" in line:
 			if len(dist.get("Dist",""))>0:
 				content[dist["Dist"]]=dist

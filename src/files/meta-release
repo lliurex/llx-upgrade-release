@@ -1,5 +1,6 @@
 Dist: llx21
 Name: LliureX 21
+Codename: focal
 Version: 21.230721.1
 Date: Thu, 23 April 2020 20:04:00 UTC
 Supported: 1
@@ -12,6 +13,7 @@ UpgradeToolSignature: https://raw.githubusercontent.com/lliurex/llx-upgrade-rele
 
 Dist: llx23
 Name: LliureX 23
+Codename: jammy
 Version: 23.230901.1
 Date: Thu, 13 Sept 2023 12:10:00 UTC
 Supported: 1
@@ -24,6 +26,7 @@ UpgradeToolSignature: https://raw.githubusercontent.com/lliurex/llx-upgrade-rele
 
 Dist: llx25
 Name: LliureX 25
+Codename: noble
 Version: 25.241121.0
 Date: Thu, 21 Nov 2024 12:03:01 UTC
 Supported: 1

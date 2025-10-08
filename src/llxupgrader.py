@@ -324,6 +324,10 @@ def _modifyAptConf(repodir=""):
 #def _modifyAptConf
 
 def setLocalRepo(release="jammy",repodir=""):
+	print("*****")
+	print(release)
+	print("*****")
+	sys.exit(1)
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	tmpsources=os.path.join(TMPDIR,".{}".format(os.path.basename(SOURCESF)))
@@ -556,6 +560,13 @@ def chkUpgradeResult():
 def fixAptSources(repodir="",release="jammy"):
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
+	if release=="jammy":
+		if os.path.exists(repodir):
+			for f in os.scandir(repodir):
+				if f.is_dir():
+					release=f.name.split("-")[0]
+					break
+		
 	_debug("Setting dir for repo: {}".format(repodir))
 	llxup_sources=os.path.join(os.path.dirname(SOURCESF),"lliurexup_sources.list")
 	tmpllxup_sources=os.path.join(TMPDIR,"lliurexup_sources.list")

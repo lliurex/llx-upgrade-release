@@ -2,9 +2,9 @@
 
 import os,subprocess,shutil,time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from PySide6.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
-from PySide6 import QtGui
-from PySide6.QtCore import Qt,QThread,QObject,Signal,QEvent
+from PySide2.QtWidgets import QApplication, QWidget,QLabel,QGridLayout,QPushButton
+from PySide2 import QtGui
+from PySide2.QtCore import Qt,QThread,QObject,Signal,QEvent
 from i18n import i18n
 import llxupgrader
 from lliurex import lliurexup
@@ -149,7 +149,6 @@ class qupgrader(QWidget):
 		if os.path.exists(codenamef)==True:
 			with open(codenamef,"r") as f:
 				codename=f.read().strip().split(":")[0]
-			os.unlink(codenamef)
 		else:
 			codename="llx25"
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768_{}.jpg".format(codename)

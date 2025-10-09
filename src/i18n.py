@@ -9,6 +9,7 @@ def i18n(raw):
 		"ACCEPT":_("Accept"),
 		"ASK":_("Update?"),
 		"AVAILABLE":_("There's a new LliureX release"),
+		"BROKEN":_("Remove packages blocking upgrades"),
 		"BEGIN":_("Upgrading Lliurex..."),
 		"CANCEL":_("Cancel"),
 		"CHKRESULTS":_("Checking upgrade results..."),

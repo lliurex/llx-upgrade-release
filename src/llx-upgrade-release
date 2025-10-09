@@ -112,6 +112,7 @@ if os.geteuid()!=0:
 if len(sys.argv[0])>1:
 	(unattended,repo,download)=chkParms(sys.argv)
 upgradeTo=llxupgrader.chkReleaseAvailable()
+upgradeTo.update({"Codename" :upgradeTo["Codename"].removeprefix("Codename:").lower()})
 if len(repo)>0:
 	print("Using {}".format(repo))
 	if os.path.exists(repo)==False:
@@ -183,7 +184,8 @@ if download==True:
 #llxupgrader.generateReleaseFile("jammy","23.8","2023.08.07")
 #llxupgrader.upgradeLlxUp(upgradeTo)
 noreturn=0
-llxupgrader.setLocalRepo(upgradeTo["codename" ],repo)
+codename=upgradeTo["Codename" ].removeprefix("Codename:").lower()
+llxupgrader.setLocalRepo(codename,repo)
 llxupgrader.setSystemdUpgradeTarget()
 unattendedf="/tmp/.unattended"
 repof="/tmp/.repo"

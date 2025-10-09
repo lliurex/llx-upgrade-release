@@ -6,7 +6,7 @@
 import os,sys,subprocess,time
 from i18n import i18n
 import llxupgrader
-from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QListWidget,QTextEdit, QCheckBox,QListWidgetItem
+from PySide2.QtWidgets import QApplication, QLabel, QWidget, QPushButton,QGridLayout,QDialog
 from PySide2 import QtGui
 from PySide2.QtCore import QSize,Qt,QThread,Signal,QObject
 from lliurex import lliurexup
@@ -55,9 +55,13 @@ class qrescue(QWidget):
 		btn_tty=QPushButton(i18n("KONSOLE"))
 		btn_tty.clicked.connect(self._konsole)
 		lay.addWidget(btn_tty,5,1,1,1)
+		btn_brk=QPushButton(i18n("BROKEN"))
+		btn_brk.clicked.connect(self._broken)
+		lay.addWidget(btn_brk,6,0,1,2)
+
 		btn_rbt=QPushButton(i18n("REBOOT_OK"))
 		btn_rbt.clicked.connect(self._reboot)
-		lay.addWidget(btn_rbt,6,0,1,2,Qt.AlignCenter)
+		lay.addWidget(btn_rbt,7,0,1,2,Qt.AlignCenter)
 		self.show()
 	#def renderGui
 
@@ -105,6 +109,37 @@ class qrescue(QWidget):
 		cmd=["konsole"]
 		subprocess.run(cmd)
 	#def _konsole
+
+	def _broken(self):
+		cmd=["apt-get","dist-upgrade"]
+		proc=subprocess.run(cmd,universal_newlines=True,encoding="utf8",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		print(proc)
+		pkgs=[]
+		for line in proc.stdout.split("\n"):
+			if len(line)>5:
+				if line[0]==" " and line[1]!=" " and ":" in line:
+					pkgs.append(line.strip().split(" ")[0])
+		print(pkgs)
+		if len(pkgs)>0:
+			dlg=QDialog()
+			lay=QGridLayout()
+			dlg.setLayout(lay)
+			lbl=QLabel("Remove broken pkgs?")
+			lay.addWidget(lbl,0,0,1,1)
+			lbl=QLabel("<br>".join(pkgs))
+			lay.addWidget(lbl,1,0,1,1)
+			btnOk=QPushButton("OK")
+			lay.addWidget(btnOk,2,0,1,1)
+			btnKo=QPushButton("CANCEL")
+			lay.addWidget(btnKo,2,1,1,1)
+			btnOk.clicked.connect(dlg.accept)
+			btnKo.clicked.connect(dlg.reject)
+			remove=dlg.exec_()
+			if remove==True:
+				cmd=["apt-get","--allow-remove-essential","-y","remove"]
+				cmd.extend(pkgs)
+				subprocess.run(cmd)
+	#def _broken
 
 	def _reboot(self):
 		self._doFixes()

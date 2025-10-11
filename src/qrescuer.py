@@ -111,15 +111,7 @@ class qrescue(QWidget):
 	#def _konsole
 
 	def _broken(self):
-		cmd=["apt-get","dist-upgrade"]
-		proc=subprocess.run(cmd,universal_newlines=True,encoding="utf8",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		print(proc)
-		pkgs=[]
-		for line in proc.stdout.split("\n"):
-			if len(line)>5:
-				if line[0]==" " and line[1]!=" " and ":" in line:
-					pkgs.append(line.strip().split(" ")[0])
-		print(pkgs)
+		pkgs=llxupgrader.simulateUpgrade()
 		if len(pkgs)>0:
 			dlg=QDialog()
 			lay=QGridLayout()
@@ -136,9 +128,11 @@ class qrescue(QWidget):
 			btnKo.clicked.connect(dlg.reject)
 			remove=dlg.exec_()
 			if remove==True:
+				self.setEnabled(False)
 				cmd=["apt-get","--allow-remove-essential","-y","remove"]
 				cmd.extend(pkgs)
 				subprocess.run(cmd)
+				self.setEnabled(True)
 	#def _broken
 
 	def _reboot(self):

@@ -28,6 +28,8 @@ def i18n(raw):
 		"INFO":_("The upgrade process has ended with errors"),
 		"INFO1":_("If there's a network connection then try to upgrade from lliurex.net"),
 		"INFO2":_("If you know about you're doing you can enable network and launch a konsole or retry the process."),
+		"INTEGRITY":_("Checking integrity..."),
+		"INTEGRITY_END":_("Integrity checked"),
 		"KONSOLE":_("Launch a terminal"),
 		"LASTCHANCE":_("This is the last chance for aborting.<br>Don't poweroff the computer nor interrupt the upgrade in any way."),
 		"LOG":_("Show apt log"),

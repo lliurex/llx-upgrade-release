@@ -18,7 +18,8 @@ TARFILE=os.path.join(TMPDIR,"data.tar")
 WRKDIR="/usr/share/llx-upgrade-release/"
 DATADIR="/usr/share/llx-upgrade-release/files"
 REPODIR="/usr/share/llx-upgrade-release/repo"
-LLXUP_PRESCRIPT="/usr/share/lliurex-up/preActions/850-remove-comited"
+LLXUP_PRESCRIPT_DEMOTE="/usr/share/lliurex-up/preActions/850-remove-comited"
+LLXUP_PRESCRIPT_BROKEN="/usr/share/lliurex-up/preActions/840-remove-broken"
 LLXUP_POSTSCRIPT="/usr/share/lliurex-up/postActions/900-touch"
 LLXUP_TOKEN="/var/run/disableMetaProtection.token"
 META_RDEPENDS=os.path.join(TMPDIR,"pkgs.list")
@@ -142,6 +143,7 @@ def _generateDemoteScript():
 			fcontent+="ACTION=\"$1\"\n"
 			fcontent+="case \"$ACTION\" in\n" 
 			fcontent+="preActions)\n"
+			fcontent+="echo \"******* Demoted pkgs *******\""
 			fcontent+="dpkg --force-all --purge {} || true\n".format(" ".join(demote))
 			fcontent+="apt-get install -f -y\n"
 			fcontent+="dpkg --get-selections > {0}\n".format(os.path.join(TMPDIR,"dselect"))
@@ -149,10 +151,22 @@ def _generateDemoteScript():
 			fcontent+="\n;;\nesac"
 
 		if len(fcontent)>0:
-			with open(LLXUP_PRESCRIPT,"w") as f:
+			with open(LLXUP_PRESCRIPT_DEMOTE,"w") as f:
 				f.write(fcontent)
-			os.chmod(LLXUP_PRESCRIPT,0o755)
+			os.chmod(LLXUP_PRESCRIPT_DEMOTE,0o755)
 #def _generateDemoteScript
+
+def generateRemoveBrokenScript(pkgs):
+		with open(LLXUP_PRESCRIPT_BROKEN,"w") as f:
+			fcontent="#!/bin/bash\n"
+			fcontent+="ACTION=\"$1\"\n"
+			fcontent+="case \"$ACTION\" in\n" 
+			fcontent+="preActions)\n"
+			fcontent+="echo \"******* Broken pkgs *******\""
+			fcontent+="apt-get --allow-remove-essential -y remove {}\n".format(" ".join(pkgs))
+			fcontent+="rm $0\n"
+			fcontent+="\n;;\nesac"
+#def generateRemoveBrokenScript
 
 def _disablePinning():
 	pinf="/etc/apt/preferences.d/lliurex-pinning"
@@ -198,7 +212,7 @@ def enableUpgradeRepos(tools):
 
 def clean():
 	cmd=["apt-get","clean"]
-	subprocess.run(cmd)
+	#subprocess.run(cmd)
 #def clean
 
 def _enablePinning():
@@ -237,8 +251,8 @@ def restoreRepos():
 #def restoreRepos
 
 def cleanLlxUpActions():
-	if os.path.isfile(LLXUP_PRESCRIPT):
-		os.unlink(LLXUP_PRESCRIPT)
+	if os.path.isfile(LLXUP_PRESCRIPT_DEMOTE):
+		os.unlink(LLXUP_PRESCRIPT_DEMOTE)
 	if os.path.isfile(LLXUP_POSTSCRIPT):
 		os.unlink(LLXUP_POSTSCRIPT)
 	if os.path.isfile(LLXUP_TOKEN):
@@ -263,7 +277,6 @@ def downgrade():
 	cmd=["apt-get"]
 	cmd.extend(aptFlags)
 	cmd.extend(pkgList.split())
-	print(cmd)
 	subprocess.run(cmd)
 #def downgrade()
 
@@ -323,10 +336,6 @@ def _modifyAptConf(repodir=""):
 #def _modifyAptConf
 
 def setLocalRepo(release="jammy",repodir=""):
-	print("*****")
-	print(release)
-	print("*****")
-	sys.exit(1)
 	if repodir=="" or os.path.exists(repodir)==False:
 		repodir=REPODIR
 	tmpsources=os.path.join(TMPDIR,".{}".format(os.path.basename(SOURCESF)))
@@ -358,17 +367,26 @@ def downloadPackages(pkgs,repodir=""):
 	repoerr="/usr/share/llx-upgrade-release/err"
 	f=open(repoerr,"w")
 	f.close()
-	for pkg in pkgs:
-		cmd=["apt-get","install","-y","-d","--reinstall",pkg,"-o","Dir::Cache::Archives={0}".format(repodir)]
+	cont=0
+	pkgList=[]
+	while pkgs:
+		if len(pkgs)>1: #Last pkg
+			if len(pkgList)%2==0:
+				pkgList.append(pkgs.pop())
+				continue
+		pkgList.append(pkgs.pop())
+		cmd=["apt-get","install","-y","-d","--reinstall"," ".join(pkgList),"-o","Dir::Cache::Archives={0}".format(repodir)]
 		prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
-		_debug("Get: {}".format(pkg))
+		_debug("Get: {}".format(pkgList))
 		if prc.returncode!=0:
 			olddir=os.getcwd()
 			os.chdir(repodir)
-			_debug("Download: {})".format(pkg))
-			cmd=["apt-get","download","{}".format(pkg)]
+			_debug("Download: {})".format(pkgList))
+			cmd=["apt-get","download","{}".format(" ".join(pkgList))]
 			prc=subprocess.run(cmd,stderr=subprocess.PIPE,stdout=subprocess.PIPE)
 			os.chdir(olddir)
+		pkgList=[]
+		cont+=1
 #def downloadPackages
 
 def _getMetaDepends():
@@ -485,7 +503,6 @@ def _readLocalRepo(repodir=""):
 		repodir=REPODIR
 
 	repos={}
-	print("BEGIN")
 	with open(SOURCESF,"r") as f:
 		fcontent=f.readlines()
 	for l in fcontent:
@@ -728,3 +745,14 @@ def enableSystemdServices():
 		subprocess.run(cmd)
 	return()
 #def enableSystemdServices
+
+def simulateUpgrade():
+	pkgs=[]
+	cmd=["apt-get","dist-upgrade","--simulate"]
+	proc=subprocess.run(cmd,universal_newlines=True,encoding="utf8",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	for line in proc.stdout.split("\n"):
+		if len(line)>5:
+			if line[0]==" " and line[1]!=" " and ":" in line:
+				pkgs.append(line.strip().split(" ")[0])
+	return(pkgs)
+#def simulateUpgrade

@@ -63,6 +63,7 @@ class ChkResults(QThread):
 
 class Launcher(QThread):
 	processEnd=Signal(str,subprocess.CompletedProcess)
+	updateReady=Signal(bool)
 	def __init__(self,parent=None):
 		super (Launcher,self).__init__(parent)
 		self.dbg=False
@@ -85,6 +86,11 @@ class Launcher(QThread):
 	#def setCmd
 
 	def run(self):
+		self._debug("Checking integrity")
+		pkgs=llxupgrader.simulateUpgrade()
+		if len(pkgs)>0:
+			llxupgrader.generateRemoveBrokenScript(pkgs)
+		self.upgradeReady.emit(True)
 		self._debug("Launching {}".format(self.cmd))
 		prc=subprocess.run(self.cmd,universal_newlines=self.universal_newlines,encoding=self.encoding,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		self.processEnd.emit(" ".join(self.cmd),prc)
@@ -148,7 +154,10 @@ class qupgrader(QWidget):
 		codenamef="/tmp/.codename"
 		if os.path.exists(codenamef)==True:
 			with open(codenamef,"r") as f:
-				codename=f.read().strip().split(":")[0]
+				for f in f.read().strip().split(":"):
+					if "llx" in f:
+						codename=f.strip()
+						break
 		else:
 			codename="llx25"
 		self.img="/usr/share/llx-upgrade-release/rsrc/1024x768_{}.jpg".format(codename)
@@ -226,8 +235,11 @@ class qupgrader(QWidget):
 
 	def launchLlxUp(self):
 		ln=Launcher()
+		txt=self.lbl_txt.text()
+		self.lbl_txt.setText("{0}<br>{1}".format(txt,i18n("INTEGRITY")))
 		ln.setCmd(self.upgradeCmd)
 		ln.processEnd.connect(self._processEnd)
+		ln.upgradeReady.connect(self._upgradeReady)
 		ln.start()
 		self.processDict[self.upgradeCmd]=ln
 	#def launchLlxUp
@@ -239,6 +251,11 @@ class qupgrader(QWidget):
 		llxupgrader._disableMirror()
 		self.qserver.start()
 	#def fakeLliurexNet
+
+	def _upgradeReady(self,*args):
+		txt=self.lbl_txt.text()
+		self.lbl_txt.setText("{0}<br>{1}".format(txt,i18n("INTEGRITY_END")))
+	#def _upgradeReady
 
 	def _processEnd(self,prc,prcdata):
 		err=True
@@ -305,7 +322,7 @@ class qupgrader(QWidget):
 		llxupgrader.unfixAptSources()
 		llxupgrader.removeAptConf()
 		llxupgrader.undoHostsMod()
-		llxupgrader.clean()
+		#llxupgrader.clean()
 		llxupgrader.unsetSystemdUpgradeTarget()
 		llxupgrader.cleanLlxUpActions()
 	#def _undoFixes()
@@ -324,8 +341,6 @@ class qupgrader(QWidget):
 		if prcdata.returncode!=0:
 			cmd=["/usr/bin/konsole"]
 			subprocess.run(cmd)
-		print("LAUNCH")
-		print(prcdata)
 		self._undoFixes()
 		self.showEnd()
 	#def _endErrorMode
